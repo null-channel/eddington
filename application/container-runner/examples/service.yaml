@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{.appname}}
+  namespace: {{.customer_id}}/{{.appname}}
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - nullcloud-gateway
+  http:
+  - name: {{.customer_id}}/{{.appname}}
+    match:
+      - uri:
+        prefix: "/{{.customer_id}}/{{.appname}}/{{.servicename}}"
+    route:
+      - destination:
+          host: {{.appname}}
+          port:
+            number: 80
+

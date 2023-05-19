@@ -1,0 +1,19 @@
+apiVersion: nullapp.io.nullcloud/v1alpha1
+kind: NullApplication
+metadata:
+  labels:
+    app.kubernetes.io/name: nullapplication
+    app.kubernetes.io/instance: nullapplication-sample
+    app.kubernetes.io/part-of: container-runner
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: container-runner
+  name: nullapplication-sample
+  namespace: my-customer-our-app
+spec:
+  appName: our-app
+  appVersion: "v1"
+  apps:
+  - name: bob
+    image: nginx
+     
+  # TODO(user): Add fields here
