@@ -5,7 +5,7 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/null-channel/microlich/container-runner/internal/templates"
+	"github.com/null-channel/eddington/application/container-runner/internal/templates"
 )
 
 func main() {

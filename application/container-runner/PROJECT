@@ -6,7 +6,7 @@ domain: io.nullcloud
 layout:
 - go.kubebuilder.io/v4
 projectName: container-runner
-repo: github.com/null-channel/microlich/container-runner
+repo: github.com/null-channel/eddington/application/container-runner
 resources:
 - api:
     crdVersion: v1
@@ -15,6 +15,6 @@ resources:
   domain: io.nullcloud
   group: nullapp
   kind: NullApplication
-  path: github.com/null-channel/microlich/container-runner/api/v1alpha1
+  path: github.com/null-channel/eddington/application/container-runner/api/v1alpha1
   version: v1alpha1
 version: "3"

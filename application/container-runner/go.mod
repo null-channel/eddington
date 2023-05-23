@@ -1,4 +1,4 @@
-module github.com/null-channel/microlich/container-runner
+module github.com/null-channel/eddington/application/container-runner
 
 go 1.19
 

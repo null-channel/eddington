@@ -31,8 +31,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	nullappv1alpha1 "github.com/null-channel/microlich/container-runner/api/v1alpha1"
-	"github.com/null-channel/microlich/container-runner/internal/controller"
+	nullappv1alpha1 "github.com/null-channel/eddington/application/container-runner/api/v1alpha1"
+	"github.com/null-channel/eddington/application/container-runner/internal/controller"
 	//+kubebuilder:scaffold:imports
 )
 
