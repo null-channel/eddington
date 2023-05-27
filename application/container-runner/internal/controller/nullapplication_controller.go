@@ -35,6 +35,10 @@ import (
 	"github.com/null-channel/eddington/application/container-runner/internal/templates"
 )
 
+var (
+	setupLog = ctrl.Log.WithName("null-application-controller")
+)
+
 // NullApplicationReconciler reconciles a NullApplication object
 type NullApplicationReconciler struct {
 	client.Client
@@ -71,15 +75,15 @@ func (r *NullApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			Namespace: req.Namespace,
 		}
 
-		err := r.CheckDeploymentService(ctx, workloadNamespacedName, nullApplication, workload)
+		err := r.CheckDeployment(ctx, workloadNamespacedName, nullApplication, workload)
 		if err != nil {
-			log.Error(err, "unable to update service for microservice")
+			log.Error(err, "unable to update deployment for microservice")
 			return ctrl.Result{}, err
 		}
 
-		err = r.CheckDeployment(ctx, workloadNamespacedName, nullApplication, workload)
+		err = r.CheckDeploymentService(ctx, workloadNamespacedName, nullApplication, workload)
 		if err != nil {
-			log.Error(err, "unable to update deployment for microservice")
+			log.Error(err, "unable to update service for microservice")
 			return ctrl.Result{}, err
 		}
 
@@ -95,10 +99,11 @@ func (r *NullApplicationReconciler) CheckDeploymentService(ctx context.Context, 
 			serviceTemplate := templates.ServiceTemplate{
 				NullApplicationName: nullApplication.Spec.AppName,
 				AppName:             workload.Name,
-				CustomerID:          "my-customer",
+				CustomerID:          workloadNamespacedName.Namespace,
 			}
 			t, err := template.New("service").Parse(templates.Service)
 			if err != nil {
+				setupLog.Info("Error parsing service template")
 				return err
 			}
 
@@ -106,15 +111,21 @@ func (r *NullApplicationReconciler) CheckDeploymentService(ctx context.Context, 
 			byteBuffer := bytes.NewBufferString(templateOutput)
 			err = t.Execute(byteBuffer, serviceTemplate)
 			if err != nil {
+				setupLog.Info("Error executing service template")
 				return err
 			}
 
 			appService := v1.Service{}
 			err = yaml.Unmarshal(byteBuffer.Bytes(), &appService)
 			if err != nil {
+				setupLog.Info("Error unmarshalling service template")
 				return err
 			}
-			r.Create(ctx, &appService)
+			log := log.FromContext(ctx)
+			log.Error(err, "Not yet an error creating service for microservice: "+templateOutput)
+
+			setupLog.Info("Creating service for microservice: " + string(byteBuffer.Bytes()))
+			return r.Create(ctx, &appService)
 		}
 	}
 	// TODO It is found!!! Need to update the service.

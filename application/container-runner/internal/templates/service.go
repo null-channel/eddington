@@ -1,10 +1,10 @@
 package templates
 
-var Service = `apiVersion: networking.istio.io/v1alpha3
+var Service = `apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: {{.NullApplicationName}}-{{.AppName}}
-  namespace: {{.CustomerID}}-{{.NullApplicationName}}
+  namespace: {{.CustomerID}}
 spec:
   hosts:
   - "*"
@@ -13,8 +13,9 @@ spec:
   http:
   - name: {{.CustomerID}}/{{.AppName}}
     match:
-      - uri:
-        prefix: "/{{.CustomerID}}/{{.NullApplicationName}}/{{.AppName}}"
+      - name: "{{.CustomerID}}-{{.NullApplicationName}}-{{.AppName}}"
+        uri:
+          prefix: "/{{.CustomerID}}/{{.NullApplicationName}}/{{.AppName}}/"
     route:
       - destination:
           host: {{.AppName}}

@@ -4,7 +4,7 @@ var Deployment = `apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{.NullApplicationName}}-{{.AppName}}
-  namespace: {{.CustomerID}}-{{.NullApplicationName}}
+  namespace: {{.CustomerID}}
 spec:
   selector:
     matchLabels:

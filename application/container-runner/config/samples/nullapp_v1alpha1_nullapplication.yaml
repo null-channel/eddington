@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: container-runner
   name: nullapplication-sample
-  namespace: my-customer-our-app
+  namespace: user-id
 spec:
   appName: our-app
   appVersion: "v1"
