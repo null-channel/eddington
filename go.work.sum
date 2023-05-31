@@ -22,6 +22,8 @@ github.com/rogpeppe/go-internal v1.6.1/go.mod h1:xXDCJY+GAPziupqXw64V24skbSoqbTE
 github.com/rogpeppe/go-internal v1.8.0/go.mod h1:WmiCO8CzOY8rg0OYDC4/i/2WRWAB6poM+XZ2dLUbcbE=
 github.com/russross/blackfriday v1.6.0 h1:KqfZb0pUVN2lYqZUYRddxF4OR8ZMURnJIG5Y3VRLtww=
 github.com/ugorji/go v1.1.4 h1:j4s+tAvLfL3bZyefP2SEWmhBzmuIlH/eqNuPdFPgngw=
+github.com/ugorji/go v1.2.9 h1:Uczo8yPLSLGNzCRCprARqq6bDxfBKK0Ku34LbFVi5vo=
+github.com/ugorji/go v1.2.9/go.mod h1:Lb6hSNkODqHo79DfjqmiP4BiShlU9aoUJ2Ns4u22R0o=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.35.0 h1:xFSRQBbXF6VvYRf2lqMJXxoB72XI1K/azav8TekHHSw=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.35.0/go.mod h1:h8TWwRAhQpOd0aM5nYsRD8+flnkj+526GEIVlarH7eY=
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.35.0 h1:Ajldaqhxqw/gNzQA45IKFWLdG7jZuXX/wBW1d5qvbUI=
