@@ -24,8 +24,12 @@ import (
 	app "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/dynamic"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -36,13 +40,16 @@ import (
 )
 
 var (
-	setupLog = ctrl.Log.WithName("null-application-controller")
+	setupLog               = ctrl.Log.WithName("null-application-controller")
+	istioVirtualServiceGVR = schema.GroupVersionResource{Group: "networking.istio.io", Version: "v1beta1", Resource: "virtualservice"}
+	istioVirtualServiceGVK = schema.GroupVersionKind{Group: "networking.istio.io", Version: "v1beta1", Kind: "VirtualService"}
 )
 
 // NullApplicationReconciler reconciles a NullApplication object
 type NullApplicationReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme     *runtime.Scheme
+	DynoClient *dynamic.DynamicClient
 }
 
 //+kubebuilder:rbac:groups=nullapp.io.nullcloud,resources=nullapplications,verbs=get;list;watch;create;update;patch;delete
@@ -114,18 +121,10 @@ func (r *NullApplicationReconciler) CheckDeploymentService(ctx context.Context, 
 				setupLog.Info("Error executing service template")
 				return err
 			}
-
-			appService := v1.Service{}
-			err = yaml.Unmarshal(byteBuffer.Bytes(), &appService)
-			if err != nil {
-				setupLog.Info("Error unmarshalling service template")
-				return err
-			}
-			log := log.FromContext(ctx)
-			log.Error(err, "Not yet an error creating service for microservice: "+templateOutput)
+			appService, err := virtualServiceBytesToUnstructured(*byteBuffer)
 
 			setupLog.Info("Creating service for microservice: " + string(byteBuffer.Bytes()))
-			return r.Create(ctx, &appService)
+			return r.Create(ctx, appService)
 		}
 	}
 	// TODO It is found!!! Need to update the service.
@@ -140,7 +139,7 @@ func (r *NullApplicationReconciler) CheckDeployment(ctx context.Context, workloa
 			deploymentVars := templates.DeploymentTemplate{
 				NullApplicationName: nullApplication.Spec.AppName,
 				AppName:             workload.Name,
-				CustomerID:          "my-customer",
+				CustomerID:          workloadNamespacedName.Namespace,
 				Image:               workload.Image,
 			}
 			deploymentTemplate, err := template.New("deployment").Parse(templates.Deployment)
@@ -174,4 +173,17 @@ func (r *NullApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&nullappv1alpha1.NullApplication{}).
 		Complete(r)
+}
+
+func (r *NullApplicationReconciler) getObject(namespace, name string, gvr schema.GroupVersionResource, ctx context.Context) (*unstructured.Unstructured, error) {
+	return r.DynoClient.Resource(gvr).Namespace(namespace).Get(ctx, name, metav1.GetOptions{})
+}
+
+func virtualServiceBytesToUnstructured(data bytes.Buffer) (*unstructured.Unstructured, error) {
+	u := &unstructured.Unstructured{Object: map[string]interface{}{}}
+	if err := yaml.Unmarshal(data.Bytes(), &u); err != nil {
+		return nil, err
+	}
+
+	return u, nil
 }
