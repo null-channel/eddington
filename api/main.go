@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/null-channel/eddington/api/controllers"
 	"github.com/null-channel/eddington/api/docs"
+	userController "github.com/null-channel/eddington/api/users/controllers"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	swaggerfiles "github.com/swaggo/files"
@@ -23,6 +24,8 @@ func main() {
 	router := gin.New()
 	router.Use(gin.Logger())
 	docs.SwaggerInfo.BasePath = "/api/v1"
+	userController := userController.New()
+
 	v1 := router.Group("api/v1")
 	{
 		// Apps
@@ -34,6 +37,7 @@ func main() {
 		}
 
 		// Users
+		userController.AddAllControllers(v1)
 
 		// AuthZ
 

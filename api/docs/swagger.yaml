@@ -30,4 +30,19 @@ paths:
       summary: Create an application
       tags:
       - example
+  /users/:
+    post:
+      consumes:
+      - application/json
+      description: create a user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Create an user
+      tags:
+      - Users
 swagger: "2.0"
