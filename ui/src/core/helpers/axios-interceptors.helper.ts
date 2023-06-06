@@ -1,6 +1,6 @@
 import { useCookies } from "vue3-cookies";
 import { notify } from "@kyvg/vue3-notification";
-import router from "@routers";
+import router from "@router";
 
 const baseURL = import.meta.env.VITE_BASE_API_URL;
 

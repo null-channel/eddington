@@ -26,7 +26,7 @@
       "@interfaces/*": ["./src/shared/interfaces/*"],
       "@constants": ["./src/core/constants"],
       "@helpers": ["./src/core/helpers"],
-      "@routers": ["./src/core/routers"],
+      "@router": ["./src/core/routers"],
       "@guards/*": ["./src/core/guards/*"],
       "@pages/*": ["./src/pages/*"]
     }

@@ -9,6 +9,13 @@ export default {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        "hero-bg": "url('./src/assets/img/hero-bg.png')",
+      },
+      fontFamily: {
+        inter: ["Inter", "sans-serif"],
+        roboto: ["Roboto", "sans-serif"],
+      },
     },
   },
   plugins: [formKitTailwind],

@@ -10,7 +10,7 @@ export default defineConfig({
       "@constants": fileURLToPath(
         new URL("./src/core/constants", import.meta.url)
       ),
-      "@routers": fileURLToPath(new URL("./src/core/routers", import.meta.url)),
+      "@router": fileURLToPath(new URL("./src/core/routers", import.meta.url)),
       "@components": fileURLToPath(
         new URL("./src/shared/components", import.meta.url)
       ),

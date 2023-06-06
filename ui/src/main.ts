@@ -6,9 +6,11 @@ import { createPinia } from "pinia";
 import { plugin, defaultConfig } from "@formkit/vue";
 import genesis from "./formkit.config";
 import Notifications from "@kyvg/vue3-notification";
+import router from "@router";
 
 const app = createApp(App);
 const pinia = createPinia();
+app.use(router)
 app.use(plugin, defaultConfig(genesis));
 app.use(axiosHelper);
 app.use(pinia);

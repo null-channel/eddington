@@ -14,6 +14,7 @@
     "@formkit/vue": "^0.17.2",
     "@heroicons/vue": "^2.0.18",
     "@kyvg/vue3-notification": "^2.9.1",
+    "axios": "^1.4.0",
     "pinia": "^2.1.3",
     "url": "^0.11.0",
     "vite-plugin-dynamic-import": "^1.4.0",
