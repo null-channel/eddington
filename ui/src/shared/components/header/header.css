@@ -1,4 +1,4 @@
 
 .nav-link {
-    @apply font-inter text-sm font-medium block py-2 pr-4 pl-3 leading-5 not-italic text-gray-200 border-b border-gray-100 hover:bg-gray-50 hover:text-gray-900 lg:hover:bg-transparent lg:border-0  lg:p-0
+    @apply font-inter text-sm font-medium py-2 pr-4 pl-3 leading-5 not-italic text-gray-200 border-b border-gray-100 hover:bg-gray-200 hover:text-gray-900 lg:border-0  lg:p-0
 }

@@ -1,12 +1,12 @@
 import { defineStore } from "pinia";
 import { env } from "@constants";
 import { useCookies } from "vue3-cookies";
-import router from "@routers";
+import router from "@router";
 
 const { cookies } = useCookies();
 export const useUserStore = defineStore("user", {
   state: () => ({
-    user: {},
+    user: {  },
   }),
   getters: {},
   actions: {

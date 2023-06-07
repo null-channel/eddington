@@ -3,4 +3,4 @@ export enum env {
 }
 export { default as ROUTES } from './routes.const';
 export { default as MAIN_ROUTES } from './dashbordRoutes.const';
-export { default as NAVBAR } from './navbar.const';
+export { NAVBAR_AFTER_LOGIN ,NAVBAR_BEFORE_LOGIN } from './navbar.const';

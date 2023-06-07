@@ -4,11 +4,17 @@
 import { defineComponent } from 'vue';
 import Header from "@components/header/header.vue"
 import { ChevronDoubleRightIcon } from '@heroicons/vue/24/outline';
+import { NAVBAR_BEFORE_LOGIN } from '@/core/constants';
 export default defineComponent({
     name: "HeroSection",
     components: {
         Header,
         ChevronDoubleRightIcon
+    },
+    data() {
+        return {
+            routes: NAVBAR_BEFORE_LOGIN
+        }
     }
 })
 </script>
