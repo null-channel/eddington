@@ -1,10 +1,11 @@
 import { useCookies } from "vue3-cookies";
 import { notify } from "@kyvg/vue3-notification";
 import router from "@router";
+import { AxiosInstance } from "axios";
 
 const baseURL = import.meta.env.VITE_BASE_API_URL;
 
-function axiosInterceptor(axios: any) {
+function axiosInterceptor(axios: AxiosInstance) {
   const { cookies } = useCookies();
 
   axios.interceptors.request.use((request: any) => {
