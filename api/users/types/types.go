@@ -1,6 +1,6 @@
 package types
 
-type CreateUserRequest struct {
+type CreateUserResponse struct {
 	Name   string `json:"name"`
 	Emails string `json:"emails"`
 }
