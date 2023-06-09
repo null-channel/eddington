@@ -1,50 +1,46 @@
 <section class=" h-[100vh] bg-hero-bg bg-contain bg-center bg-no-repeat">
-    <Header :routes="routes"></Header>
-    <div class="pt-16  pl-4 sm:pl-40  max-w-sm lg:max-w-3xl gap-10 flex flex-col backdrop-blur-lg rounded-md">
-        <div class="p-4">
-          <div class="flex items-center gap-8">
-              <h1 class="flex gap-2 font-bold text-xl lg:text-3xl font-inter text-gray-400 uppercase">
-                  <span class="underline ">Null</span>
-                  <span class=" bg-gray-200 h-fit uppercase">Cloud</span>
-              </h1>
-              <img src="../../../assets/svg/star.svg" class=" h-[43px] lg:h-[86px]" />
-          </div>
-          <div id="cta-text">
-              <p class="text-gray-200 not-italic font-bold  text-base lg:text-lg leading-5 lg:leading-7 font-roboto">
-                  Are you a budding developer, ready to soar into the world of cloud computing but don't know where to
-                  start? Look no
-                  further than Null Cloud, your trusty sidekick in the realm of deployment and cloud management.
-              </p>
-          </div>
-          <div id="user-interactions" class="flex justify-between pt-4">
-            <div id="email-input-form" class="mx-1 py-4 px-2 border-gray-200">
-              <div class="flex flex-col items-center font-roboto">
-                <div class="flex flex-row items-center">
-                  <div class="flex flex-col items-center">
-                    <div class="flex flex-row items-center">
-                      <input type="text" placeholder="your@email.com" class="w-64 h-10 px-2 py-1 rounded-l-md font-roboto bg-gray-200 justify-start" />
-                      <button class="h-10 px-8 py-1 rounded-r-md bg-gray-900 text-white font-roboto font-bold border-gray-200 border-2">Subscribe</button>
-                    </div>
-                  </div>
-                </div>
-                
-              </div>
-            </div>
-          <div class="py-4 mx-1">
-              <a href="#" class="button-primary flex items-center gap-2 h-8 justify-center">Start here
-                  <ChevronDoubleRightIcon class="w-4 h-4" />
-              </a>
-          </div>
+  <Header :routes="routes"></Header>
+  <div class="pt-16  pl-4 sm:pl-40  max-w-sm lg:max-w-3xl gap-10 flex flex-col backdrop-blur-lg rounded-md">
+    <div class="p-4">
+      <div class="flex items-center gap-8">
+        <h1 class="flex gap-2 font-bold text-xl lg:text-3xl font-inter text-gray-400 uppercase">
+          <span class="underline ">Null</span>
+          <span class=" bg-gray-200 h-fit uppercase">Cloud</span>
+        </h1>
+        <img src="../../../assets/svg/star.svg" class=" h-[43px] lg:h-[86px]" />
+      </div>
+      <div id="cta-text">
+        <p class="text-gray-200 not-italic font-bold  text-base lg:text-lg leading-5 lg:leading-7 font-roboto">
+          Are you a budding developer, ready to soar into the world of cloud computing but don't know where to
+          start? Look no
+          further than Null Cloud, your trusty sidekick in the realm of deployment and cloud management.
+        </p>
+      </div>
+      <div id="user-interactions" class="flex justify-between pt-4">
+        <div id="email-input-form" class="mx-1 py-4 px-2 border-gray-200">
+          <div class="flex flex-row items-center font-roboto px-2 py-1">
+            <input type="text" placeholder="your@email.com"
+              class="w-64 h-10 px-2 py-1 rounded-l-md font-roboto bg-gray-200 justify-start pr-2" />
+            <button
+              class="h-10 px-8 py-1 rounded-r-md bg-gray-900 text-white font-roboto font-bold border-gray-200 border-2 pl-2">Subscribe</button>
           </div>
         </div>
-    </div>
-    <footer id="footer" class="bg-gray-100">
-      <div class="text-gray-800 not-italic font-bold  text-base lg:text-lg leading-5 lg:leading-7 font-roboto flex-col flex py-4">
-        <div class="flex items-center justify-center">
-          <a href="https://github.com/null-channel/eddington">
-            <img src="../../../assets/svg/github-mark.png" class=" h-[15px] lg:h-[30px] cursor-pointer" />
+        <div class="py-4 mx-1">
+          <a href="#" class="button-primary flex items-center gap-2 h-8 justify-center">Start here
+            <ChevronDoubleRightIcon class="w-4 h-4" />
           </a>
         </div>
       </div>
-    </footer>
+    </div>
+  </div>
+  <footer id="footer" class="bg-gray-100">
+    <div
+      class="text-gray-800 not-italic font-bold  text-base lg:text-lg leading-5 lg:leading-7 font-roboto flex-col flex py-4">
+      <div class="flex items-center justify-center">
+        <a href="https://github.com/null-channel/eddington">
+          <img src="../../../assets/svg/github-mark.png" class=" h-[15px] lg:h-[30px] cursor-pointer" />
+        </a>
+      </div>
+    </div>
+  </footer>
 </section>
