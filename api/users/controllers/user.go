@@ -99,3 +99,19 @@ func (u *UserController) CreateUser() gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"status": "User created successfully!"})
 	}
 }
+
+// UpdateUser godoc
+//
+// @Summary	update an user
+// @Schemes
+// @Description	update a user
+// @Tags			Users
+// @Accept			json
+// @Produce		json
+// @Success		200	{string}	Helloworld
+// @Router			/users/ [post]
+func (u *UserController) UpdateUser() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Update user in database
+	}
+}
