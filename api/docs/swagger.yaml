@@ -1,0 +1,48 @@
+info:
+  contact: {}
+paths:
+  /apps/:
+    get:
+      consumes:
+      - application/json
+      description: Get all applications created by the user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get all applications created by the user
+      tags:
+      - example
+    post:
+      consumes:
+      - application/json
+      description: create an application
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Create an application
+      tags:
+      - example
+  /users/:
+    post:
+      consumes:
+      - application/json
+      description: create a user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Create an user
+      tags:
+      - Users
+swagger: "2.0"

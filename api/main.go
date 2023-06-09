@@ -8,6 +8,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/null-channel/eddington/api/controllers"
+	"github.com/null-channel/eddington/api/docs"
+	userController "github.com/null-channel/eddington/api/users/controllers"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	swaggerfiles "github.com/swaggo/files"
 )
 
 func main() {
@@ -18,7 +23,10 @@ func main() {
 	}
 	router := gin.New()
 	router.Use(gin.Logger())
-	v1 := router.Group("/v1")
+	docs.SwaggerInfo.BasePath = "/api/v1"
+	userController := userController.New()
+
+	v1 := router.Group("api/v1")
 	{
 		// Apps
 		v1.POST("/apps", controllers.CreateApplication())
@@ -29,6 +37,7 @@ func main() {
 		}
 
 		// Users
+		userController.AddAllControllers(v1)
 
 		// AuthZ
 
@@ -37,6 +46,8 @@ func main() {
 		// Space
 
 	}
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	log.Fatal(router.Run(":" + port))
 
 }
