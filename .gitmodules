@@ -1,0 +1,6 @@
+[submodule "source-controller"]
+	path = source-controller
+	url = https://github.com/fluxcd/source-controller.git
+[submodule "application/container-builder/legion"]
+	path = application/container-builder/legion
+	url = https://github.com/null-channel/legion.git
