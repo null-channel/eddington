@@ -9,7 +9,8 @@ import (
 
 //	@BasePath	/api/v1/
 
-// CreateApplication godoc
+// AppPOST godoc
+//
 //	@Summary	Create an application
 //	@Schemes
 //	@Description	create an application
@@ -18,13 +19,14 @@ import (
 //	@Produce		json
 //	@Success		200	{string}	Helloworld
 //	@Router			/apps/ [post]
-func CreateApplication() gin.HandlerFunc {
+func AppPOST() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.IndentedJSON(501, "Not implemented yet")
 	}
 }
 
-// GetApplication godoc
+// AppGET godoc
+//
 //	@Summary	Get all applications created by the user
 //	@Schemes
 //	@Description	Get all applications created by the user
@@ -33,7 +35,7 @@ func CreateApplication() gin.HandlerFunc {
 //	@Produce		json
 //	@Success		200	{string}	Helloworld
 //	@Router			/apps/ [get]
-func GetApplications() gin.HandlerFunc {
+func AppGET() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.IndentedJSON(501, "Not implemented yet")
 	}

@@ -29,11 +29,11 @@ func main() {
 	v1 := router.Group("api/v1")
 	{
 		// Apps
-		v1.POST("/apps", controllers.CreateApplication())
-		v1.GET("/apps", controllers.GetApplications())
+		v1.POST("/apps", controllers.AppPOST())
+		v1.GET("/apps", controllers.AppGET())
 		apps := v1.Group("/apps")
 		{
-			apps.GET("/:app_id/containers", controllers.CreateContainer())
+			apps.GET("/:app_id/containers", controllers.ContainerPOST())
 		}
 
 		// Users

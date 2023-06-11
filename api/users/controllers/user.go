@@ -62,7 +62,6 @@ func (u *UserController) CreateUser() gin.HandlerFunc {
 			Name:   c.PostForm("name"),
 			Emails: []string{c.PostForm("email")},
 		}
-
 		res, err := u.database.NewInsert().Model(&user).Exec(context.Background())
 
 		if err != nil {
@@ -97,5 +96,21 @@ func (u *UserController) CreateUser() gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"status": "User created successfully!"})
+	}
+}
+
+// UpdateUser godoc
+//
+// @Summary	update an user
+// @Schemes
+// @Description	update a user
+// @Tags			Users
+// @Accept			json
+// @Produce		json
+// @Success		200	{string}	Helloworld
+// @Router			/users/ [post]
+func (u *UserController) UpdateUser() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Update user in database
 	}
 }

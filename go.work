@@ -1,9 +1,11 @@
 go 1.20
 
-use ./git
 use ./container
-use ./application/container-runner
-use ./application/container-builder
-use ./api
-use ./proto
 
+use ./application/container-runner
+
+use ./application/container-builder
+
+use ./api
+
+use ./proto

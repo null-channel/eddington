@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateContainer() gin.HandlerFunc {
+func ContainerPOST() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.IndentedJSON(501, "Not implemented yet")
 	}

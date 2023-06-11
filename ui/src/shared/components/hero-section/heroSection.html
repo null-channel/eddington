@@ -1,6 +1,6 @@
 <section class=" h-[100vh] bg-hero-bg bg-contain bg-center bg-no-repeat">
   <Header :routes="routes"></Header>
-  <div class="pt-16  pl-4 sm:pl-40  max-w-sm lg:max-w-3xl gap-10 flex flex-col backdrop-blur-lg rounded-md">
+  <div class="pt-16  pl-4 sm:pl-40  max-w-sm lg:max-w-3xl gap-10 flex flex-col rounded-md">
     <div class="p-4">
       <div class="flex items-center gap-8">
         <h1 class="flex gap-2 font-bold text-xl lg:text-3xl font-inter text-gray-400 uppercase">
@@ -20,16 +20,22 @@
         <div id="email-input-form" class="mx-1 py-4 px-2 border-gray-200">
           <div class="flex flex-row items-center font-roboto px-2 py-1">
             <input type="text" placeholder="your@email.com"
-              class="w-64 h-10 px-2 py-1 rounded-l-md font-roboto bg-gray-200 justify-start pr-2" />
-            <button
-              class="h-10 px-8 py-1 rounded-r-md bg-gray-900 text-white font-roboto font-bold border-gray-200 border-2 pl-2">Subscribe</button>
+              class="w-64 h-10 px-4 py-1 rounded-lg font-roboto bg-gray-200 justify-start pr-2" />
+            <!-- <button
+              class="h-10 px-8 py-1 rounded-r-md bg-gray-900 text-white font-roboto font-bold border-gray-200 border-2 pl-2">Subscribe</button> -->
+              <div class="py-4 mx-1 px-4">
+                <a href="#" class="button-primary flex items-center gap-2 h-8 justify-center">
+                  Subscribe
+                  <ChevronDoubleRightIcon class="w-4 h-4" />
+                </a>
+              </div>
           </div>
         </div>
-        <div class="py-4 mx-1">
+        <!-- <div class="py-4 mx-1">
           <a href="#" class="button-primary flex items-center gap-2 h-8 justify-center">Start here
             <ChevronDoubleRightIcon class="w-4 h-4" />
           </a>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
