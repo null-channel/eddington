@@ -1,0 +1,20 @@
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: req-authn
+  namespace: istio-system
+spec:
+  jwtRules:
+  - issuer: "https://hungry-jennings-4s54dkzkv7.projects.oryapis.com"
+    jwksUri: https://hungry-jennings-4s54dkzkv7.projects.oryapis.com/.well-known/jwks.json
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: require-jwt-for-all
+  namespace: istio-system
+spec:
+  rules:
+  - from:
+    - source:
+        requestPrincipals: ["*"]
