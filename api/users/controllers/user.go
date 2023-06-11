@@ -62,7 +62,6 @@ func (u *UserController) CreateUser() gin.HandlerFunc {
 			Name:   c.PostForm("name"),
 			Emails: []string{c.PostForm("email")},
 		}
-
 		res, err := u.database.NewInsert().Model(&user).Exec(context.Background())
 
 		if err != nil {
