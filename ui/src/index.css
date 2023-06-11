@@ -18,6 +18,6 @@ body {
 .button-primary {
     @apply text-gray-900 font-inter bg-gray-200 font-medium rounded-2xl text-sm px-4 py-2 mr-2
 }
-.button-secondairy {
+.button-secondary {
     @apply text-gray-900 font-inter bg-gray-400 font-medium rounded-2xl text-sm px-4 py-2 mr-2
 }
