@@ -16,8 +16,12 @@ export default {
         help: "text-xs text-gray-500",
         messages: "list-none p-0 mt-1 mb-0",
         message: "text-red-500 mb-1 text-xs",
-        inner:
-          "max-w-md border border-gray-400 rounded-lg mb-1 overflow-hidden focus-within:border-blue-500",
+      },
+      submit: {
+        label: "Log-in",
+        outer: "mx-auto",
+        input:
+          "w-full !px-16 items-center flex flex-col button-primary !bg-gray-900 !text-gray-200",
       },
       email: {
         outer: "mb-5",
@@ -26,8 +30,6 @@ export default {
         help: "text-xs text-gray-500",
         messages: "list-none p-0 mt-1 mb-0",
         message: "text-red-500 mb-1 text-xs",
-        inner:
-          "max-w-md border border-gray-400 rounded-lg mb-1 overflow-hidden focus-within:border-blue-500",
       },
       select: {
         outer: "mb-5",

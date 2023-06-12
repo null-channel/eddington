@@ -1,0 +1,98 @@
+<div class="h-[100vh] bg-sign-up-bg  bg-right bg-no-repeat">
+    <Header :routes="routes"></Header>
+    <section class="mt-16 m-auto max-w-7xl gap-10 flex flex-col sm:flex-row ">
+        <div class="bg-gray-200  w-full flex flex-col mx-auto order-last sm:order-first sketchy-border">
+            <div class="flex justify-center p-4">
+                <NullCloudTitle dark></NullCloudTitle>
+            </div>
+            <div class="flex p-4 justify-between gap-16 mx-auto">
+                <button class="social-button">
+                    <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_23_75)">
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M20.1 10.5934C20.1 9.88434 20.0364 9.20252 19.9182 8.54797H10.5V12.4162H15.8818C15.65 13.6662 14.9455 14.7252 13.8864 15.4343V17.9434H17.1182C19.0091 16.2025 20.1 13.6389 20.1 10.5934Z"
+                                fill="#111827" />
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M10.4998 20.3661C13.1998 20.3661 15.4635 19.4707 17.118 17.9434L13.8862 15.4343C12.9907 16.0343 11.8453 16.3888 10.4998 16.3888C7.89529 16.3888 5.69075 14.6297 4.90439 12.2661H1.56348V14.857C3.20893 18.1252 6.59075 20.3661 10.4998 20.3661Z"
+                                fill="#111827" />
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M4.90455 12.2662C4.70455 11.6662 4.59091 11.0252 4.59091 10.3662C4.59091 9.70706 4.70455 9.06615 4.90455 8.46615V5.87524H1.56364C0.886364 7.22524 0.5 8.75252 0.5 10.3662C0.5 11.9798 0.886364 13.5071 1.56364 14.8571L4.90455 12.2662Z"
+                                fill="#111827" />
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M10.4998 4.34336C11.968 4.34336 13.2862 4.84791 14.3226 5.83882L17.1907 2.97063C15.4589 1.357 13.1953 0.366089 10.4998 0.366089C6.59075 0.366089 3.20893 2.607 1.56348 5.87518L4.90439 8.46609C5.69075 6.10245 7.89529 4.34336 10.4998 4.34336Z"
+                                fill="#111827" />
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_23_75">
+                                <rect width="20" height="20" fill="white" transform="translate(0.5 0.366089)" />
+                            </clipPath>
+                        </defs>
+                    </svg>
+                </button>
+
+                <a class="social-button">
+                    <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_23_112)">
+                            <path
+                                d="M17.368 4.68751C16.1048 4.10792 14.7503 3.6809 13.334 3.43633C13.3082 3.43161 13.2825 3.4434 13.2692 3.467C13.095 3.77684 12.902 4.18105 12.7669 4.49876C11.2436 4.27071 9.72812 4.27071 8.23607 4.49876C8.10091 4.17399 7.90094 3.77684 7.72595 3.467C7.71266 3.44419 7.6869 3.4324 7.66111 3.43633C6.24562 3.68012 4.89107 4.10714 3.62712 4.68751C3.61618 4.69223 3.6068 4.7001 3.60058 4.71032C1.03128 8.54879 0.327441 12.2929 0.67272 15.9906C0.674283 16.0087 0.684438 16.026 0.698499 16.037C2.39365 17.2819 4.03569 18.0377 5.64724 18.5386C5.67303 18.5465 5.70036 18.537 5.71677 18.5158C6.09799 17.9952 6.4378 17.4463 6.72916 16.869C6.74636 16.8352 6.72994 16.7951 6.6948 16.7818C6.1558 16.5773 5.64255 16.328 5.14885 16.0449C5.1098 16.0221 5.10667 15.9662 5.1426 15.9395C5.24649 15.8616 5.35041 15.7806 5.44962 15.6989C5.46756 15.6839 5.49257 15.6808 5.51368 15.6902C8.7571 17.171 12.2685 17.171 15.4736 15.6902C15.4947 15.68 15.5198 15.6831 15.5385 15.6981C15.6377 15.7799 15.7416 15.8616 15.8463 15.9395C15.8822 15.9662 15.8799 16.0221 15.8408 16.0449C15.3471 16.3335 14.8339 16.5773 14.2941 16.781C14.2589 16.7943 14.2433 16.8352 14.2605 16.869C14.5581 17.4455 14.8979 17.9944 15.2721 18.515C15.2877 18.537 15.3158 18.5465 15.3416 18.5386C16.961 18.0377 18.603 17.2819 20.2982 16.037C20.313 16.026 20.3224 16.0095 20.324 15.9914C20.7372 11.7165 19.6318 8.00303 17.3938 4.7111C17.3883 4.7001 17.3789 4.69223 17.368 4.68751ZM7.21352 13.7391C6.23702 13.7391 5.43242 12.8426 5.43242 11.7416C5.43242 10.6406 6.22142 9.74415 7.21352 9.74415C8.2134 9.74415 9.01021 10.6485 8.99458 11.7416C8.99458 12.8426 8.20559 13.7391 7.21352 13.7391ZM13.7988 13.7391C12.8223 13.7391 12.0177 12.8426 12.0177 11.7416C12.0177 10.6406 12.8067 9.74415 13.7988 9.74415C14.7987 9.74415 15.5955 10.6485 15.5799 11.7416C15.5799 12.8426 14.7987 13.7391 13.7988 13.7391Z"
+                                fill="#111827" />
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_23_112">
+                                <rect width="20" height="20" fill="white" transform="translate(0.5 0.366089)" />
+                            </clipPath>
+                        </defs>
+                    </svg>
+                </a>
+                <a class="social-button">
+                    <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_23_96)">
+                            <path
+                                d="M14.8447 11.4729L15.363 8.06026H12.121V5.84667C12.121 4.91281 12.5731 4.00201 14.0251 4.00201H15.5V1.09667C15.5 1.09667 14.1621 0.866089 12.8836 0.866089C10.2123 0.866089 8.46804 2.50092 8.46804 5.45929V8.06026H5.5V11.4729H8.46804V19.7231C9.06393 19.8177 9.67352 19.8661 10.2945 19.8661C10.9155 19.8661 11.5251 19.8177 12.121 19.7231V11.4729H14.8447Z"
+                                fill="#111827" />
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_23_96">
+                                <rect width="20" height="20" fill="white" transform="translate(0.5 0.366089)" />
+                            </clipPath>
+                        </defs>
+                    </svg>
+                </a>
+            </div>
+            <div class="flex flex-row mx-auto w-2/3 items-center">
+
+                <hr class="my-4 border-gray-300 w-full">
+
+                <p class="text-center text-gray-500 font-semibold my-4 px-6">OR</p>
+                <hr class="my-4 border-gray-300 w-full">
+            </div>
+
+            <div class="flex justify-center p-4 flex-col mx-auto w-2/3">
+                <FormKit type="group" v-model="formData">
+                    <FormKitSchema :schema="formSchema" />
+                    <!-- <div class="mx-auto">
+                        <button class="w-full button-primary !bg-gray-900 !text-gray-200" type="submit">
+                            <span class="px-8">
+                                Log-in
+                            </span>
+                        </button>
+                    </div> -->
+                </FormKit>
+            </div>
+        </div>
+        <div class="flex flex-col gap-8 my-auto sm:w-full ">
+            <h1 class="not-italic font-bold text-5xl leading-10 flex items-center uppercase text-gray-200 font-roboto">
+                You build it
+            </h1>
+            <div class="flex flex-col skew items-center">
+                <div>
+                    <h1
+                        class="not-itali bg-gray-200 p-4 underline font-bold text-5xl leading-10 flex items-center uppercase text-gray-900 font-roboto">
+                        we ship it
+                    </h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>

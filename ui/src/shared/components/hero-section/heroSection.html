@@ -1,28 +1,17 @@
-<section class=" h-[100vh] bg-hero-bg bg-contain bg-center bg-no-repeat">
-    <Header :routes="routes"></Header>
-    <div class="container max-w-screen-xl my-24 mx-auto">
-        <div class=" flex flex-col items-start w-full gap-8 sm:w-1/2 ">
-            <div class="flex items-center gap-8">
-                <h1 class="flex gap-2 font-bold items-center text-xl lg:text-3xl font-inter text-gray-400 uppercase">
-                    <span class="underline ">Null</span>
-                    <span class=" bg-gray-200 p-2 h-fit uppercase">Cloud</span>
-                </h1>
-                <img src="../../../assets/svg/star.svg" class=" h-[43px] lg:h-[86px]" />
-            </div>
-            <div>
-                <p class="text-gray-200 not-italic font-bold  text-base lg:text-lg leading-5 lg:leading-7 font-roboto">
-                    Are you a budding developer, ready to soar into the world of cloud computing but don't know
-                    where to
-                    start? Look no
-                    further than Null Cloud, your trusty sidekick in the realm of deployment and cloud management.
-                </p>
-            </div>
-            <div class="flex flex-grow w-full flex-row-reverse">
-                <a href="#" class="button-primary flex items-center gap-2">Start here
-                    <ChevronDoubleRightIcon class="w-4 h-4" />
-                </a>
-            </div>
+<section class="container max-w-screen-xl my-24 mx-auto">
+    <div class="pl-4 max-w-sm lg:max-w-3xl gap-10 flex flex-col">
+        <NullCloudTitle></NullCloudTitle>
+        <div>
+            <p class="text-gray-200 not-italic font-bold  text-base lg:text-lg leading-5 lg:leading-7 font-roboto">
+                Are you a budding developer, ready to soar into the world of cloud computing but don't know where to
+                start? Look no
+                further than Null Cloud, your trusty sidekick in the realm of deployment and cloud management.
+            </p>
         </div>
-
+        <div class="flex flex-row-reverse">
+            <a href="#" class="button-primary flex items-center gap-2">Start here
+                <ChevronDoubleRightIcon class="w-4 h-4" />
+            </a>
+        </div>
     </div>
 </section>
