@@ -31,4 +31,3 @@ jobs:
 
           # Optional: working directory, useful for monorepos
           working-directory: ./application/container-runner
-          only-new-issues: true
