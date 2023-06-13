@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/null-channel/eddington/api/controllers"
+	"github.com/null-channel/eddington/api/apps/controllers"
 	"github.com/null-channel/eddington/api/docs"
 	userController "github.com/null-channel/eddington/api/users/controllers"
 	ginSwagger "github.com/swaggo/gin-swagger"
