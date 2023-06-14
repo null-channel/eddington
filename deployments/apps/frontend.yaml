@@ -1,15 +1,15 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: infra
+  name: null-web
   namespace: argocd
 spec:
   destination:
     name: in-cluster
-    namespace: infra
+    namespace: web
   project: null-cloud
   source:
-    path: deployments/infra/overlays/prod
+    path: deployments/manifests/null-web/overlays/prod
     repoURL: https://github.com/null-channel/nullcloud-deployments/
     targetRevision: HEAD
   syncPolicy:

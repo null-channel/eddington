@@ -1,16 +1,16 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: null-bot
+  name: nats-certs
   namespace: argocd
 spec:
   destination:
     name: in-cluster
-    namespace: null-bot
+    namespace: nats
   project: null-cloud
   source:
-    path: deployments/null-bot/overlays/prod
-    repoURL: https://github.com/null-channel/nullcloud-deployments/
+    path: deployments/manifests/nats
+    repoURL: https://github.com/null-channel/eddington/
     targetRevision: HEAD
   syncPolicy:
         automated:
