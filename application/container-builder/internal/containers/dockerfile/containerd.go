@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/moby/buildkit/client"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,6 +19,8 @@ type BuildOpt struct {
 
 type Builder struct {
 	client *client.Client
+	// TODO: add nats connection
+	// nc     *nats.Conn
 }
 
 func NewBuilder(ctx context.Context) (*Builder, error) {
@@ -33,18 +36,26 @@ func NewBuilder(ctx context.Context) (*Builder, error) {
 }
 
 func (b *Builder) Build(opts BuildOpt) error {
+
 	ctx := context.Background()
 	solvOpts := b.createSolveOpt(opts.ImageName, ".", opts.Dockerfile)
 
 	// prob print out what's going on here
 	status := make(chan *client.SolveStatus)
 
-	b.client.Solve(ctx, nil, solvOpts, status)
+	resp, err := b.client.Solve(ctx, nil, solvOpts, status)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to solve with")
+	}
+
+	logrus.Info("build status: ", resp)
 	return nil
 
 }
 
 func (b *Builder) createSolveOpt(imageName string, buildContext string, dockerfile string) client.SolveOpt {
+
 	return client.SolveOpt{
 		Exports: []client.ExportEntry{
 			{
@@ -52,7 +63,7 @@ func (b *Builder) createSolveOpt(imageName string, buildContext string, dockerfi
 				Attrs: map[string]string{
 					"name": imageName,
 				},
-				Output: func(m map[string]string) (io.WriteCloser, error) {
+				Output: func(_ map[string]string) (io.WriteCloser, error) {
 					return os.Stdout, nil
 				},
 			},
@@ -67,3 +78,11 @@ func (b *Builder) createSolveOpt(imageName string, buildContext string, dockerfi
 		},
 	}
 }
+
+// func streamOutput(src io.Reader, dest io.Writer) error {
+// 	_, err := io.Copy(dest, src)
+// 	if err != nil {
+// 		return errors.Wrap(err, "failed to stream output")
+// 	}
+// 	return nil
+// }
