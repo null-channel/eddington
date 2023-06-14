@@ -52,7 +52,6 @@ func main() {
 		{
 			_ = marketing.New(os.Getenv("SENDGRID_API_KEY"), marketingGroup)
 		}
-
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
