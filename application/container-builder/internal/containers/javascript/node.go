@@ -32,7 +32,10 @@ func BuildNodeContainer() {
 	if err != nil {
 		panic(err)
 	}
-	llb.WriteTo(dt, os.Stdout)
+	err = llb.WriteTo(dt, os.Stdout)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func goBuildBase() llb.State {

@@ -2,19 +2,14 @@
 <style src="./heroSection.css"></style>
 <script lang="ts">
 import { defineComponent } from 'vue';
-import Header from "@components/header/header.vue"
 import { ChevronDoubleRightIcon } from '@heroicons/vue/24/outline';
-import { NAVBAR_BEFORE_LOGIN } from '@/core/constants';
+import NullCloudTitle from '@components/null-cloud-title/nullCloudTitle.vue';
 export default defineComponent({
     name: "HeroSection",
     components: {
-        Header,
-        ChevronDoubleRightIcon
+        ChevronDoubleRightIcon,
+        NullCloudTitle
     },
-    data() {
-        return {
-            routes: NAVBAR_BEFORE_LOGIN
-        }
-    }
+    
 })
 </script>

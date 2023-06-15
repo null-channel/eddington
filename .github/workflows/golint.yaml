@@ -23,11 +23,11 @@ jobs:
           go-version: '1.20'
           cache: false
           # Golangci-lint issue with go workspaces means we need to run for each package
-      - name: golangci-lint container builder
+      - name: golangci-lint container runner
         uses: golangci/golangci-lint-action@v3
         with:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.29
 
           # Optional: working directory, useful for monorepos
-          working-directory: ./application/container-builder
+          working-directory: ./application/container-runner

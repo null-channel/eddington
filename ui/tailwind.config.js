@@ -11,6 +11,7 @@ export default {
     extend: {
       backgroundImage: {
         "hero-bg": "url('./src/assets/img/hero-bg.png')",
+        "sign-up-bg": "url('./src/assets/img/sign-up.png')",
       },
       fontFamily: {
         inter: ["Inter", "sans-serif"],
