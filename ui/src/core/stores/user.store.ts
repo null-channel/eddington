@@ -6,7 +6,11 @@ import router from "@router";
 const { cookies } = useCookies();
 export const useUserStore = defineStore("user", {
   state: () => ({
-    user: {  },
+    user: {
+      session: {},
+      authenticated: false,
+      logoutUrl: "",
+    },
   }),
   getters: {},
   actions: {
