@@ -68,16 +68,8 @@
             </div>
 
             <div class="flex justify-center p-4 flex-col mx-auto w-2/3">
-                <FormKit type="group" v-model="formData">
-                    <FormKitSchema :schema="formSchema" />
-                    <!-- <div class="mx-auto">
-                        <button class="w-full button-primary !bg-gray-900 !text-gray-200" type="submit">
-                            <span class="px-8">
-                                Log-in
-                            </span>
-                        </button>
-                    </div> -->
-                </FormKit>
+                <OryForm v-if='loginFlow' form-id='login-form' :flow='loginFlow' >
+                </OryForm>
             </div>
         </div>
         <div class="flex flex-col gap-8 my-auto sm:w-full ">

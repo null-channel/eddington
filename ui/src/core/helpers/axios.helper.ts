@@ -11,7 +11,7 @@ const _axios = axios.create({
 export default {
   install: (app: App) => {
     axiosInterceptor(_axios);
-    app.config.globalProperties.$axios = _axios;
+    app.config.globalProperties.$axios  = _axios ;
     window.$axios = app.config.globalProperties.$axios;
   },
 };

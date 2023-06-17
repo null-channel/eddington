@@ -1,11 +1,11 @@
 import type { Plugin, InjectionKey } from "vue";
 import { Configuration, FrontendApi } from "@ory/client";
 import type { Session } from "@ory/client";
-import type { AxiosResponse } from "axios";
-
+import { env } from "../constants";
+console.log(import.meta.env);
 export const Ory = new FrontendApi(
   new Configuration({
-    basePath: import.meta.env.VITE_APP_ORY_BASE_PATH,
+    basePath: env.ORY_URL.toString(),
     baseOptions: {
       withCredentials: true,
     },

@@ -1,9 +1,23 @@
-import { FrontendApi } from "@ory/client";
+import {
+  FrontendApi,
+  LoginFlow,
+  RecoveryFlow,
+  RegistrationFlow,
+  SettingsFlow,
+  VerificationFlow,
+} from "@ory/client";
+import { AxiosInstance } from "axios";
 
 declare global {
   interface Window {
-    $axios: any;
+    $axios: AxiosInstance;
     $ory: FrontendApi;
   }
 }
-export {};
+type Flow =
+  | LoginFlow
+  | RegistrationFlow
+  | RecoveryFlow
+  | SettingsFlow
+  | VerificationFlow;
+export { Flow };

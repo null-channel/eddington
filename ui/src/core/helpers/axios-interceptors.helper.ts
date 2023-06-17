@@ -10,10 +10,7 @@ function axiosInterceptor(axios: AxiosInstance) {
   const userStore =useUserStore()
 
   axios.interceptors.request.use((request: any) => {
-    const isApiUrl = request.url.startsWith(baseURL);
-    if (userStore.user.authenticated && isApiUrl) {
-      request.withCredentials = true;
-    }
+    request.withCredentials = true;
 
     return request;
   });

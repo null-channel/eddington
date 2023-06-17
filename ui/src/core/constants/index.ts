@@ -1,6 +1,6 @@
 export enum env {
   BACKEND_BASE_URL = import.meta.env.VITE_BASE_API_URL,
-  ORY_URL = import.meta.env.VUE_APP_ORY_URL || "http://localhost:4000",
+  ORY_URL = import.meta.env.VITE_ORY_URL || "http://localhost:4000",
 }
 export { default as ROUTES } from "./routes.const";
 export { default as MAIN_ROUTES } from "./dashbordRoutes.const";

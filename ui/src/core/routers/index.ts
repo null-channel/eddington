@@ -9,12 +9,12 @@ const router = createRouter({
   routes: [
     {
       ...ROUTES.HOME,
-      component: () => lazyLoad(() => import("@pages/home/home.vue")),
+      component: () => lazyLoad(() => import("@pages/Home/home.vue")),
       //beforeEnter: authGuard,
     },
     {
-      ...ROUTES.SIGNUP,
-      component: () => lazyLoad(() => import("@pages/Sign-up/sign-up.vue")),
+      ...ROUTES.LOGIN,
+      component: () => lazyLoad(() => import("@pages/Log-in/log-in.vue")),
       // beforeEnter: authGuard,
     },
     // {

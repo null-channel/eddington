@@ -1,7 +1,7 @@
 import type { AxiosError } from "axios";
 import type { Router } from "vue-router";
 
-export const makeHandleGetFlowError = (router: Router) => {
+const oryErrorHandler = (router: Router) => {
   const refreshFlow = () => {
     router.push({
       // for our use case, removing the flow
@@ -53,3 +53,4 @@ export const makeHandleGetFlowError = (router: Router) => {
     return Promise.reject(error);
   };
 };
+export default oryErrorHandler;
