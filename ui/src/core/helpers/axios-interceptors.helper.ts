@@ -1,10 +1,8 @@
-import { useCookies } from "vue3-cookies";
 import { notify } from "@kyvg/vue3-notification";
 import router from "@router";
 import { AxiosInstance } from "axios";
 import { useUserStore } from "../stores/user.store";
 
-const baseURL = import.meta.env.VITE_BASE_API_URL;
 
 function axiosInterceptor(axios: AxiosInstance) {
   const userStore =useUserStore()
