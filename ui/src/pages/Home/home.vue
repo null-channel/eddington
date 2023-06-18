@@ -4,11 +4,12 @@ import { defineComponent } from 'vue';
 import Header from "@components/header/header.vue"
 import HeroSection from '@components/hero-section/heroSection.vue';
 import { NAVBAR_BEFORE_LOGIN } from '@/core/constants';
+import { markRaw } from 'vue';
 export default defineComponent({
     name: "HomePage",
     components: {
-        HeroSection,
-        Header,
+        HeroSection: markRaw(HeroSection),
+        Header: markRaw(Header),
     },
     data() {
         return {

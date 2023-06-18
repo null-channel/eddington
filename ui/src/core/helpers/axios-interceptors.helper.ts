@@ -1,19 +1,14 @@
-import { useCookies } from "vue3-cookies";
 import { notify } from "@kyvg/vue3-notification";
 import router from "@router";
 import { AxiosInstance } from "axios";
+import { useUserStore } from "../stores/user.store";
 
-const baseURL = import.meta.env.VITE_BASE_API_URL;
 
 function axiosInterceptor(axios: AxiosInstance) {
-  const { cookies } = useCookies();
+  const userStore =useUserStore()
 
   axios.interceptors.request.use((request: any) => {
-    const token = cookies.get("user-token");
-    const isApiUrl = request.url.startsWith(baseURL);
-    if (token && isApiUrl) {
-      request.headers.Authorization = `Bearer ${token}`;
-    }
+    request.withCredentials = true;
 
     return request;
   });
@@ -25,8 +20,8 @@ function axiosInterceptor(axios: AxiosInstance) {
     (error: any) => {
       notify({ type: "error", text: error.response?.data.message });
       if (error.response?.status == 401) {
-        cookies.remove("user-token");
-        router.push("/signin");
+        userStore.$reset()
+        router.push("/login");
       }
       throw error;
     }

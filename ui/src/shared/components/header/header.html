@@ -5,12 +5,12 @@
                 <img src="../../../assets/svg/null-cloud-icon.svg" class="mr-3 object-cover" alt="Null cloud" />
             </a>
             <div class="flex items-center lg:order-2">
-                <template v-if="isLogged">
-                    <a href="#" class="hidden lg:block button-primary">Login</a>
-                    <a href="#" class="hidden lg:block button-secondary">Sign up</a>
+                <template v-if="!isLogged">
+                    <a href="/login" class="hidden lg:block button-primary">Login</a>
+                    <a href="/signup" class="hidden lg:block button-secondary">Sign up</a>
                     <button type="button"
                         class="inline-flex items-center p-2 ml-1 text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200"
-                        @click="togelMenu">
+                        @click="toggleBurgerMenu">
                         <span class="sr-only">Open main menu</span>
                         <svg :class="{hidden:showMenu}" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
                             xmlns="http://www.w3.org/2000/svg">
@@ -29,15 +29,15 @@
                 <template v-else>
                     <div class="flex flex-col">
                         <div class="flex items-center space-x-4">
-                            <img class="w-10 h-10 rounded-full cursor-pointer" @click="togelMenu"
+                            <img class="w-10 h-10 rounded-full cursor-pointer" @click="toggleMenu"
                                 src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
                                 alt="Rounded avatar">
                             <div class="font-medium text-base not-italic font-roboto text-gray-200">
                                 <div>Jese Leos</div>
                             </div>
                         </div>
-                        <div :class="{hidden:!toggled}"
-                            class="absolute right-4 font-inter z-10 mt-14 divide-y rounded-lg shadow w-44 bg-gray-700 divide-gray-600">
+                        <div :class="{hidden:!showMenu}"
+                            class="absolute  font-inter z-10 mt-14 divide-y rounded-lg shadow w-44 bg-gray-700 divide-gray-600">
                             <div class="px-4 py-3 text-sm text-gray-200">
                                 <div>Bonnie Green</div>
                                 <div class="font-medium truncate">name@flowbite.com</div>
@@ -55,20 +55,21 @@
                                         class="block px-4 py-2 hover:bg-gray-600 hover:text-gray-200">Earnings</a>
                                 </li>
                             </ul>
-                            <div class="py-1">
-                                <a href="#"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Sign
-                                    out</a>
+                            <div class="py-1 ">
+                                <button 
+                                @click="logout"
+                                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                                    Sign out</button>
                             </div>
                         </div>
                     </div>
 
                 </template>
             </div>
-            <div :class="{hidden:!showMenu}" class="justify-between items-center w-full lg:flex lg:w-auto lg:order-1">
+            <div :class="{hidden:!toggled}" class="justify-between items-center w-full lg:flex lg:w-auto lg:order-1">
                 <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
                     <li v-for="route in routes">
-                        <router-link :class="{hidden:!showMenu&&route.hiddenOnDesktop,block:showMenu}" :to="route.path"
+                        <router-link :class="{hidden:!toggled&&route.hiddenOnDesktop,block:showMenu}" :to="route.path"
                             v-slot="{ navigate }" class="nav-link">
                             {{route.name}}
                         </router-link>
