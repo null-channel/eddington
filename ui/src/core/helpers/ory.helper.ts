@@ -2,7 +2,6 @@ import type { Plugin, InjectionKey } from "vue";
 import { Configuration, FrontendApi } from "@ory/client";
 import type { Session } from "@ory/client";
 import { env } from "../constants";
-console.log(import.meta.env);
 export const Ory = new FrontendApi(
   new Configuration({
     basePath: env.ORY_URL.toString(),
