@@ -15,6 +15,8 @@ const oryErrorHandler = (router: Router) => {
 
   return (error: AxiosError) => {
     const responseData = error.response?.data as any;
+    if (!(error.response?.data as any).error.id)
+      window.location = router.currentRoute.value.path;
     switch ((error.response?.data as any).error.id) {
       case "session_already_available": // User is already signed in, let's redirect them home!
         router.push("/");
@@ -34,6 +36,8 @@ const oryErrorHandler = (router: Router) => {
       case "self_service_flow_return_to_forbidden": // the return is invalid, we need a new flow
         break;
       case "security_csrf_violation": // A CSRF violation occurred. Best to just refresh the flow!
+        window.location = router.currentRoute.value.path;
+
         break;
       case "security_identity_mismatch": // The requested item was intended for someone else. Let's request a new flow...
         //	refreshFlow(); This causes an infinite loop on chrome because it uses the same flow code each time

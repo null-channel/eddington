@@ -17,6 +17,7 @@
     "@ory/client": "^1.1.38",
     "@ory/integrations": "^1.1.1",
     "axios": "^1.4.0",
+    "lodash": "^4.17.21",
     "pinia": "^2.1.3",
     "url": "^0.11.0",
     "vite-plugin-dynamic-import": "^1.4.0",
@@ -25,6 +26,7 @@
     "vue3-cookies": "^1.0.6"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.195",
     "@vitejs/plugin-vue": "^4.1.0",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.24",

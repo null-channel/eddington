@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { env } from "@constants";
 import { useCookies } from "vue3-cookies";
 import router from "@router";
+import { $ory, injectStrict } from "@helpers";
 
 const { cookies } = useCookies();
 export const useUserStore = defineStore("user", {
@@ -12,20 +13,21 @@ export const useUserStore = defineStore("user", {
       logoutUrl: "",
     },
   }),
-  getters: {},
+  getters: {
+    
+  },
   actions: {
-    async login(login: { email: string; password: string }) {
+    getUser() {},
+    login(url: string, headers: any, formData: any) {
       return window.$axios
-        .post(`${env.BACKEND_BASE_URL}/auth/signin`, login)
-        .then(async (data: any) => {
-          cookies.set("user-token", data.access_token);
-          this.$patch({ user: data.user });
-          await router.push("/");
-        });
+        .post(url, formData, {
+          headers,
+        })
     },
     logout() {
       cookies.remove("user-token");
       router.push("/signin");
     },
+ 
   },
 });

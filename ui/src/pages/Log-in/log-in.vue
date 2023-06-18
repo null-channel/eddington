@@ -2,8 +2,6 @@
 <template src="./log-in.html"></template>
 <script lang="ts">
 import { NAVBAR_BEFORE_LOGIN } from '@constants';
-import { useUserStore } from '@/core/stores/user.store';
-import { storeToRefs } from 'pinia';
 import { defineComponent } from 'vue';
 import Header from "@components/header/header.vue"
 import NullCloudTitle from '@components/null-cloud-title/nullCloudTitle.vue';
@@ -11,25 +9,21 @@ import { $ory, injectStrict, oryErrorHandler } from '@helpers';
 import { useRoute, useRouter } from 'vue-router';
 import { ref } from 'vue';
 import { LoginFlow } from '@ory/client';
-import OryForm from '@components/flow/ory-form.vue'
+import  OryFlow  from '@components/flow/login/login-flow.vue'
 export default defineComponent({
     name: "LogInPage",
     components: {
         Header,
         NullCloudTitle,
-        OryForm
+        OryFlow
     },
     setup() {
-        const userStore = useUserStore()
-        const { user } = storeToRefs(userStore)
         const ory = injectStrict($ory);
         const route = useRoute();
         const router = useRouter();
         const loginFlow = ref<LoginFlow | undefined>();
         const handleGetFlowError = oryErrorHandler(router);
         return {
-            user,
-            userStore,
             ory,
             route,
             router,

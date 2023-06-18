@@ -1,11 +1,13 @@
-<template src="./ory-form.html"></template>
+<template src="./login-flow.html"></template>
 <script lang="ts">
-import { oryMapper } from '@helpers';
+import { oryErrorHandler, oryMapper } from '@helpers';
 import { defineComponent } from 'vue';
 import { Flow } from '@/core/types'
 import { getNodeId } from "@ory/integrations/ui";
+import { useRoute, useRouter } from 'vue-router';
+import { useUserStore } from '@/core/stores/user.store';
 export default defineComponent({
-    name: "OryForm",
+    name: "LoginForm",
     props: {
         flow: null,
         formId: String
@@ -14,9 +16,18 @@ export default defineComponent({
         const formSchema = (this.flow as Flow).ui.nodes.map((node) => {
             return oryMapper(node, getNodeId(node))
         });
+        const userStore = useUserStore()
+        const router = useRouter();
+        const route = useRoute();
+        const handleGetFlowError = oryErrorHandler(router);
+
         return {
             formData: {},
             formSchema,
+            handleGetFlowError,
+            route,
+            router,
+            userStore,
         }
     },
     methods: {
@@ -24,28 +35,16 @@ export default defineComponent({
             if (this.formId)
                 this.$formkit.submit(this.formId);
         },
-        submitFlow() {
-            // method contains the form method like: post & get 
-            const method = (this.flow as Flow).ui.method.toLowerCase();
-
-            // Set request headers
+        submitFlow() { 
             const headers = {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             };
-
-            // Make the HTTP request
-            window.$axios({
-                method: method,
-                headers: headers,
-                // Add other request parameters such as URL and data
-                url: (this.flow as Flow).ui.action,
-                data: { ...(this.formData) }
-            }).then(( data : any)=>{
-                // we need to handel each flow 
-            })
+            this.userStore.login((this.flow as Flow).ui.action, headers, this.formData).then((_) => {
+                    this.router.push('/')
+            }).catch(this.handleGetFlowError)
         }
     }
 })
 </script>
-<style src="./ory-form.css"></style>
+<style src="./login-flow.css"></style>

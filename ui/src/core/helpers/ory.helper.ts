@@ -1,4 +1,4 @@
-import type { Plugin, InjectionKey } from "vue";
+import { type Plugin, type InjectionKey, type App, inject } from "vue";
 import { Configuration, FrontendApi } from "@ory/client";
 import type { Session } from "@ory/client";
 import { env } from "../constants";
@@ -18,34 +18,30 @@ export const $ory_urls: InjectionKey<{
 }> = Symbol("$ory_urls");
 
 export const OryPlugin: Plugin = {
-  install(app) {
+  install: async (app: App) => {
     // can now be used with inject($ory)
     app.provide($ory, Ory);
-
-    // can now be used with inject($session)
-    Ory.toSession()
-      .then(({ data }: any) => {
-        app.provide($session, data);
-      })
-      .catch(() => {
-        console.log("[Ory] User has no session.");
-      });
-
-    Promise.all([
-      // get the logout url
-      Ory.createBrowserLogoutFlow(undefined, {
-        params: {
-          return_url: "/",
-        },
-      }).catch(() => ({
-        data: {
-          logout_url: "",
-        },
-      })),
-    ]).then(([{ data: logoutData }]) => {
-      app.provide($ory_urls, {
-        logoutUrl: logoutData.logout_url,
-      });
-    });
+    // injection is headache Don't do it 
+    // try {
+    //   // can now be used with inject($session)
+    //   const { data: session } = await Ory.toSession();
+    //   app.provide($session, session);
+    // } catch (error) {
+    //   console.log("[Ory] User has no session.");
+      
+    // }
+    // try{
+    //   const [{data: {logout_url}}]= await Promise.all([Ory.createBrowserLogoutFlow(undefined,{
+    //     params: {
+    //       return_url: "/",
+    //     },
+    //   })])
+    //   app.provide($ory_urls, {
+    //     logoutUrl: logout_url,
+    //   });
+    
+    // }catch(error){
+    //   console.log("[Ory] Failed to retrieve logout URL.");
+    // }
   },
 };

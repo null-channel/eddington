@@ -8,12 +8,15 @@ import genesis from "./formkit.config";
 import Notifications from "@kyvg/vue3-notification";
 import router from "@router";
 
-const app = createApp(App);
-const pinia = createPinia();
-app.use(pinia);
-app.use(router);
-app.use(plugin, defaultConfig(genesis));
-app.use(axiosHelper);
-app.use(OryPlugin);
-app.use(Notifications);
-app.mount("#app");
+async function run(){
+    const pinia = createPinia();
+    const app = createApp(App);
+    app.use(pinia);
+    app.use(OryPlugin);
+    app.use(plugin, defaultConfig(genesis));
+    app.use(axiosHelper);
+    app.use(router);
+    app.use(Notifications);
+    app.mount("#app");
+}
+run()
