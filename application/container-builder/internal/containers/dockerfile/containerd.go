@@ -4,11 +4,13 @@ import (
 	"context"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/moby/buildkit/client"
-	"github.com/pkg/errors"
+	dockerfile "github.com/moby/buildkit/frontend/dockerfile/builder"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 )
 
 type BuildOpt struct {
@@ -18,19 +20,19 @@ type BuildOpt struct {
 }
 
 type Builder struct {
-	client *client.Client
+	Client *client.Client
 	// TODO: add nats connection
 	// nc     *nats.Conn
 }
 
 func NewBuilder(ctx context.Context) (*Builder, error) {
-	client, err := client.New(ctx, "", client.WithFailFast())
+	client, err := client.New(ctx, "buildkit://buildkitd", client.WithFailFast())
 	if err != nil {
 		logrus.Panic("unable to create buildkit client error: ", err.Error())
 		return nil, err
 	}
 	return &Builder{
-		client: client,
+		Client: client,
 	}, nil
 
 }
@@ -38,23 +40,39 @@ func NewBuilder(ctx context.Context) (*Builder, error) {
 func (b *Builder) Build(opts BuildOpt) error {
 
 	ctx := context.Background()
-	solvOpts := b.createSolveOpt(opts.ImageName, ".", opts.Dockerfile)
+	pipeR, pipeW := io.Pipe()
+	eg, ctx := errgroup.WithContext(ctx)
+
+	solvOpts := b.createSolveOpt(opts.ImageName, ".", opts.Dockerfile, pipeW)
 
 	// prob print out what's going on here
 	status := make(chan *client.SolveStatus)
 
-	resp, err := b.client.Solve(ctx, nil, solvOpts, status)
+	eg.Go(func() error {
+		var err error
+		_, err = b.Client.Build(ctx, solvOpts, "", dockerfile.Build, status)
+		if err != nil {
+			logrus.Panic("unable to build image error: ", err.Error())
+			return err
+		}
+		return nil
+	})
 
-	if err != nil {
-		return errors.Wrap(err, "failed to solve with")
+	eg.Go(func() error {
+		if err := loadDockerTar(pipeR); err != nil {
+			return err
+		}
+		return pipeR.Close()
+	})
+	if err := eg.Wait(); err != nil {
+		return err
 	}
-
-	logrus.Info("build status: ", resp)
+	logrus.Infof("Loaded the image %q to Docker.")
 	return nil
 
 }
 
-func (b *Builder) createSolveOpt(imageName string, buildContext string, dockerfile string) client.SolveOpt {
+func (b *Builder) createSolveOpt(imageName string, buildContext string, dockerfile string, w io.WriteCloser) client.SolveOpt {
 
 	return client.SolveOpt{
 		Exports: []client.ExportEntry{
@@ -64,7 +82,7 @@ func (b *Builder) createSolveOpt(imageName string, buildContext string, dockerfi
 					"name": imageName,
 				},
 				Output: func(_ map[string]string) (io.WriteCloser, error) {
-					return os.Stdout, nil
+					return w, nil
 				},
 			},
 		},
@@ -79,10 +97,11 @@ func (b *Builder) createSolveOpt(imageName string, buildContext string, dockerfi
 	}
 }
 
-// func streamOutput(src io.Reader, dest io.Writer) error {
-// 	_, err := io.Copy(dest, src)
-// 	if err != nil {
-// 		return errors.Wrap(err, "failed to stream output")
-// 	}
-// 	return nil
-// }
+func loadDockerTar(r io.Reader) error {
+
+	cmd := exec.Command("docker", "load")
+	cmd.Stdin = r
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
