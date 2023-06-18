@@ -1,6 +1,8 @@
 syntax = "proto3";
 package githubWatcher;
 
+option go_package = "github.com/null-channel/eddington/proto/github-watcher";
+
 service WatchRepoService {
   rpc WatchRepo (WatchRepoRequest) returns (WatchRepoResponse) {}
 }
