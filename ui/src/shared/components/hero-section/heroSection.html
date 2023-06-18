@@ -1,6 +1,5 @@
-<section class=" h-[100vh] bg-hero-bg bg-contain bg-center bg-no-repeat">
-  <Header :routes="routes"></Header>
-  <div class="pt-16  pl-4 sm:pl-40  max-w-sm lg:max-w-3xl gap-10 flex flex-col rounded-md">
+<section class="flex max-w-screen-xl h-3/4 items-center justify-between mx-auto">
+  <div class="pt-16  max-w-sm lg:max-w-3xl gap-10 flex flex-col rounded-md">
     <div class="p-4">
       <div class="flex items-center gap-8">
         <h1 class="flex gap-2 font-bold text-xl lg:text-3xl font-inter text-gray-400 uppercase">
@@ -16,29 +15,17 @@
           further than Null Cloud, your trusty sidekick in the realm of deployment and cloud management.
         </p>
       </div>
-      <div id="user-interactions" class="flex justify-between pt-4">
-        <div id="email-input-form" class="mx-1 py-4 px-2 border-gray-200">
-          <div class="flex flex-row items-center font-roboto px-2 py-1">
+      <div  class="flex justify-between pt-4">
+        <div class="mx-1 py-4 px-2 w-full border-gray-200">
+          <div class="flex flex-row  items-center font-roboto px-1 hover:!bg-gray-500 py-1 rounded-md bg-gray-400">
             <input type="text" placeholder="your@email.com"
-              class="w-64 h-10 px-4 py-1 rounded-lg font-roboto bg-gray-200 justify-start pr-2" />
-              <div class="py-4 mx-1 px-4">
-                <a href="#" class="button-primary bg-gray-200 flex items-center gap-2 h-8 justify-center">
+              class=" h-10 px-4 w-3/4 py-1 rounded-lg font-roboto bg-gray-900 justify-start pr-2" />
+            <button class="button-secondairy !rounded-sm w-1/4 flex items-center !font-bold  justify-center">
                   Subscribe
-                </a>
-              </div>
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <footer id="footer" class="bg-gray-100">
-    <div
-      class="text-gray-800 not-italic font-bold  text-base lg:text-lg leading-5 lg:leading-7 font-roboto flex-col flex py-4">
-      <div class="flex items-center justify-center">
-        <a href="https://github.com/null-channel/eddington">
-          <img src="../../../assets/svg/github-mark.png" class=" h-[15px] lg:h-[30px] cursor-pointer" />
-        </a>
-      </div>
-    </div>
-  </footer>
 </section>
