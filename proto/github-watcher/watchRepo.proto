@@ -11,6 +11,7 @@ message WatchRepoRequest {
   string repository = 1;
   string branch = 2;
   string SHA = 3;
+  string owner = 4;
 }
 
 message WatchRepoResponse {
