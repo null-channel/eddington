@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/null-channel/eddington/api/controllers"
 	"github.com/null-channel/eddington/api/docs"
+	marketing "github.com/null-channel/eddington/api/marketing/controllers"
 	userController "github.com/null-channel/eddington/api/users/controllers"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
@@ -16,6 +17,7 @@ import (
 )
 
 func main() {
+
 	//TODO: Never used gin. seems like mux is archived. going to try this out.
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -44,6 +46,12 @@ func main() {
 		// AuthN
 
 		// Space
+
+		// Marketing
+		marketingGroup := v1.Group("/marketing")
+		{
+			_ = marketing.New(os.Getenv("SENDGRID_API_KEY"), marketingGroup)
+		}
 
 	}
 
