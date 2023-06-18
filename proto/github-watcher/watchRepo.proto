@@ -1,0 +1,14 @@
+syntax = "proto3";
+package github-watcher;
+
+service WatchRepoService {
+  rpc WatchRepo (WatchRepoRequest) returns (WatchRepoResponse) {}
+}
+
+message WatchRepoRequest {
+  string repo = 1;
+}
+
+message WatchRepoResponse {
+  string message = 1;
+}
