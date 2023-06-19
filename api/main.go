@@ -6,6 +6,7 @@ import (
 
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/null-channel/eddington/api/controllers"
 	"github.com/null-channel/eddington/api/docs"
@@ -25,6 +26,7 @@ func main() {
 	}
 	router := gin.New()
 	router.Use(gin.Logger())
+	router.Use(cors.Default())
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	userController := userController.New()
 

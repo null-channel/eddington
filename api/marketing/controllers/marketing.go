@@ -52,27 +52,7 @@ func (m *MarketingController) POSTEmailSubscriber() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
 			return
 		}
-		// TODO: get the id from the response... Their API is weird and maybe broken? not sure.
-<<<<<<< HEAD
-		// We don't need this, we have their e-mail. it was just nice to have their e-mail in a list specific to waiting for the null cloud.
 
-=======
-		// We don't need this, we have their e-mail. it was just nice to have.
-		{
-			c.JSON(http.StatusOK, gin.H{"status": "New e-mail added to list successfully!"})
-			return
-		}
-		id, err := m.GetIDfromEmail(email)
-
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
-			return
-		}
-
-		// TODO parse the response and get the id
-		err = m.AddRecipientToWaitingList(id)
->>>>>>> b2d8b2a (removed sendgrid env)
 		c.JSON(http.StatusOK, gin.H{"status": "New e-mail added to list successfully!"})
 	}
 }
