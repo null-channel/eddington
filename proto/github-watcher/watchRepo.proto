@@ -1,0 +1,19 @@
+syntax = "proto3";
+package githubWatcher;
+
+option go_package = "github.com/null-channel/eddington/proto/github-watcher";
+
+service WatchRepoService {
+  rpc WatchRepo (WatchRepoRequest) returns (WatchRepoResponse) {}
+}
+
+message WatchRepoRequest {
+  string repository = 1;
+  string branch = 2;
+  string SHA = 3;
+  string owner = 4;
+}
+
+message WatchRepoResponse {
+  bool isUpdated = 1;
+}
