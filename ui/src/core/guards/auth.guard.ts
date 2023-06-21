@@ -1,6 +1,4 @@
-import { useCookies } from 'vue3-cookies';
 import { ROUTES } from '@constants';
-import { useUserStore } from '../stores/user.store';
 import { Ory } from '@helpers';
 
 const AUTH_ROUTES = [ROUTES.LOGIN.name, ROUTES.RESET_PASSWORD.name, ROUTES.UPDATE_PASSWORD.name];

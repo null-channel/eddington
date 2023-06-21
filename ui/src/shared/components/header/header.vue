@@ -2,7 +2,7 @@
 <template src="./header.html"></template>
 <script lang="ts">
 import { $ory, injectStrict } from '@helpers';
-import { useUserStore } from '@/core/stores/user.store';
+import { useUserStore } from '@stores';
 import { storeToRefs } from 'pinia';
 import { defineComponent } from 'vue';
 import * as _ from 'lodash';

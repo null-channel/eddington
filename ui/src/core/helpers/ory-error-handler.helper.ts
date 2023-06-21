@@ -15,8 +15,7 @@ const oryErrorHandler = (router: Router) => {
 
   return (error: AxiosError) => {
     const responseData = error.response?.data as any;
-    if (!(error.response?.data as any).error.id)
-      window.location = router.currentRoute.value.path;
+    if (!(error.response?.data as any).error) return;
     switch ((error.response?.data as any).error.id) {
       case "session_already_available": // User is already signed in, let's redirect them home!
         router.push("/");
