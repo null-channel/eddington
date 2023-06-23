@@ -17,6 +17,8 @@ export default defineConfig({
       "@guards": fileURLToPath(new URL("./src/core/guards", import.meta.url)),
       "@pages": fileURLToPath(new URL("./src/pages", import.meta.url)),
       "@helpers": fileURLToPath(new URL("./src/core/helpers", import.meta.url)),
+      "@types": fileURLToPath(new URL("./src/core/types", import.meta.url)),
+      "@stores": fileURLToPath(new URL("./src/core/stores", import.meta.url)),
       "@interfaces": fileURLToPath(
         new URL("./src/shared/interfaces", import.meta.url)
       ),

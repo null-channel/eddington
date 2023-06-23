@@ -1,11 +1,9 @@
 import { defineStore } from "pinia";
-import { env } from "@constants";
 import { useCookies } from "vue3-cookies";
 import router from "@router";
-import { $ory, injectStrict } from "@helpers";
 
 const { cookies } = useCookies();
-export const useUserStore = defineStore("user", {
+const useUserStore = defineStore("user", {
   state: () => ({
     user: {
       session: {},
@@ -13,21 +11,23 @@ export const useUserStore = defineStore("user", {
       logoutUrl: "",
     },
   }),
-  getters: {
-    
-  },
+  getters: {},
   actions: {
     getUser() {},
     login(url: string, headers: any, formData: any) {
-      return window.$axios
-        .post(url, formData, {
-          headers,
-        })
+      return window.$axios.post(url, formData, {
+        headers,
+      });
+    },
+    signUp(url: string, headers: any, formData: any) {
+      return window.$axios.post(url, formData, {
+        headers,
+      });
     },
     logout() {
       cookies.remove("user-token");
       router.push("/signin");
     },
- 
   },
 });
+export default useUserStore

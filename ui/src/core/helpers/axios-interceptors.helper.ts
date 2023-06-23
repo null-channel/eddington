@@ -1,7 +1,7 @@
 import { notify } from "@kyvg/vue3-notification";
 import router from "@router";
 import { AxiosInstance } from "axios";
-import { useUserStore } from "../stores/user.store";
+import { useUserStore } from "@stores";
 
 
 function axiosInterceptor(axios: AxiosInstance) {

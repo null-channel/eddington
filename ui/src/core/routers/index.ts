@@ -17,6 +17,11 @@ const router = createRouter({
       component: () => lazyLoad(() => import("@pages/Log-in/log-in.vue")),
       // beforeEnter: authGuard,
     },
+    {
+      ...ROUTES.SIGNUP,
+      component: () => lazyLoad(() => import("@pages/Sign-up/sign-up.vue")),
+      // beforeEnter: authGuard,
+    },
     // {
     //   ...ROUTES.CONTACT_US,
     //   component: () => lazyLoad(() => import("@pages/contactUs/contactUs.vue")),
