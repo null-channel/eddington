@@ -3,5 +3,5 @@ export enum env {
   ORY_URL = import.meta.env.VITE_ORY_URL || "http://localhost:4000",
 }
 export { default as ROUTES } from "./routes.const";
-export { default as MAIN_ROUTES } from "./dashbordRoutes.const";
+export { default as MAIN_ROUTES } from "./dashboardRoutes";
 export { NAVBAR_AFTER_LOGIN, NAVBAR_BEFORE_LOGIN } from "./navbar.const";

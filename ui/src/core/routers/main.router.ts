@@ -3,9 +3,9 @@ import { lazyLoad } from '@helpers';
 
 export default [
   {
-    ...MAIN_ROUTES.DASHBORD,
+    ...MAIN_ROUTES.CONTAINER,
     component: () =>
-      lazyLoad(() => import('@pages/main/dashbord/dashbord.vue')),
+      lazyLoad(() => import('@pages/container/container.vue')),
   },
 
 ];
