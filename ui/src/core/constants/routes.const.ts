@@ -1,5 +1,5 @@
 const ROUTES = {
-  MAIN: { path: "/main", name: "dashbord_home" },
+  MAIN: { path: "/main", name: "dashboard_home" },
   NOT_FOUND: { path: "/:catchAll(.*)", name: "NotFound" },
   HOME: { name: "home", path: "/" },
   LOGIN: { name: "login", path: "/login" },

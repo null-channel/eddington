@@ -17,6 +17,12 @@ const router = createRouter({
       component: () => lazyLoad(() => import("@pages/Log-in/log-in.vue")),
       // beforeEnter: authGuard,
     },
+    {
+      ...ROUTES.MAIN,
+      component: () => lazyLoad(() => import("@pages/Dashboard/dashboard.vue")),
+      //beforeEnter: authGuard,
+      children: mainRouter as any,
+    },
     // {
     //   ...ROUTES.CONTACT_US,
     //   component: () => lazyLoad(() => import("@pages/contactUs/contactUs.vue")),
@@ -34,12 +40,7 @@ const router = createRouter({
     //     lazyLoad(() => import("@pages/updatePassword/updatePassword.vue")),
     //   beforeEnter: authGuard,
     // },
-    // {
-    //   ...ROUTES.MAIN,
-    //   component: () => lazyLoad(() => import("@pages/main/main.vue")),
-    //   //beforeEnter: authGuard,
-    //   children: mainRouter as any,
-    // },
+
     // {
     //   ...ROUTES.NOT_FOUND,
     //   redirect: ROUTES.SIGN_IN.name,
