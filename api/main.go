@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/null-channel/eddington/api/controllers"
+	"github.com/null-channel/eddington/api/apps/controllers"
 	"github.com/null-channel/eddington/api/docs"
 	marketing "github.com/null-channel/eddington/api/marketing/controllers"
 	userController "github.com/null-channel/eddington/api/users/controllers"
