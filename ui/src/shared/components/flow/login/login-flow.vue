@@ -35,16 +35,26 @@ export default defineComponent({
             if (this.formId)
                 this.$formkit.submit(this.formId);
         },
-        submitFlow() { 
+        submitFlow() {
             const headers = {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             };
             this.userStore.login((this.flow as Flow).ui.action, headers, this.formData).then((_) => {
-                    this.router.push('/')
-            }).catch(this.handleGetFlowError)
+                this.router.push('/')
+            }).catch((err) => {
+                this.handleGetFlowError(err);
+                if (this.formId) {
+                    console.log(err.response.data.ui.messages[0].text)
+                    this.$formkit.setErrors(
+                            this.formId, // You must use the ID of the form
+                            err.response.data.ui.messages.map((el)=>el.text) // (optional) An array of form level errors
+                        )
+                }
+            })
         }
     }
+
 })
 </script>
 <style src="./login-flow.css"></style>
