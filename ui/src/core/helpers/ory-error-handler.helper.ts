@@ -1,4 +1,3 @@
-import type { AxiosError } from "axios";
 import type { Router } from "vue-router";
 
 const oryErrorHandler = (router: Router) => {
@@ -13,7 +12,7 @@ const oryErrorHandler = (router: Router) => {
     window.location.reload();
   };
 
-  return (error: AxiosError) => {
+  return (error:any) => {
     const responseData = error.response?.data as any;
     if (!(error.response?.data as any).error) return;
     switch ((error.response?.data as any).error.id) {
