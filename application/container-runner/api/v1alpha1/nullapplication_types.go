@@ -36,9 +36,12 @@ type NullApplicationSpec struct {
 }
 
 type MicroserviceSpec struct {
-	Name   string      `json:"name,omitempty"`
-	Image  string      `json:"image,omitempty"`
-	Routes []RouteSpec `json:"routes,omitempty"`
+	Name    string      `json:"name,omitempty"`
+	Image   string      `json:"image,omitempty"`
+	Cpu     string      `json:"cpu,omitempty"`
+	Memory  string      `json:"memory,omitempty"`
+	Storage string      `json:"storage,omitempty"`
+	Routes  []RouteSpec `json:"routes,omitempty"`
 }
 
 type RouteSpec struct {

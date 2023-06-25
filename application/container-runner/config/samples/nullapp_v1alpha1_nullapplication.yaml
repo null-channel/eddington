@@ -15,5 +15,8 @@ spec:
   apps:
   - name: bob
     image: nginx
+    cpu: 100m
+    memory: 128Mi
+    storage: 1Gi
      
   # TODO(user): Add fields here
