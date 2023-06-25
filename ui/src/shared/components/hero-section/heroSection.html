@@ -15,15 +15,22 @@
           further than Null Cloud, your trusty sidekick in the realm of deployment and cloud management.
         </p>
       </div>
-      <div  class="flex justify-between pt-4">
+      <div class="flex justify-between pt-4">
         <div class="mx-1 py-4 px-2 w-full border-gray-200">
-          <div class="flex flex-row  items-center font-roboto px-1 hover:!bg-gray-500 py-1 rounded-md bg-gray-400">
-            <input type="text" placeholder="your@email.com"
-              class=" h-10 px-4 w-3/4 py-1 rounded-lg font-roboto bg-gray-900 justify-start pr-2" />
-            <button class="button-secondairy !rounded-sm w-1/4 flex items-center !font-bold  justify-center">
-                  Subscribe
-            </button>
-          </div>
+          <FormKit type="form" @submit="sendMail" id="sub" v-model="subForm" :actions="false">
+            <div class="flex flex-row  items-center font-roboto px-1 hover:!bg-gray-500 py-1 rounded-md bg-gray-400">
+              <!-- <input type="email" placeholder="" :value="email"
+              class=" h-10 px-4 w-3/4 py-1 rounded-lg font-roboto bg-gray-900 justify-start pr-2" /> -->
+              <FormKit type="email" name="email" id="email" outerClass="!h-10 flex flex-col my-auto !w-3/4"
+                innerClass="py-1 max-w-3xl !rounded-lg font-roboto !bg-gray-900 justify-start "
+                validation="required|email" helpClass="!text-gray-900" placeholder="your@email.com" />
+              <button type="submit"
+                class="button-secondairy !rounded-sm w-1/4 flex items-center !font-bold  justify-center"
+                @click="submit">
+                Subscribe
+              </button>
+            </div>
+          </FormKit>
         </div>
       </div>
     </div>
