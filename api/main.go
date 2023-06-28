@@ -32,7 +32,12 @@ func main() {
 	router.Use(gin.Logger())
 	router.Use(cors.Default())
 	docs.SwaggerInfo.BasePath = "/api/v1"
-	userController := userController.New()
+	userController, err := userController.New()
+
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
 	kubeConfig := os.Getenv("KUBECONFIG")
 
@@ -54,8 +59,10 @@ func main() {
 		}
 
 		// Users
-		userController.AddAllControllers(v1)
-
+		users := v1.Group("/users")
+		{
+			userController.AddAllControllers(users)
+		}
 		// AuthZ
 
 		// AuthN
