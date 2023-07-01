@@ -17,7 +17,7 @@ option java_multiple_files = true;
 option java_package = "io.nullcloud.users";
 option java_outer_classname = "UserServiceProto";
 
-package application;
+package user;
 
 // The greeting service definition.
 service UserService {
@@ -31,7 +31,16 @@ message GetUserContextRequest {
 
 // The response message containing the greetings
 message GetUserContextReply {
-  repeated ResourceGroup resourceGroups = 1;
+
+	// Org stuff
+	Org org = 10;
+}
+
+message Org {
+	int64 ID = 1;
+	string Name = 2;
+	int64 OwnerID = 3;
+	repeated ResourceGroup resourceGroups = 4;
 }
 
 message ResourceGroup {

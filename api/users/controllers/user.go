@@ -77,9 +77,18 @@ func (u *UserController) GetUserContext(ctx context.Context, in *pb.GetUserConte
 		return nil, err
 	}
 
-	var org models.Org
+	return modelToUserContextRequest(orgs[0], in.UserId), nil
+}
 
-	return &pb.GetUserContextReply{ResourceGroups: resourceGroupModelToProto(org.ResourceGroups)}, nil
+func modelToUserContextRequest(org models.Org, ownerId int64) *pb.GetUserContextReply {
+	return &pb.GetUserContextReply{
+		Org: &pb.Org{
+			ID:             org.ID,
+			Name:           org.Name,
+			OwnerID:        ownerId,
+			ResourceGroups: resourceGroupModelToProto(org.ResourceGroups),
+		},
+	}
 }
 
 func resourceGroupModelToProto(resourceGroups []*models.ResourceGroup) []*pb.ResourceGroup {

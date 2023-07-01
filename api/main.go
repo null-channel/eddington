@@ -2,6 +2,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	"os"
@@ -23,6 +24,7 @@ import (
 
 func main() {
 
+	flag.Parse()
 	//TODO: Never used gin. seems like mux is archived. going to try this out.
 	port := os.Getenv("PORT")
 	if port == "" {

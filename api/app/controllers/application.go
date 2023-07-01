@@ -2,11 +2,18 @@ package controllers
 
 import (
 	"context"
+	"errors"
+	"flag"
+	"log"
 
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
+
+	pb "github.com/null-channel/eddington/proto/user"
 
 	_ "github.com/swaggo/files"
 	_ "github.com/swaggo/gin-swagger"
@@ -14,13 +21,25 @@ import (
 
 //	@BasePath	/api/v1/
 
+var (
+	addr = flag.String("addr", "localhost:50051", "the address to connect to")
+)
+
 type ApplicationController struct {
-	kube dynamic.Interface
+	kube       dynamic.Interface
+	userClient pb.UserServiceClient
 }
 
-func NewApplicationController(kube dynamic.Interface) ApplicationController {
-	return ApplicationController{
-		kube: kube,
+func NewApplicationController(kube dynamic.Interface) *ApplicationController {
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	return &ApplicationController{
+		kube:       kube,
+		userClient: pb.NewUserServiceClient(conn),
 	}
 }
 
@@ -30,8 +49,9 @@ func (a ApplicationController) RegisterRoutes(routerGroup *gin.RouterGroup) {
 }
 
 type Application struct {
-	Name  string `json:"name" binding:"required"`
-	Image string `json:"image" binding:"required"`
+	Name          string `json:"name" binding:"required"`
+	Image         string `json:"image" binding:"required"`
+	ResourceGroup string `json:"resourceGroup"`
 }
 
 // AppPOST godoc
@@ -47,13 +67,38 @@ type Application struct {
 func (a ApplicationController) AppPOST() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		app := Application{
-			Name:  c.PostForm("name"),
-			Image: c.PostForm("image"),
+			Name:          c.PostForm("name"),
+			Image:         c.PostForm("image"),
+			ResourceGroup: c.PostForm("resourceGroup"),
 		}
 		//TODO: get user namespace
-		deployment := getApplication(app.Name, "default", app.Image)
-		a.kube.Resource(getDeploymentGVR()).Namespace("default").Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
+
+		userContext, err := a.userClient.GetUserContext(context.Background(), &pb.GetUserContextRequest{UserId: 1})
+		if err != nil {
+			c.IndentedJSON(500, "Internal server error")
+		}
+		resourceGroup, err := getResourceGroupName(userContext.Org.ResourceGroups, app.ResourceGroup)
+		if err != nil {
+			c.IndentedJSON(400, "Resource group not found")
+		}
+
+		namespace := userContext.Org.Name + resourceGroup
+
+		deployment := getApplication(app.Name, namespace, app.Image)
+		a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
 	}
+}
+
+func getResourceGroupName(resourceGroups []*pb.ResourceGroup, requested string) (string, error) {
+	if requested == "" {
+		return "default", nil
+	}
+	for _, group := range resourceGroups {
+		if group.Name == requested {
+			return group.Name, nil
+		}
+	}
+	return "", errors.New("Resource group not found")
 }
 
 func getDeploymentGVR() schema.GroupVersionResource {

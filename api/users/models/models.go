@@ -10,6 +10,7 @@ type User struct {
 
 type Org struct {
 	ID             int64 `bun:",pk,autoincrement"`
+	Name           string
 	OwnerID        int64
 	Owner          *User            `bun:"rel:belongs-to,join:owner_id=id"`
 	ResourceGroups []*ResourceGroup `bun:"rel:has-many,join:id=org_id"`
