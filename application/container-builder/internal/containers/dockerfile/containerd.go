@@ -26,7 +26,7 @@ type Builder struct {
 }
 
 func NewBuilder(ctx context.Context) (*Builder, error) {
-	client, err := client.New(ctx, "buildkit://buildkitd", client.WithFailFast())
+	client, err := client.New(ctx, "tcp://0.0.0.0:4000", client.WithFailFast())
 	if err != nil {
 		logrus.Panic("unable to create buildkit client error: ", err.Error())
 		return nil, err
@@ -77,10 +77,12 @@ func (b *Builder) createSolveOpt(imageName string, buildContext string, dockerfi
 	return client.SolveOpt{
 		Exports: []client.ExportEntry{
 			{
+
 				Type: "image",
 				Attrs: map[string]string{
 					"name": imageName,
 				},
+
 				Output: func(_ map[string]string) (io.WriteCloser, error) {
 					return w, nil
 				},
