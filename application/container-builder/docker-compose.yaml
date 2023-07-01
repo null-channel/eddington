@@ -2,9 +2,13 @@ version: "3.7"
 
 #deploy dockerfile and buildkitd on the same network 
 services:
-  buildkit:
+  buildkitd:
     image: moby/buildkit 
     privileged: true
+    hostname: buildkitd
+    command: ["--addr", "tcp://0.0.0.0:4000"]  # Replace "1234" with the desired TCP port number
+    ports:
+      - "4000:4000"
     volumes:
       - /var/lib/buildkit
     networks:
@@ -19,10 +23,10 @@ services:
     networks:
       - buildkit
     depends_on:
-      - buildkit 
-
+      - buildkitd
 
 networks:
   buildkit:
 
+  
 
