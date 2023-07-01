@@ -13,18 +13,6 @@ services:
       - /var/lib/buildkit
     networks:
       - buildkit
-
-  container-builder:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    hostname: container-builder
-    image: dockerfile
-    networks:
-      - buildkit
-    depends_on:
-      - buildkitd
-
 networks:
   buildkit:
 
