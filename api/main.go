@@ -2,6 +2,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	"os"
@@ -23,6 +24,7 @@ import (
 
 func main() {
 
+	flag.Parse()
 	//TODO: Never used gin. seems like mux is archived. going to try this out.
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -32,7 +34,12 @@ func main() {
 	router.Use(gin.Logger())
 	router.Use(cors.Default())
 	docs.SwaggerInfo.BasePath = "/api/v1"
-	userController := userController.New()
+	userController, err := userController.New()
+
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
 	kubeConfig := os.Getenv("KUBECONFIG")
 
@@ -54,8 +61,10 @@ func main() {
 		}
 
 		// Users
-		userController.AddAllControllers(v1)
-
+		users := v1.Group("/users")
+		{
+			userController.AddAllControllers(users)
+		}
 		// AuthZ
 
 		// AuthN

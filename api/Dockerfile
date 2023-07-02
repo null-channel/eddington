@@ -4,6 +4,7 @@ WORKDIR /app
 COPY go.* ./
 RUN go mod download
 COPY . .
+RUN go mod tidy
 RUN go build -o api ./main.go
 
 # The Real container

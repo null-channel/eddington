@@ -9,4 +9,3 @@ use ./api
 use ./proto
 
 use ./github-watcher
-
