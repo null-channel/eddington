@@ -23,4 +23,8 @@ func main() {
 	}
 
 	err = t.Execute(os.Stdout, serviceTemplate)
+
+	if err != nil {
+		panic(err)
+	}
 }

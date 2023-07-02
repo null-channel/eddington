@@ -159,6 +159,12 @@ func (u *UserController) CreateUser() gin.HandlerFunc {
 		}
 
 		orgId, err := res.LastInsertId()
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
 		resourceGroup := models.ResourceGroup{
 			OrgID: orgId,
 			Name:  "default",

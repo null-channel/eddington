@@ -1,11 +1,9 @@
 go 1.20
 
-use ./application/container-runner
-
-use ./application/container-builder
-
-use ./api
-
-use ./proto
-
-use ./github-watcher
+use( 
+    ./application/container-runner
+    ./application/container-builder
+    ./api
+    ./proto
+    ./github-watcher
+)
