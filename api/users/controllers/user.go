@@ -3,10 +3,7 @@ package controllers
 import (
 	"context"
 	"database/sql"
-	"flag"
 	"fmt"
-	"log"
-	"net"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,19 +12,12 @@ import (
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/sqlitedialect"
 	"github.com/uptrace/bun/driver/sqliteshim"
-	"google.golang.org/grpc"
 )
-
-var _ pb.UserServiceServer = (*UserController)(nil)
 
 type UserController struct {
 	pb.UnimplementedUserServiceServer
 	database *bun.DB
 }
-
-var (
-	port = flag.Int("port", 50051, "The server port")
-)
 
 func New() (*UserController, error) {
 	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
@@ -48,36 +38,24 @@ func New() (*UserController, error) {
 		panic(err)
 	}
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-
 	userServer := &UserController{database: db}
-	s := grpc.NewServer()
-	pb.RegisterUserServiceServer(s, userServer)
-	log.Printf("server listening at %v", lis.Addr())
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-		return nil, err
-	}
 
 	return userServer, nil
 }
 
-func (u *UserController) GetUserContext(ctx context.Context, in *pb.GetUserContextRequest) (*pb.GetUserContextReply, error) {
+func (u *UserController) GetUserContext(ctx context.Context, userId int64) (*models.Org, error) {
 
 	// This assumes that the user is the owner. This is bad... but works for now.
 	// This is probably not even going to be an indext column in the future.
 	// Regrets future marek.
 	var orgs []models.Org
-	err := u.database.NewSelect().Model(orgs).Where(fmt.Sprintf("owner_id = %d", in.UserId)).Scan(ctx, orgs)
+	err := u.database.NewSelect().Model(orgs).Where(fmt.Sprintf("owner_id = %d", userId)).Scan(ctx, orgs)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return modelToUserContextRequest(orgs[0], in.UserId), nil
+	return &orgs[0], nil
 }
 
 func modelToUserContextRequest(org models.Org, ownerId int64) *pb.GetUserContextReply {

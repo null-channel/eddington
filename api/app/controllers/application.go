@@ -13,10 +13,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 
-	pb "github.com/null-channel/eddington/proto/user"
-
 	_ "github.com/swaggo/files"
 	_ "github.com/swaggo/gin-swagger"
+
+	usercon "github.com/null-channel/eddington/api/users/controllers"
+	"github.com/null-channel/eddington/api/users/models"
 )
 
 //	@BasePath	/api/v1/
@@ -26,11 +27,11 @@ var (
 )
 
 type ApplicationController struct {
-	kube       dynamic.Interface
-	userClient pb.UserServiceClient
+	kube           dynamic.Interface
+	userController *usercon.UserController
 }
 
-func NewApplicationController(kube dynamic.Interface) *ApplicationController {
+func NewApplicationController(kube dynamic.Interface, userService *usercon.UserController) *ApplicationController {
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -38,8 +39,8 @@ func NewApplicationController(kube dynamic.Interface) *ApplicationController {
 	}
 	defer conn.Close()
 	return &ApplicationController{
-		kube:       kube,
-		userClient: pb.NewUserServiceClient(conn),
+		kube:           kube,
+		userController: userService,
 	}
 }
 
@@ -73,16 +74,16 @@ func (a ApplicationController) AppPOST() gin.HandlerFunc {
 		}
 		//TODO: get user namespace
 
-		userContext, err := a.userClient.GetUserContext(context.Background(), &pb.GetUserContextRequest{UserId: 1})
+		userContext, err := a.userController.GetUserContext(context.Background(), 1)
 		if err != nil {
 			c.IndentedJSON(500, "Internal server error")
 		}
-		resourceGroup, err := getResourceGroupName(userContext.Org.ResourceGroups, app.ResourceGroup)
+		resourceGroup, err := getResourceGroupName(userContext.ResourceGroups, app.ResourceGroup)
 		if err != nil {
 			c.IndentedJSON(400, "Resource group not found")
 		}
 
-		namespace := userContext.Org.Name + resourceGroup
+		namespace := userContext.Name + resourceGroup
 
 		deployment := getApplication(app.Name, namespace, app.Image)
 		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
@@ -92,7 +93,7 @@ func (a ApplicationController) AppPOST() gin.HandlerFunc {
 	}
 }
 
-func getResourceGroupName(resourceGroups []*pb.ResourceGroup, requested string) (string, error) {
+func getResourceGroupName(resourceGroups []*models.ResourceGroup, requested string) (string, error) {
 	if requested == "" {
 		return "default", nil
 	}

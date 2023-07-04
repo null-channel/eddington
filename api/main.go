@@ -3,6 +3,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 
 	"os"
@@ -24,6 +25,7 @@ import (
 
 func main() {
 
+	fmt.Println("Starting server...")
 	flag.Parse()
 	//TODO: Never used gin. seems like mux is archived. going to try this out.
 	port := os.Getenv("PORT")
@@ -31,6 +33,7 @@ func main() {
 		port = "8080"
 	}
 	router := gin.New()
+
 	router.Use(gin.Logger())
 	router.Use(cors.Default())
 	docs.SwaggerInfo.BasePath = "/api/v1"
@@ -49,8 +52,9 @@ func main() {
 		log.Fatal(err)
 		return
 	}
+
 	config := dynamic.NewForConfigOrDie(clusterConfig)
-	appController := app.NewApplicationController(config)
+	appController := app.NewApplicationController(config, userController)
 
 	v1 := router.Group("api/v1")
 	{
@@ -77,9 +81,10 @@ func main() {
 			_ = marketing.New(os.Getenv("SENDGRID_API_KEY"), marketingGroup)
 		}
 	}
+	fmt.Println("Starting server on port " + port)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
-	log.Fatal(router.Run(":" + port))
+	log.Fatal(router.Run("127.0.0.1:8080"))
 
 }
 
