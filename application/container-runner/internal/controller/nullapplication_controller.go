@@ -39,6 +39,7 @@ import (
 	"github.com/null-channel/eddington/application/container-runner/internal/templates"
 )
 
+//nolint:golint,unused
 var (
 	setupLog               = ctrl.Log.WithName("null-application-controller")
 	istioVirtualServiceGVR = schema.GroupVersionResource{Group: "networking.istio.io", Version: "v1beta1", Resource: "virtualservice"}
@@ -123,7 +124,12 @@ func (r *NullApplicationReconciler) CheckDeploymentService(ctx context.Context, 
 			}
 			appService, err := virtualServiceBytesToUnstructured(*byteBuffer)
 
-			setupLog.Info("Creating service for microservice: " + string(byteBuffer.Bytes()))
+			if err != nil {
+				setupLog.Info("Error converting service template to unstructured")
+				return err
+			}
+
+			setupLog.Info("Creating service for microservice: " + byteBuffer.String())
 			return r.Create(ctx, appService)
 		}
 	}
@@ -175,6 +181,7 @@ func (r *NullApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+//nolint:golint,unused
 func (r *NullApplicationReconciler) getObject(namespace, name string, gvr schema.GroupVersionResource, ctx context.Context) (*unstructured.Unstructured, error) {
 	return r.DynoClient.Resource(gvr).Namespace(namespace).Get(ctx, name, metav1.GetOptions{})
 }

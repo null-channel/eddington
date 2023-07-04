@@ -34,6 +34,8 @@ func getApplication(name string, namespace string, image string) *unstructured.U
 }
 
 // getPatchData will return difference between original and modified document
+//
+//nolint:golint,unused
 func getPatchData(originalObj, modifiedObj interface{}) ([]byte, error) {
 	originalData, err := json.Marshal(originalObj)
 	if err != nil {

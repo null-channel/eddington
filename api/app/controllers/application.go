@@ -85,7 +85,10 @@ func (a ApplicationController) AppPOST() gin.HandlerFunc {
 		namespace := userContext.Org.Name + resourceGroup
 
 		deployment := getApplication(app.Name, namespace, app.Image)
-		a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
+		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
+		if err != nil {
+			c.IndentedJSON(500, "Internal server error")
+		}
 	}
 }
 
