@@ -9,7 +9,6 @@ export default async (to: any) => {
     .then(() => {
       authenticated=true
     })
-  
   if (!AUTH_ROUTES.includes(to.name) && !authenticated) {
     return { name: ROUTES.LOGIN.name };
   }
