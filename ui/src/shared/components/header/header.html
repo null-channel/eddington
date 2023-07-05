@@ -1,7 +1,7 @@
 <header class="header">
     <nav class="bg-opacity-0 nav">
         <div class="flex flex-wrap justify-between items-center flex-1">
-            <a href="/" class="flex items-center">
+            <a href="/" class="flex items-center" :class="{'hidden':hideLogo}">
                 <img src="../../../assets/svg/null-cloud-icon.svg" class="mr-3 object-cover" alt="Null cloud" />
             </a>
             <div class="flex items-center lg:order-2">
@@ -56,8 +56,7 @@
                                 </li>
                             </ul>
                             <div class="py-1 ">
-                                <button 
-                                @click="logout"
+                                <button @click="logout"
                                     class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
                                     Sign out</button>
                             </div>

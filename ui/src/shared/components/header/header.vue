@@ -23,21 +23,22 @@ export default defineComponent({
         }
     },
     mounted() {
-        try{
+        try {
             this.ory.toSession().then(({ data }) => {
                 this.user.session = data
-                this.user.authenticated=true
+                this.user.authenticated = true
                 // If the user is logged in, we want to show a logout link!
                 this.ory.createBrowserLogoutFlow().then(({ data }) => {
                     this.user.logoutUrl = data.logout_url
                 })
             })
-        }catch(err){
+        } catch (err) {
             console.log('no user is logged in')
         }
     },
     props: {
-        routes: null
+        routes: null,
+        hideLogo: Boolean
     },
     data() {
         return {
@@ -47,7 +48,7 @@ export default defineComponent({
     },
     computed: {
         isLogged() {
-            return this.user.authenticated 
+            return this.user.authenticated
         }
     },
     methods: {
@@ -65,7 +66,7 @@ export default defineComponent({
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     }
-                }).then(()=>{
+                }).then(() => {
                     this.userStore.$reset()
                     this.router.push('/')
                 }

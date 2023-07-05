@@ -1,0 +1,4 @@
+.side-bar-text {
+    @apply text-lg not-italic font-medium leading-[normal];
+    font-family: Roboto, Sans-Serif;
+}
