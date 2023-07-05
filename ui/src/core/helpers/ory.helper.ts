@@ -19,29 +19,6 @@ export const $ory_urls: InjectionKey<{
 
 export const OryPlugin: Plugin = {
   install: async (app: App) => {
-    // can now be used with inject($ory)
     app.provide($ory, Ory);
-    // injection is headache Don't do it 
-    // try {
-    //   // can now be used with inject($session)
-    //   const { data: session } = await Ory.toSession();
-    //   app.provide($session, session);
-    // } catch (error) {
-    //   console.log("[Ory] User has no session.");
-      
-    // }
-    // try{
-    //   const [{data: {logout_url}}]= await Promise.all([Ory.createBrowserLogoutFlow(undefined,{
-    //     params: {
-    //       return_url: "/",
-    //     },
-    //   })])
-    //   app.provide($ory_urls, {
-    //     logoutUrl: logout_url,
-    //   });
-    
-    // }catch(error){
-    //   console.log("[Ory] Failed to retrieve logout URL.");
-    // }
   },
 };

@@ -1,19 +1,16 @@
 import { defineStore } from "pinia";
-import { useCookies } from "vue3-cookies";
 import router from "@router";
 
-const { cookies } = useCookies();
 const useUserStore = defineStore("user", {
   state: () => ({
-    user: {
-      session: {},
-      authenticated: false,
-      logoutUrl: "",
-    },
   }),
-  getters: {},
+  getters: {
+    user() {
+      const user = localStorage.getItem("session");
+      return user ? JSON.parse(user) : null;
+    },
+  },
   actions: {
-    getUser() {},
     login(url: string, headers: any, formData: any) {
       return window.$axios.post(url, formData, {
         headers,
@@ -24,10 +21,19 @@ const useUserStore = defineStore("user", {
         headers,
       });
     },
-    logout() {
-      cookies.remove("user-token");
-      router.push("/signin");
+    logout(logoutUrl: string) {
+      window.$axios
+        .get(logoutUrl, {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        })
+        .then(() => {
+          localStorage.removeItem("session");
+          router.push("/login");
+        });
     },
   },
 });
-export default useUserStore
+export default useUserStore;

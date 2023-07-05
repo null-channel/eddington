@@ -40,7 +40,8 @@ export default defineComponent({
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             };
-            this.userStore.signUp((this.flow as Flow).ui.action, headers, this.formData).then((_: any) => {
+            this.userStore.signUp((this.flow as Flow).ui.action, headers, this.formData).then((session: any) => {
+                localStorage.setItem('session', session)
                 this.router.push('/')
             }).catch((err: any) => {
                 this.handleGetFlowError(err);
