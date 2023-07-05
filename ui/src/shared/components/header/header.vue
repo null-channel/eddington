@@ -6,7 +6,6 @@ import { useUserStore } from '@stores';
 import { defineComponent } from 'vue';
 import * as _ from 'lodash';
 import { useRouter } from 'vue-router';
-import { storeToRefs } from 'pinia';
 
 export default defineComponent({
     name: "Header",
@@ -21,7 +20,8 @@ export default defineComponent({
         }
     },
     props: {
-        routes: null
+        routes: null,
+        hideLogo: Boolean
     },
     data() {
         return {

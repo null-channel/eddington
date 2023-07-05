@@ -5,6 +5,10 @@ import Header from "@components/header/header.vue"
 import HeroSection from '@components/hero-section/heroSection.vue';
 import { NAVBAR_AFTER_LOGIN, NAVBAR_BEFORE_LOGIN } from '@/core/constants';
 import { markRaw } from 'vue';
+import { $ory, injectStrict } from '@/core/helpers';
+import { useUserStore } from '@/core/stores';
+import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
 export default defineComponent({
     name: "HomePage",
     components: {

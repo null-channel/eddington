@@ -1,0 +1,253 @@
+<SideBar title="Docker SVC">
+    <template v-slot:svc-image>
+        <img src="@/assets/img/Docker-Logo_Horizontel_279x131 1.png" class="h-6 mr-3 sm:h-7" />
+    </template>
+    <template v-slot:action-btn>
+        <li>
+            <button class="flex items-center p-2 w-full  text-gray-900 rounded-lg hover:bg-gray-400 hover:text-gray-200"
+                @click="()=>setSelected('Dashboard')">
+                <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g id="icons/grid">
+                        <path id="Vector" d="M10 3.17712H3V10.1771H10V3.17712Z" :stroke="selectedColor('Dashboard')"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path id="Vector_2" d="M21 3.17712H14V10.1771H21V3.17712Z" :stroke="selectedColor('Dashboard')"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path id="Vector_3" d="M21 14.1771H14V21.1771H21V14.1771Z" :stroke="selectedColor('Dashboard')"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path id="Vector_4" d="M10 14.1771H3V21.1771H10V14.1771Z" :stroke="selectedColor('Dashboard')"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </g>
+                </svg>
+
+                <span class="ml-3" :class="{'text-purple-900': isSelected('Dashboard') }"> Dashboard</span>
+            </button>
+        </li>
+        <li>
+            <button class="flex items-center p-2 w-full  text-gray-900 rounded-lg hover:bg-gray-400 hover:text-gray-200"
+                @click="()=>setSelected('Settings')">
+                <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g id="icons/settings" clip-path="url(#clip0_110_55)">
+                        <path id="Vector"
+                            d="M12 15.1771C13.6569 15.1771 15 13.834 15 12.1771C15 10.5203 13.6569 9.17712 12 9.17712C10.3431 9.17712 9 10.5203 9 12.1771C9 13.834 10.3431 15.1771 12 15.1771Z"
+                            :stroke="selectedColor('Settings')" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path id="Vector_2"
+                            d="M19.4 15.1771C19.2669 15.4787 19.2272 15.8133 19.286 16.1377C19.3448 16.4621 19.4995 16.7614 19.73 16.9971L19.79 17.0571C19.976 17.2429 20.1235 17.4634 20.2241 17.7062C20.3248 17.949 20.3766 18.2093 20.3766 18.4721C20.3766 18.735 20.3248 18.9952 20.2241 19.238C20.1235 19.4808 19.976 19.7014 19.79 19.8871C19.6043 20.0731 19.3837 20.2206 19.1409 20.3212C18.8981 20.4219 18.6378 20.4737 18.375 20.4737C18.1122 20.4737 17.8519 20.4219 17.6091 20.3212C17.3663 20.2206 17.1457 20.0731 16.96 19.8871L16.9 19.8271C16.6643 19.5966 16.365 19.4419 16.0406 19.3831C15.7162 19.3243 15.3816 19.364 15.08 19.4971C14.7842 19.6239 14.532 19.8344 14.3543 20.1027C14.1766 20.371 14.0813 20.6853 14.08 21.0071V21.1771C14.08 21.7076 13.8693 22.2163 13.4942 22.5913C13.1191 22.9664 12.6104 23.1771 12.08 23.1771C11.5496 23.1771 11.0409 22.9664 10.6658 22.5913C10.2907 22.2163 10.08 21.7076 10.08 21.1771V21.0871C10.0723 20.7561 9.96512 20.4351 9.77251 20.1658C9.5799 19.8965 9.31074 19.6914 9 19.5771C8.69838 19.444 8.36381 19.4043 8.03941 19.4631C7.71502 19.5219 7.41568 19.6766 7.18 19.9071L7.12 19.9671C6.93425 20.1531 6.71368 20.3006 6.47088 20.4012C6.22808 20.5019 5.96783 20.5537 5.705 20.5537C5.44217 20.5537 5.18192 20.5019 4.93912 20.4012C4.69632 20.3006 4.47575 20.1531 4.29 19.9671C4.10405 19.7814 3.95653 19.5608 3.85588 19.318C3.75523 19.0752 3.70343 18.815 3.70343 18.5521C3.70343 18.2893 3.75523 18.029 3.85588 17.7862C3.95653 17.5434 4.10405 17.3229 4.29 17.1371L4.35 17.0771C4.58054 16.8414 4.73519 16.5421 4.794 16.2177C4.85282 15.8933 4.81312 15.5587 4.68 15.2571C4.55324 14.9614 4.34276 14.7091 4.07447 14.5314C3.80618 14.3538 3.49179 14.2584 3.17 14.2571H3C2.46957 14.2571 1.96086 14.0464 1.58579 13.6713C1.21071 13.2963 1 12.7876 1 12.2571C1 11.7267 1.21071 11.218 1.58579 10.8429C1.96086 10.4678 2.46957 10.2571 3 10.2571H3.09C3.42099 10.2494 3.74201 10.1422 4.0113 9.94964C4.28059 9.75703 4.48572 9.48786 4.6 9.17712C4.73312 8.87551 4.77282 8.54093 4.714 8.21654C4.65519 7.89214 4.50054 7.5928 4.27 7.35712L4.21 7.29712C4.02405 7.11138 3.87653 6.8908 3.77588 6.64801C3.67523 6.40521 3.62343 6.14496 3.62343 5.88212C3.62343 5.61929 3.67523 5.35904 3.77588 5.11624C3.87653 4.87345 4.02405 4.65287 4.21 4.46712C4.39575 4.28117 4.61632 4.13365 4.85912 4.033C5.10192 3.93236 5.36217 3.88055 5.625 3.88055C5.88783 3.88055 6.14809 3.93236 6.39088 4.033C6.63368 4.13365 6.85425 4.28117 7.04 4.46712L7.1 4.52712C7.33568 4.75766 7.63502 4.91231 7.95941 4.97113C8.28381 5.02995 8.61838 4.99024 8.92 4.85712H9C9.29577 4.73036 9.54802 4.51988 9.72569 4.25159C9.90337 3.9833 9.99872 3.66891 10 3.34712V3.17712C10 2.64669 10.2107 2.13798 10.5858 1.76291C10.9609 1.38784 11.4696 1.17712 12 1.17712C12.5304 1.17712 13.0391 1.38784 13.4142 1.76291C13.7893 2.13798 14 2.64669 14 3.17712V3.26712C14.0013 3.58891 14.0966 3.9033 14.2743 4.17159C14.452 4.43988 14.7042 4.65036 15 4.77712C15.3016 4.91024 15.6362 4.94995 15.9606 4.89113C16.285 4.83231 16.5843 4.67766 16.82 4.44712L16.88 4.38712C17.0657 4.20117 17.2863 4.05365 17.5291 3.953C17.7719 3.85236 18.0322 3.80055 18.295 3.80055C18.5578 3.80055 18.8181 3.85236 19.0609 3.953C19.3037 4.05365 19.5243 4.20117 19.71 4.38712C19.896 4.57287 20.0435 4.79345 20.1441 5.03624C20.2448 5.27904 20.2966 5.53929 20.2966 5.80212C20.2966 6.06496 20.2448 6.32521 20.1441 6.56801C20.0435 6.8108 19.896 7.03138 19.71 7.21712L19.65 7.27712C19.4195 7.5128 19.2648 7.81214 19.206 8.13654C19.1472 8.46093 19.1869 8.79551 19.32 9.09713V9.17712C19.4468 9.47289 19.6572 9.72514 19.9255 9.90282C20.1938 10.0805 20.5082 10.1758 20.83 10.1771H21C21.5304 10.1771 22.0391 10.3878 22.4142 10.7629C22.7893 11.138 23 11.6467 23 12.1771C23 12.7076 22.7893 13.2163 22.4142 13.5913C22.0391 13.9664 21.5304 14.1771 21 14.1771H20.91C20.5882 14.1784 20.2738 14.2738 20.0055 14.4514C19.7372 14.6291 19.5268 14.8814 19.4 15.1771V15.1771Z"
+                            :stroke="selectedColor('Settings')" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </g>
+                    <defs>
+                        <clipPath id="clip0_110_55">
+                            <rect width="24" height="24" fill="white" transform="translate(0 0.177124)" />
+                        </clipPath>
+                    </defs>
+                </svg>
+                <span class="ml-3" :class="{'text-purple-900': isSelected('Settings') }">Settings</span>
+            </button>
+        </li>
+    </template>
+</SideBar>
+<div class="w-full pt-4 pl-64 h-3/4 items-center mx-auto">
+    <Header :routes="routes" hideLogo></Header>
+    <div class="container pt-36 my-auto">
+        <div class="flex flex-col bg-white mx-auto rounded max-w-screen-lg w-full p-4 space-y-4">
+            <div class="flex space-x-4 ">
+                <div class="flex flex-col flex-grow">
+                    <h1 class="header !mx-0">
+                        container
+                    </h1>
+                    <span class="small-text">
+                        This is a list of latest Containers.
+                    </span>
+                </div>
+                <div class="flex space-x-4">
+                    <button class="button-primary h-9">delete</button>
+                    <button class="button-secondary h-9">Actions</button>
+                </div>
+            </div>
+            <div>
+                <table class="w-full text-sm text-left text-gray-900">
+                    <thead class="text-xs text-gray-900 uppercase bg-gray-50 ">
+                        <tr>
+                            <th scope="col" class="p-4">
+                                <div class="flex items-center">
+                                    <input id="checkbox-all-search" type="checkbox"
+                                        class="w-4 h-4 text-blue-600 bg-gray-200 border-gray-500 rounded focus:ring-blue-500 focus:ring-2 ">
+                                    <label class="sr-only">checkbox</label>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Name
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Position
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Status
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Action
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            class="bg-white border-b  border-gray-700 hover:bg-gray-200 ">
+                            <td class="w-4 p-4">
+                                <div class="flex items-center">
+                                    <input id="checkbox-table-search-1" type="checkbox"
+                                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                    <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
+                                </div>
+                            </td>
+                            <th scope="row"
+                                class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
+                                <img class="w-10 h-10 rounded-full" src="/docs/images/people/profile-picture-1.jpg"
+                                    alt="Jese image">
+                                <div class="pl-3">
+                                    <div class="text-base font-semibold">Neil Sims</div>
+                                    <div class="font-normal text-gray-500">neil.sims@flowbite.com</div>
+                                </div>
+                            </th>
+                            <td class="px-6 py-4">
+                                React Developer
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="h-2.5 w-2.5 rounded-full bg-green-500 mr-2"></div> Online
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit
+                                    user</a>
+                            </td>
+                        </tr>
+                        <tr
+                            class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            <td class="w-4 p-4">
+                                <div class="flex items-center">
+                                    <input id="checkbox-table-search-2" type="checkbox"
+                                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                    <label for="checkbox-table-search-2" class="sr-only">checkbox</label>
+                                </div>
+                            </td>
+                            <th scope="row"
+                                class="flex items-center px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <img class="w-10 h-10 rounded-full" src="/docs/images/people/profile-picture-3.jpg"
+                                    alt="Jese image">
+                                <div class="pl-3">
+                                    <div class="text-base font-semibold">Bonnie Green</div>
+                                    <div class="font-normal text-gray-500">bonnie@flowbite.com</div>
+                                </div>
+                            </th>
+                            <td class="px-6 py-4">
+                                Designer
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="h-2.5 w-2.5 rounded-full bg-green-500 mr-2"></div> Online
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit
+                                    user</a>
+                            </td>
+                        </tr>
+                        <tr
+                            class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            <td class="w-4 p-4">
+                                <div class="flex items-center">
+                                    <input id="checkbox-table-search-2" type="checkbox"
+                                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                    <label for="checkbox-table-search-2" class="sr-only">checkbox</label>
+                                </div>
+                            </td>
+                            <th scope="row"
+                                class="flex items-center px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <img class="w-10 h-10 rounded-full" src="/docs/images/people/profile-picture-2.jpg"
+                                    alt="Jese image">
+                                <div class="pl-3">
+                                    <div class="text-base font-semibold">Jese Leos</div>
+                                    <div class="font-normal text-gray-500">jese@flowbite.com</div>
+                                </div>
+                            </th>
+                            <td class="px-6 py-4">
+                                Vue JS Developer
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="h-2.5 w-2.5 rounded-full bg-green-500 mr-2"></div> Online
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit
+                                    user</a>
+                            </td>
+                        </tr>
+                        <tr
+                            class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            <td class="w-4 p-4">
+                                <div class="flex items-center">
+                                    <input id="checkbox-table-search-2" type="checkbox"
+                                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                    <label for="checkbox-table-search-2" class="sr-only">checkbox</label>
+                                </div>
+                            </td>
+                            <th scope="row"
+                                class="flex items-center px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <img class="w-10 h-10 rounded-full" src="/docs/images/people/profile-picture-5.jpg"
+                                    alt="Jese image">
+                                <div class="pl-3">
+                                    <div class="text-base font-semibold">Thomas Lean</div>
+                                    <div class="font-normal text-gray-500">thomes@flowbite.com</div>
+                                </div>
+                            </th>
+                            <td class="px-6 py-4">
+                                UI/UX Engineer
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="h-2.5 w-2.5 rounded-full bg-green-500 mr-2"></div> Online
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit
+                                    user</a>
+                            </td>
+                        </tr>
+                        <tr class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            <td class="w-4 p-4">
+                                <div class="flex items-center">
+                                    <input id="checkbox-table-search-3" type="checkbox"
+                                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                    <label for="checkbox-table-search-3" class="sr-only">checkbox</label>
+                                </div>
+                            </td>
+                            <th scope="row"
+                                class="flex items-center px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <img class="w-10 h-10 rounded-full" src="/docs/images/people/profile-picture-4.jpg"
+                                    alt="Jese image">
+                                <div class="pl-3">
+                                    <div class="text-base font-semibold">Leslie Livingston</div>
+                                    <div class="font-normal text-gray-500">leslie@flowbite.com</div>
+                                </div>
+                            </th>
+                            <td class="px-6 py-4">
+                                SEO Specialist
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="h-2.5 w-2.5 rounded-full bg-red-500 mr-2"></div> Offline
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit
+                                    user</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

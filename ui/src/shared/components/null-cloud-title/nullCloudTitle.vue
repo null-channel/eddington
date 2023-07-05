@@ -4,7 +4,8 @@ import { defineComponent } from 'vue';
 export default defineComponent({
     name: "NullCloudTitle",
     props:{
-        dark:Boolean
+        dark:Boolean,
+        fixed:Boolean
     }
 
 })

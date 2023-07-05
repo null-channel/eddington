@@ -5,7 +5,7 @@ export default [
   {
     ...MAIN_ROUTES.CONTAINER,
     component: () =>
-      lazyLoad(() => import('@pages/container/container.vue')),
+      lazyLoad(() => import('@pages/Container/container.vue')),
   },
 
 ];

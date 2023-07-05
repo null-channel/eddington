@@ -1,7 +1,7 @@
 import { MAIN_ROUTES, ROUTES } from ".";
 
 export const NAVBAR_BEFORE_LOGIN = [
-  { ...MAIN_ROUTES.CONTAINER },
+  { ...ROUTES.HOME },
   { ...ROUTES.CONTACT_US },
   { ...ROUTES.LOGIN, hiddenOnDesktop: true },
   { ...ROUTES.SIGNUP, hiddenOnDesktop: true },

@@ -1,0 +1,9 @@
+.header {
+    @apply text-xl not-italic font-semibold leading-[150%];
+    font-family: Inter, sans-serif;
+}
+
+.small-text {
+    @apply text-sm not-italic font-normal leading-5 text-gray-400;
+    font-family: Inter, sans-serif;
+}
