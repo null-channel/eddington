@@ -23,7 +23,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@components/*": ["./src/shared/components/*"],
-      "@interfaces/*": ["./src/shared/interfaces/*"],
+      "@interfaces": ["./src/shared/interfaces"],
       "@constants": ["./src/core/constants"],
       "@helpers": ["./src/core/helpers"],
       "@types": ["./src/core/types"],

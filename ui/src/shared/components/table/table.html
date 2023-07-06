@@ -1,0 +1,45 @@
+<table class="w-full text-sm text-left text-gray-900">
+    <thead class="text-xs text-gray-900 uppercase bg-gray-50 ">
+        <tr>
+            <th scope="col" class="p-4">
+                <div class="flex items-center">
+                    <input  type="checkbox"
+                        class="w-4 h-4 text-blue-600 bg-gray-200 focus:bg-blue-600 accent-blue-600  rounded-lg focus:ring-blue-500 ">
+                    <label class="sr-only">checkbox</label>
+                </div>
+            </th>
+            <th v-for="column in columns" :key="column.propertyKey">
+                {{ column.label }}
+            </th>
+        </tr>
+    </thead>
+    <tbody v-if="dataList.length">
+        <tr v-for="row in dataList" :key="row.id" tabindex="0"
+            class="bg-white border-b  border-gray-700 hover:bg-gray-200 ">
+            <td class="w-4 p-4">
+                <div class="flex items-center">
+                    <input id="checkbox-table-search-1" type="checkbox"
+                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                    <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
+                </div>
+            </td>
+            <td v-for="column in columns" :key="column.propertyKey" class="w-4 p-4">
+                <div class="flex items-center">
+                    {{ getRowValue(row, column.propertyKey,
+                    column.getValueFunction) }}
+                </div>
+            </td>
+        </tr>
+    </tbody>
+    <tbody v-if="!dataList?.length">
+        <tr>
+            <td colspan="999999">
+                <div class="flex justify-center items-center flex-col h-64">
+                    <img src="@/assets/img/no-data.jpg" alt="" width="200" height="200" />
+                    <span class="text-xs uppercase text-gray-600 font-bold">Nothing to show</span>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<PaginatorComponent :dataList="filtredData" :perPage="perPage" v-model:page="page" v-model:paginatedData="dataList" />

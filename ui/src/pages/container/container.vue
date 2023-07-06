@@ -6,17 +6,25 @@ import SideBar from '@components/side-bar/sideBar.vue'
 import { markRaw } from "vue";
 import Header from "@/shared/components/header/header.vue";
 import { NAVBAR_AFTER_LOGIN } from "@/core/constants";
+import Table from "../../shared/components/table/table.vue";
 export default defineComponent({
     name: "ContainerPage",
     components: {
         SideBar: markRaw(SideBar),
         Header: markRaw(Header),
+        Table:markRaw(Table)
     },
     data() {
         return {
             content: {},
             selected: "Dashboard",
-            routes:NAVBAR_AFTER_LOGIN
+            routes:NAVBAR_AFTER_LOGIN,
+            containerColum: [
+                { label: 'App name', propertyKey: "name", isFiltredBy: false },
+                { label: 'Date & time', propertyKey: "urgencyLevel", isFiltredBy: false },
+                { label: 'Access URL', propertyKey: "qty", isFiltredBy: false },
+                { label: 'Status', propertyKey: "status", isFiltredBy: true },
+            ]
         }
     },
     methods: {

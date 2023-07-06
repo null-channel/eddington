@@ -1,0 +1,11 @@
+<div class="flex flex-row-reverse" v-if="buttons.length">
+    <button v-for="(button,index) in buttons" :key="index" :class="{
+        'button-primary': button.type =='primary',
+        'button-secondairy': button.type == 'secondary',
+        'button-cancel': button.type == 'cancel',
+        [button.class]: !!button.class ,
+        '!bg-gray-300': button.disabled
+    }" :disabled="button.disabled" @click="triggerEvent(button)">
+        {{button.label}}
+    </button>
+</div>
