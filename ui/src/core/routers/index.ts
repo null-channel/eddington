@@ -18,9 +18,10 @@ const router = createRouter({
       // beforeEnter: authGuard,
     },
     {
-      ...ROUTES.SIGNUP,
-      component: () => lazyLoad(() => import("@pages/Sign-up/sign-up.vue")),
-      // beforeEnter: authGuard,
+      ...ROUTES.MAIN,
+      component: () => lazyLoad(() => import("@pages/Dashboard/dashboard.vue")),
+      //beforeEnter: authGuard,
+      children: mainRouter as any,
     },
     {
       ...ROUTES.MAIN,

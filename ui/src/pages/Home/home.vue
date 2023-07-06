@@ -5,7 +5,6 @@ import Header from "@components/header/header.vue"
 import HeroSection from '@components/hero-section/heroSection.vue';
 import { NAVBAR_AFTER_LOGIN, NAVBAR_BEFORE_LOGIN } from '@/core/constants';
 import { markRaw } from 'vue';
-
 export default defineComponent({
     name: "HomePage",
     components: {
