@@ -33,8 +33,8 @@ type Builder struct {
 	// nc     *nats.Conn
 }
 
-func NewBuilder(ctx context.Context) (*Builder, error) {
-	client, err := client.New(ctx, "tcp://0.0.0.0:4000", client.WithFailFast())
+func NewBuilder(ctx context.Context, builkitdaddr string) (*Builder, error) {
+	client, err := client.New(ctx, builkitdaddr, client.WithFailFast())
 	if err != nil {
 		logrus.Panic("unable to create buildkit client error: ", err.Error())
 		return nil, err
