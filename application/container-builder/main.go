@@ -7,10 +7,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	builkitdaddr = "tcp://0.0.0.0:4000"
+)
+
 func main() {
 
 	ctx := context.Background()
-	b, err := dockerfile.NewBuilder(ctx)
+	b, err := dockerfile.NewBuilder(ctx, builkitdaddr)
 	if err != nil {
 		logrus.Panic("unable to create builder error: ", err.Error())
 	}
