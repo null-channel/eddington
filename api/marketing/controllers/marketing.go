@@ -164,7 +164,7 @@ func (u *MarketingController) Addrecipients(email string) error {
 	host := "https://api.sendgrid.com"
 	request := sendgrid.GetRequest(apiKey, "/v3/marketing/contacts", host)
 	request.Method = "PUT"
-	v := RecipientList{Contacts: []Contact{Contact{Email: email}}}
+	v := RecipientList{Contacts: []Contact{{Email: email}}}
 	b, e := json.Marshal(v)
 	if e != nil {
 		fmt.Println(e)
@@ -173,6 +173,7 @@ func (u *MarketingController) Addrecipients(email string) error {
 	request.Body = b
 	response, err := sendgrid.MakeRequest(request)
 	if err != nil {
+		fmt.Println("addrecipients request finished with error ------")
 		log.Println(err)
 		return err
 	} else {

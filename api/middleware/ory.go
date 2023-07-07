@@ -1,0 +1,67 @@
+package middleware
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	ory "github.com/ory/client-go"
+)
+
+type OryApp struct {
+	Ory *ory.APIClient
+}
+
+// save the cookies for any upstream calls to the Ory apis
+func withCookies(ctx context.Context, v string) context.Context {
+	return context.WithValue(ctx, "req.cookies", v)
+}
+
+func getCookies(ctx context.Context) string {
+	return ctx.Value("req.cookies").(string)
+}
+
+// save the session to display it on the dashboard
+func withSession(ctx context.Context, v *ory.Session) context.Context {
+	return context.WithValue(ctx, "req.session", v)
+}
+
+func getSession(ctx context.Context) *ory.Session {
+	return ctx.Value("req.session").(*ory.Session)
+}
+
+func (app *OryApp) SessionMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		log.Printf("handling middleware request\n")
+
+		// set the cookies on the ory client
+		var cookies string
+
+		// this example passes all request.Cookies
+		// to `ToSession` function
+		//
+		// However, you can pass only the value of
+		// ory_session_projectid cookie to the endpoint
+		cookies = c.Request.Header.Get("Cookie")
+
+		// check if we have a session
+		session, _, err := app.Ory.FrontendApi.ToSession(c.Request.Context()).Cookie(cookies).Execute()
+		if (err != nil && session == nil) || (err == nil && !*session.Active) {
+			// this will redirect the user to the managed Ory Login UI
+			fmt.Println("redirecting to login")
+			//http.Redirect(c.Writer, c.Request, "/.ory/self-service/login/browser", http.StatusSeeOther)
+			c.AbortWithStatusJSON(http.StatusSeeOther, "/.ory/self-service/login/browser")
+			return
+		}
+
+		ctx := withCookies(c.Request.Context(), cookies)
+		_ = withSession(ctx, session)
+
+		// continue to the requested page (in our case the Dashboard)
+		c.Next()
+		//next.ServeHTTP(c.Writer, c.Request.WithContext(ctx))
+		//return
+	}
+}
