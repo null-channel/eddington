@@ -7,9 +7,9 @@ function getValidation(attributes: UiNodeInputAttributes) {
   return validationList.join("|");
 }
 const oryNodeToFormKitNodeMapper = (
-  meta: UiNodeMeta,
+  _meta: UiNodeMeta,
   attributes: UiNodeInputAttributes,
-  id: string
+  _id: string
 ) => {
   const formElement = {
     $formkit: attributes.type,
