@@ -6,7 +6,6 @@ import { useUserStore } from '@stores';
 import { defineComponent } from 'vue';
 import * as _ from 'lodash';
 import { useRouter } from 'vue-router';
-import { storeToRefs } from 'pinia';
 
 export default defineComponent({
     name: "Header",
@@ -43,7 +42,7 @@ export default defineComponent({
             this.toggled = !this.toggled
         },
         logout() {
-            this.ory.toSession().then(({ data }) => {
+            this.ory.toSession().then((_: any) => {
                 this.ory.createBrowserLogoutFlow().then(({ data }: any) => {
                     this.userStore.logout(data.logout_url)
                 });

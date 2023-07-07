@@ -12,7 +12,7 @@ const oryErrorHandler = (router: Router) => {
     window.location.reload();
   };
 
-  return (error:any) => {
+  return (error: any) => {
     const responseData = error.response?.data as any;
     if (!(error.response?.data as any).error) return;
     switch ((error.response?.data as any).error.id) {
@@ -34,7 +34,9 @@ const oryErrorHandler = (router: Router) => {
       case "self_service_flow_return_to_forbidden": // the return is invalid, we need a new flow
         break;
       case "security_csrf_violation": // A CSRF violation occurred. Best to just refresh the flow!
-        window.location = router.currentRoute.value.path;
+        window.location = router.currentRoute.value.path as
+          | Location
+          | (string & Location);
 
         break;
       case "security_identity_mismatch": // The requested item was intended for someone else. Let's request a new flow...
