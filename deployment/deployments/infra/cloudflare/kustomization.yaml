@@ -1,8 +1,0 @@
-resources:
-- 0-namespace.yaml
-- cert-manager.k8s.cloudflare.com_originissuers.yaml
-- deployment.yaml
-- role-approver.yaml
-- role-binding.yaml
-- role.yaml
-- serviceaccount.yaml

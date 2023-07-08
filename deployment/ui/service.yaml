@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: eddington-ui
+spec:
+  selector:
+    app: eddington-ui
+  ports:
+  - port: 80
+    targetPort: 3000

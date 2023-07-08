@@ -1,5 +1,0 @@
-resources:
-- ../../certs
-- ../../cloudflare
-- ../../metallb
-- ../../storage

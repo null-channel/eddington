@@ -4,6 +4,7 @@ import "fmt"
 
 type User struct {
 	ID     int64 `bun:",pk,autoincrement"`
+	OryID  string
 	Name   string
 	Emails []string
 }
