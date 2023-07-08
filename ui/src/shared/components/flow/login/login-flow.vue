@@ -48,7 +48,7 @@ export default defineComponent({
                 if (this.formId) {
                     this.$formkit.setErrors(
                         this.formId, // You must use the ID of the form
-                        err.response.data.ui.messages.map((el) => el.text) // (optional) An array of form level errors
+                        err.response.data.ui.messages.map((el:any) => el.text) // (optional) An array of form level errors
                     )
                 }
             })

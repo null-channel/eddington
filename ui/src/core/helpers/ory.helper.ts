@@ -1,4 +1,4 @@
-import { type Plugin, type InjectionKey, type App, inject } from "vue";
+import { type Plugin, type InjectionKey, type App } from "vue";
 import { Configuration, FrontendApi } from "@ory/client";
 import type { Session } from "@ory/client";
 import { env } from "../constants";

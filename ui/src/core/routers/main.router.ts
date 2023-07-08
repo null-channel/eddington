@@ -1,11 +1,9 @@
-import { MAIN_ROUTES } from '@constants';
-import { lazyLoad } from '@helpers';
+import { MAIN_ROUTES } from '../constants';
 
 export default [
   {
     ...MAIN_ROUTES.CONTAINER,
-    component: () =>
-      lazyLoad(() => import('@pages/Container/container.vue')),
+    component: () =>import('@pages/Container/container.vue'),
   },
 
 ];

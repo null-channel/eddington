@@ -43,7 +43,7 @@ export default defineComponent({
             this.toggled = !this.toggled
         },
         logout() {
-            this.ory.toSession().then(({ data }) => {
+            this.ory.toSession().then((_: any) => {
                 this.ory.createBrowserLogoutFlow().then(({ data }: any) => {
                     this.userStore.logout(data.logout_url)
                 });
