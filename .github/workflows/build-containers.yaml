@@ -27,18 +27,18 @@ jobs:
         with:
           context: ./api/
           push: true
-          tags: nullchannel/eddington-api:latest
+          tags: nullchannel/eddington-api:${{ github.sha }}
       -
         name: Build and push Frontend
         uses: docker/build-push-action@v4
         with:
           context: ./ui/
           push: true
-          tags: nullchannel/eddington-ui:latest
+          tags: nullchannel/eddington-ui:${{ github.sha }}
       -
         name: Build and push container runner
         uses: docker/build-push-action@v4
         with:
           context: ./application/container-runner/
           push: true
-          tags: nullchannel/eddington-container-runner:latest
+          tags: nullchannel/eddington-container-runner:${{ github.sha }}
