@@ -30,7 +30,8 @@
       "@stores": ["./src/core/stores"],
       "@router": ["./src/core/routers"],
       "@guards/*": ["./src/core/guards/*"],
-      "@pages/*": ["./src/pages/*"]
+      "@pages/*": ["./src/pages/*"],
+      "@assets/*": ["./src/assets/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

@@ -40,7 +40,7 @@ export default defineComponent({
             containerColum: [
                 { label: 'App name', propertyKey: "name" },
                 {
-                    label: 'Date & time', propertyKey: "date", type: 'date', getValueFunction: (row) => {
+                    label: 'Date & time', propertyKey: "date", type: 'date', getValueFunction: (row:any) => {
                         var date = new Date(row.date)
                         return `${date.toLocaleString('default', { month: 'short', day: 'numeric', year: 'numeric' })}`
                     }
