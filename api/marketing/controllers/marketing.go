@@ -136,7 +136,6 @@ func (m *MarketingController) GetIDfromEmail(email string) (string, error) {
 	}
 
 	return "", fmt.Errorf("no ID found for email: %s", email)
-
 }
 
 func (m *MarketingController) AddRecipientToWaitingList(recipientID string) error {

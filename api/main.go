@@ -28,7 +28,7 @@ import (
 func main() {
 
 	// ORY Stuff Not sure this is a good way to deal with this.
-	proxyPort := os.Getenv("PROXY_PORT")
+	proxyPort := os.Getenv("ORY_PROXY_PORT")
 	if proxyPort == "" {
 		proxyPort = "4000"
 	}
@@ -106,8 +106,8 @@ func main() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	host := os.Getenv("HOST")
-	if oryDomain == "" {
-		oryDomain = "http://localhost"
+	if host == "" {
+		host = "http://localhost"
 	}
 
 	port := os.Getenv("PORT")
