@@ -34,7 +34,7 @@ func getSession(ctx context.Context) *ory.Session {
 
 func (app *OryApp) SessionMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.Printf("handling middleware request\n")
+		log.Printf("handling session middleware for request\n")
 
 		// set the cookies on the ory client
 		var cookies string
@@ -51,13 +51,8 @@ func (app *OryApp) SessionMiddleware() gin.HandlerFunc {
 		// check if we have a session
 		session, _, err := app.Ory.FrontendApi.ToSession(c.Request.Context()).Cookie(cookies).Execute()
 		if (err != nil && session == nil) || (err == nil && !*session.Active) {
-			fmt.Println("error: ", err)
-			fmt.Println("session: ", session)
-			fmt.Println("session active: ", session.Active)
-			// this will redirect the user to the managed Ory Login UI
-			fmt.Println("redirecting to login")
-			//http.Redirect(c.Writer, c.Request, "/.ory/self-service/login/browser", http.StatusSeeOther)
-			c.AbortWithStatusJSON(http.StatusSeeOther, "/.ory/self-service/login/browser")
+			// if we don't have a session, we need to fail the request
+			c.AbortWithStatusJSON(http.StatusUnauthorized, "Not Authorized")
 			return
 		}
 

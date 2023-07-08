@@ -50,10 +50,7 @@ func main() {
 	fmt.Println("Starting server...")
 	flag.Parse()
 	//TODO: Never used gin. seems like mux is archived. going to try this out.
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
+
 	router := gin.New()
 
 	router.Use(gin.Logger())
@@ -102,14 +99,23 @@ func main() {
 		// Marketing
 		marketingGroup := v1.Group("/marketing")
 		{
-			marketingGroup.Use(oryMiddleware.SessionMiddleware())
 			_ = marketing.New(os.Getenv("SENDGRID_API_KEY"), marketingGroup)
 		}
 	}
-	fmt.Println("Starting server on port " + port)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
-	log.Fatal(router.Run("127.0.0.1:8080"))
+
+	host := os.Getenv("HOST")
+	if oryDomain == "" {
+		oryDomain = "http://localhost"
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Fatal(router.Run(host + ":" + port))
 
 }
 
