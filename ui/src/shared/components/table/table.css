@@ -1,0 +1,4 @@
+.small-text {
+    @apply text-sm not-italic font-normal leading-5;
+    font-family: Inter, sans-serif;
+}

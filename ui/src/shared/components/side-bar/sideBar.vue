@@ -4,7 +4,7 @@
 
 import { defineComponent } from 'vue';
 import * as _ from 'lodash';
-import NullCloudTitle from '../null-cloud-title/nullCloudTitle.vue';
+import NullCloudTitle from '@components/null-cloud-title/nullCloudTitle.vue';
 import { markRaw } from 'vue';
 
 export default defineComponent({

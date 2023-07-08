@@ -1,4 +1,4 @@
-<template src="./action-buttons.html"></template>
+<template src="./btnList.html"></template>
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { FormButtons } from '@interfaces'

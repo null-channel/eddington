@@ -7,6 +7,6 @@ export interface FormButtons {
 export interface TableColumns {
   label: string;
   propertyKey: string;
-  isFiltredBy: boolean;
   getValueFunction?: Function;
+  type?: 'progress'|'date';
 }
