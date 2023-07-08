@@ -32,7 +32,7 @@ jobs:
           push: true
           tags: nullchannel/eddington-api:${{ github.sha }}      
       -
-        name: Set env
+        name: Set env for frontend
         run: |
           echo "SHA=${{ secrets.FRONTEND }}" >> ./ui/.env
       -
