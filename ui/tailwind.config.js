@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       backgroundImage: {
-        "hero-bg": "url('./src/assets/img/hero-bg.png')",
-        "sign-up-bg": "url('./src/assets/img/sign-up.png')",
+        "hero-bg": "url('@assets/img/hero-bg.png')",
+        "sign-up-bg": "url('@assets/img/sign-up.png')",
       },
       fontFamily: {
         inter: ["Inter", "sans-serif"],

@@ -1,9 +1,9 @@
-// import { MAIN_ROUTES } from "@constants";
-// import { lazyLoad } from "@helpers";
+import { MAIN_ROUTES } from '../constants';
 
 export default [
-  // {
-  //   ...MAIN_ROUTES.DASHBORD,
-  //   component: () => import("@pages/main/dashbord/dashbord.vue"),
-  // },
+  {
+    ...MAIN_ROUTES.CONTAINER,
+    component: () =>import('@pages/container/container.vue'),
+  },
+
 ];

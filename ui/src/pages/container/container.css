@@ -1,0 +1,5 @@
+.header {
+    @apply text-xl not-italic font-semibold leading-[150%];
+    font-family: Inter, sans-serif;
+}
+

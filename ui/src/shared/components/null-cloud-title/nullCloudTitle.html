@@ -1,7 +1,7 @@
 <div class="flex items-center gap-8 ">
-    <h1 class="flex gap-2 text-gray-400 items-center font-bold text-xl lg:text-3xl font-inter uppercase">
+    <h1 class="flex gap-2 text-gray-400 items-center font-bold text-xl font-inter uppercase" :class="{'lg:text-3xl':!fixed}">
         <span class="underline ">Null</span>
         <span :class="{'bg-gray-200':!dark,'bg-gray-900':dark,}" class=" p-2 h-fit uppercase">Cloud</span>
     </h1>
-    <img src="../../../assets/svg/star.svg" class=" h-[43px] lg:h-[86px]" />
+    <img src="../../../assets/svg/star.svg" :class="{'h-[43px] lg:h-[86px]':!fixed,'h-[43px]':fixed}" />
 </div>

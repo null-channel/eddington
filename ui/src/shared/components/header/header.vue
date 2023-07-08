@@ -20,7 +20,8 @@ export default defineComponent({
         }
     },
     props: {
-        routes: null
+        routes: null,
+        hideLogo: Boolean
     },
     data() {
         return {
