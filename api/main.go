@@ -27,16 +27,21 @@ import (
 
 func main() {
 
-	// ORY Stuff
+	// ORY Stuff Not sure this is a good way to deal with this.
 	proxyPort := os.Getenv("PROXY_PORT")
 	if proxyPort == "" {
-		proxyPort = "3000"
+		proxyPort = "4000"
+	}
+
+	oryDomain := os.Getenv("ORY_DOMAIN")
+	if oryDomain == "" {
+		oryDomain = "http://localhost"
 	}
 
 	// register a new Ory client with the URL set to the Ory CLI Proxy
 	// we can also read the URL from the env or a config file
 	c := ory.NewConfiguration()
-	c.Servers = ory.ServerConfigurations{{URL: fmt.Sprintf("http://localhost:%s/.ory", proxyPort)}}
+	c.Servers = ory.ServerConfigurations{{URL: fmt.Sprintf("%s:%s/.ory", oryDomain, proxyPort)}}
 
 	oryMiddleware := &middleware.OryApp{
 		Ory: ory.NewAPIClient(c),

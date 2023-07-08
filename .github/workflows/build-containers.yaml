@@ -1,0 +1,44 @@
+name: build-containers
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push API
+        uses: docker/build-push-action@v4
+        with:
+          context: ./api/
+          push: true
+          tags: nullchannel/eddington-api:latest
+      -
+        name: Build and push Frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./ui/
+          push: true
+          tags: nullchannel/eddington-ui:latest
+      -
+        name: Build and push container runner
+        uses: docker/build-push-action@v4
+        with:
+          context: ./application/container-runner/
+          push: true
+          tags: nullchannel/eddington-container-runner:latest
