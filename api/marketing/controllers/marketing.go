@@ -15,6 +15,7 @@ type MarketingController struct {
 	apiKey string
 }
 
+// New creates a new MarketingController responsible for marketing endpoints
 func New(apiKey string, routerGroup *gin.RouterGroup) MarketingController {
 	fmt.Println("New MarketingController")
 

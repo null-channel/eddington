@@ -115,7 +115,7 @@ func main() {
 		port = "8080"
 	}
 
-	log.Fatal(router.Run(host + ":" + port))
+	log.Fatal(router.Run(":" + port))
 
 }
 
