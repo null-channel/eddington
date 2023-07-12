@@ -1,42 +1,30 @@
 package main
 
-// go-git is a highly extensible git implementation in pure Go.
-// https://github.com/go-git/go-git
-
 import (
-	"fmt"
+	"context"
 
-	"github.com/go-git/go-git/v5"
+	"github.com/null-channel/eddington/application/container-builder/internal/containers/dockerfile"
+	"github.com/sirupsen/logrus"
 )
 
-// Basic example of how to clone a repository using clone options.
+var (
+	builkitdaddr = "tcp://0.0.0.0:4000"
+)
+
 func main() {
-	url := "https://github.com/null-channel/eddington.git"
-	directory := "./tmp/eddington"
 
-	r, err := git.PlainClone(directory, false, &git.CloneOptions{
-		URL:               url,
-		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
-	})
-
+	ctx := context.Background()
+	b, err := dockerfile.NewBuilder(ctx, builkitdaddr)
 	if err != nil {
-		panic(err)
+		logrus.Panic("unable to create builder error: ", err.Error())
 	}
-	// ... retrieving the branch being pointed by HEAD
-	ref, err := r.Head()
-
+	opts := dockerfile.BuildOpt{
+		Dockerfile: "./Dockerfile",
+		ImageName:  "eddington",
+	}
+	err = b.Build(opts)
 	if err != nil {
-		panic(err)
+		logrus.Panic("unable to build image error: ", err.Error())
 	}
 
-	fmt.Println(ref)
-
-	// ... retrieving the commit object
-	commit, err := r.CommitObject(ref.Hash())
-
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(commit)
 }
