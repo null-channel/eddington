@@ -41,7 +41,6 @@ func (app *OryApp) SessionMiddleware() gin.HandlerFunc {
 
 		// this example passes all request.Cookies
 		// to `ToSession` function
-		//
 		// However, you can pass only the value of
 		// ory_session_projectid cookie to the endpoint
 		cookies = c.Request.Header.Get("Cookie")
@@ -59,9 +58,7 @@ func (app *OryApp) SessionMiddleware() gin.HandlerFunc {
 		ctx := withCookies(c.Request.Context(), cookies)
 		_ = withSession(ctx, session)
 
-		// continue to the requested page (in our case the Dashboard)
+		// continue to the requested page
 		c.Next()
-		//next.ServeHTTP(c.Writer, c.Request.WithContext(ctx))
-		//return
 	}
 }
