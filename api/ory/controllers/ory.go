@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	usercontroller "github.com/null-channel/eddington/api/users/controllers"
@@ -28,6 +29,8 @@ func (o *OryController) AddOryRoutes(routerGroup *gin.RouterGroup) {
 
 func (o *OryController) OryWebhook() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
+		fmt.Println("New user registered from Ory!")
 		forwardedFor := c.Request.Header.Get("X-Forwarded-For")
 
 		// Check if request is from Ory
@@ -43,6 +46,8 @@ func (o *OryController) OryWebhook() gin.HandlerFunc {
 		c.Request.Body.Read(bytes)
 
 		json.Unmarshal(bytes, &user)
+
+		fmt.Println(user)
 
 		userDB := models.CreateUserRequestToDBModel(user)
 		code, err := o.userController.CreateUser(userDB)
