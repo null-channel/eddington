@@ -1,12 +1,22 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/null-channel/eddington/api/users/types"
+)
 
 type User struct {
-	ID     int64 `bun:",pk,autoincrement"`
-	OryID  string
-	Name   string
-	Emails []string
+	ID     string  `bun:",pk"` // primary key, same as ory.
+	Traits *Traits `bun:"rel:has-one,join:id=user_id"`
+}
+
+type Traits struct {
+	ID                int64    `bun:",pk,autoincrement"`
+	Emails            []string `bun:"email"`
+	Name              string   `bun:"name"`
+	NewsLetterConsent bool     `bun:"newsletterConsent"`
+	UserID            string   `bun:"user_id"`
 }
 
 type Org struct {
@@ -32,5 +42,16 @@ type Resources struct {
 }
 
 func (u User) String() string {
-	return fmt.Sprintf("User<%d %s %v>", u.ID, u.Name, u.Emails)
+	return fmt.Sprintf("User<%s %s %s>", u.ID, u.Traits.Name, u.Traits.Emails)
+}
+
+func CreateUserRequestToDBModel(createUserRequest types.CreateUserRequest) User {
+	return User{
+		ID: createUserRequest.UserId,
+		Traits: &Traits{
+			Emails:            []string{createUserRequest.Traits.Email},
+			Name:              createUserRequest.Traits.Name,
+			NewsLetterConsent: createUserRequest.Traits.NewsLetterConsent,
+		},
+	}
 }

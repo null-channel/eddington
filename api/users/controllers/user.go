@@ -90,7 +90,7 @@ func resourceGroupModelToProto(resourceGroups []*models.ResourceGroup) []*pb.Res
 }
 
 func (u *UserController) AddAllControllers(routerGroup *gin.RouterGroup) {
-	routerGroup.POST("/users", u.CreateUser())
+	routerGroup.POST("/users", u.UpdateUser())
 }
 
 //	@BasePath	/api/v1/
@@ -105,55 +105,39 @@ func (u *UserController) AddAllControllers(routerGroup *gin.RouterGroup) {
 //	@Produce		json
 //	@Success		200	{string}	Helloworld
 //	@Router			/users/ [post]
-func (u *UserController) CreateUser() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Create new user in database
+func (u *UserController) CreateUser(user models.User) (int, error) {
 
-		user := models.User{
-			Name:   c.PostForm("name"),
-			Emails: []string{c.PostForm("email")},
-		}
-		res, err := u.database.NewInsert().Model(&user).Exec(context.Background())
+	res, err := u.database.NewInsert().Model(&user).Exec(context.Background())
 
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		ownerId, err := res.LastInsertId()
-
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		org := models.Org{
-			OwnerID: ownerId,
-		}
-		res, err = u.database.NewInsert().Model(&org).Exec(context.Background())
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		orgId, err := res.LastInsertId()
-
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		resourceGroup := models.ResourceGroup{
-			OrgID: orgId,
-			Name:  "default",
-		}
-		_, err = u.database.NewInsert().Model(&resourceGroup).Exec(context.Background())
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"status": "User created successfully!"})
+	if err != nil {
+		return http.StatusInternalServerError, err
 	}
+
+	ownerId, err := res.LastInsertId()
+
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	org := models.Org{
+		OwnerID: ownerId,
+	}
+	res, err = u.database.NewInsert().Model(&org).Exec(context.Background())
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	orgId, err := res.LastInsertId()
+	resourceGroup := models.ResourceGroup{
+		OrgID: orgId,
+		Name:  "default",
+	}
+	_, err = u.database.NewInsert().Model(&resourceGroup).Exec(context.Background())
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	return http.StatusOK, nil
 }
 
 // UpdateUser godoc
