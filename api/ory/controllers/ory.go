@@ -45,7 +45,7 @@ func (o *OryController) OryWebhook() gin.HandlerFunc {
 		json.Unmarshal(bytes, &user)
 
 		userDB := models.CreateUserRequestToDBModel(user)
-		code, err := o.userController.CreateUser(&userDB)
+		code, err := o.userController.CreateUser(userDB)
 
 		if err != nil {
 			c.JSON(code, gin.H{"error": err.Error()})
