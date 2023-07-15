@@ -35,7 +35,7 @@ jobs:
         name: Build and push Frontend
         uses: docker/build-push-action@v4
         env:
-          VITE_BASE_API_URL: ${{ var.VITE_BASE_API_URL }}
+          VITE_BASE_API_URL: ${{ env.VITE_BASE_API_URL }}
         with:
           context: ./ui/
           push: true
