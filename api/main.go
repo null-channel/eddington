@@ -54,6 +54,9 @@ func main() {
 
 	router := gin.New()
 
+	router.NoRoute(notfound.NotFoundHandler())
+	router.NoMethod(notfound.NotFoundHandler())
+
 	router.Use(gin.Logger())
 	router.Use(cors.Default())
 	docs.SwaggerInfo.BasePath = "/api/v1"
@@ -76,7 +79,6 @@ func main() {
 	config := dynamic.NewForConfigOrDie(clusterConfig)
 	appController := app.NewApplicationController(config, userController)
 
-	router.NoRoute(notfound.NotFoundHandler())
 	v1 := router.Group("/api/v1")
 	{
 		// Apps
