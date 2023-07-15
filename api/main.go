@@ -13,6 +13,7 @@ import (
 	"github.com/null-channel/eddington/api/docs"
 	marketing "github.com/null-channel/eddington/api/marketing/controllers"
 	"github.com/null-channel/eddington/api/middleware"
+	"github.com/null-channel/eddington/api/notfound"
 	userController "github.com/null-channel/eddington/api/users/controllers"
 	ory "github.com/ory/client-go"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -75,7 +76,8 @@ func main() {
 	config := dynamic.NewForConfigOrDie(clusterConfig)
 	appController := app.NewApplicationController(config, userController)
 
-	v1 := router.Group("api/v1")
+	router.NoRoute(notfound.NotFoundHandler())
+	v1 := router.Group("/api/v1")
 	{
 		// Apps
 		apps := v1.Group("/apps")
