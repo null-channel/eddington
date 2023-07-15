@@ -23,7 +23,13 @@ package container;
 service ContainerService {
   // Sends a greeting
   rpc CreateContainer (CreateContainerRequest) returns (CreateContainerReply) {}
+	//rpc ContainerStatus (ContainerID) returns (Status){}
 }
+
+
+
+
+
 
 // The request message containing the user's name.
 message CreateContainerRequest {
@@ -34,3 +40,4 @@ message CreateContainerRequest {
 message CreateContainerReply {
   string message = 1;
 }
+
