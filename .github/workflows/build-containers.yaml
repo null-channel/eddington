@@ -36,6 +36,7 @@ jobs:
         uses: docker/build-push-action@v4
         env:
           VITE_BASE_API_URL: ${{ env.VITE_BASE_API_URL }}
+          VITE_ORY_URL: ${{ env.VITE_ORY_URL }}
         with:
           context: ./ui/
           push: true
