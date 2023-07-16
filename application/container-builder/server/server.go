@@ -14,11 +14,7 @@ type Server struct {
 }
 
 func (s *Server) CreateContainer(ctx context.Context, req *container.CreateContainerRequest) (*container.CreateContainerReply, error) {
-	language, err := s.builder.DetectLanguage(req.RepoURL)
-	if err != nil {
-		return nil, err
-	}
-	buildinfo, err := s.builder.GetBuildPackInfo(language)
+	buildinfo, err := s.builder.GetBuildPackInfo(req.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -38,4 +34,9 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 	return &container.CreateContainerReply{
 		Message: "success",
 	}, nil
+}
+
+func (s *Server) ImageStatus(ctx context.Context, req *container.ContainerID) (*container.ContainerStatus, error) {
+
+	return nil, nil
 }

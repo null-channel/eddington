@@ -2,10 +2,7 @@ package image
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"strings"
 
 	pack "github.com/buildpacks/pack/pkg/client"
@@ -49,38 +46,6 @@ func NewBuilder(db *bun.DB, pack *pack.Client) (*Builder, error) {
 		db:     db,
 		Client: pack,
 	}, nil
-}
-
-// DetectLanguage detects the language of the repo
-// Would need refactor very soon because github has rate limit
-// https://docs.github.com/en/rest/rate-limit/rate-limit?apiVersion=2022-11-28
-func (b *Builder) DetectLanguage(repo string) (string, error) {
-	repo = strings.TrimPrefix(repo, "https://github.com/")
-
-	resp, err := http.Get(fmt.Sprintf("https://api.github.com/repos/%s/languages", repo))
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		b.l.Error("failed to read response body", "error", err)
-		return "", err
-	}
-
-	var data map[string]int
-	err = json.Unmarshal(body, &data)
-	if err != nil {
-		b.l.Error("failed to unmarshal response body", "error", err)
-		return "", err
-	}
-
-	for lang := range data {
-		return lang, nil
-	}
-
-	return "", fmt.Errorf("no language found in the response")
 }
 
 func (b *Builder) GetBuildPackInfo(language string) (BuildPackInfo, error) {
