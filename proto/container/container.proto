@@ -19,11 +19,9 @@ option java_outer_classname = "ApplicationServiceProto";
 
 package container;
 
-// The greeting service definition.
 service ContainerService {
-  // Sends a greeting
   rpc CreateContainer (CreateContainerRequest) returns (CreateContainerReply) {}
-	//rpc ContainerStatus (ContainerID) returns (Status){}
+	rpc ImageStatus (ContainerID) returns (ContainerStatus){  }
 }
 
 
@@ -31,13 +29,19 @@ service ContainerService {
 
 
 
-// The request message containing the user's name.
 message CreateContainerRequest {
   string repoURL = 1;
+	string type = 2;  
 }
 
-// The response message containing the greetings
 message CreateContainerReply {
   string message = 1;
 }
 
+message ContainerStatus {
+	string status = 1;
+}
+
+message ContainerID {
+	string id = 1;
+} 
