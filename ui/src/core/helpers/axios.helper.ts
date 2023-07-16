@@ -5,7 +5,6 @@ import { env } from '@constants';
 
 const _axios = axios.create({
   baseURL: env?.BACKEND_BASE_URL?.toString(),
-  reuseBrowserDomain: true,
   headers: {},
 });
 
