@@ -54,7 +54,7 @@ export default defineComponent({
                     id: 1,
                     name: 'app1',
                     date: Date(),
-                    access_url: 'http://localhost:4000',
+                    access_url: 'https://auth.nullcloud.io',
                     status: 'completed'
                 },
                 {
