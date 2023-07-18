@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ContainerServiceClient interface {
 	CreateContainer(ctx context.Context, in *CreateContainerRequest, opts ...grpc.CallOption) (*CreateContainerReply, error)
-	ImageStatus(ctx context.Context, in *ContainerID, opts ...grpc.CallOption) (*ContainerStatus, error)
+	ImageStatus(ctx context.Context, in *Build, opts ...grpc.CallOption) (*ContainerStatusReply, error)
 }
 
 type containerServiceClient struct {
@@ -43,8 +43,8 @@ func (c *containerServiceClient) CreateContainer(ctx context.Context, in *Create
 	return out, nil
 }
 
-func (c *containerServiceClient) ImageStatus(ctx context.Context, in *ContainerID, opts ...grpc.CallOption) (*ContainerStatus, error) {
-	out := new(ContainerStatus)
+func (c *containerServiceClient) ImageStatus(ctx context.Context, in *Build, opts ...grpc.CallOption) (*ContainerStatusReply, error) {
+	out := new(ContainerStatusReply)
 	err := c.cc.Invoke(ctx, "/container.ContainerService/ImageStatus", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (c *containerServiceClient) ImageStatus(ctx context.Context, in *ContainerI
 // for forward compatibility
 type ContainerServiceServer interface {
 	CreateContainer(context.Context, *CreateContainerRequest) (*CreateContainerReply, error)
-	ImageStatus(context.Context, *ContainerID) (*ContainerStatus, error)
+	ImageStatus(context.Context, *Build) (*ContainerStatusReply, error)
 	mustEmbedUnimplementedContainerServiceServer()
 }
 
@@ -68,7 +68,7 @@ type UnimplementedContainerServiceServer struct {
 func (UnimplementedContainerServiceServer) CreateContainer(context.Context, *CreateContainerRequest) (*CreateContainerReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateContainer not implemented")
 }
-func (UnimplementedContainerServiceServer) ImageStatus(context.Context, *ContainerID) (*ContainerStatus, error) {
+func (UnimplementedContainerServiceServer) ImageStatus(context.Context, *Build) (*ContainerStatusReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ImageStatus not implemented")
 }
 func (UnimplementedContainerServiceServer) mustEmbedUnimplementedContainerServiceServer() {}
@@ -103,7 +103,7 @@ func _ContainerService_CreateContainer_Handler(srv interface{}, ctx context.Cont
 }
 
 func _ContainerService_ImageStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ContainerID)
+	in := new(Build)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func _ContainerService_ImageStatus_Handler(srv interface{}, ctx context.Context,
 		FullMethod: "/container.ContainerService/ImageStatus",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContainerServiceServer).ImageStatus(ctx, req.(*ContainerID))
+		return srv.(ContainerServiceServer).ImageStatus(ctx, req.(*Build))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -21,28 +21,41 @@ package container;
 
 service ContainerService {
   rpc CreateContainer (CreateContainerRequest) returns (CreateContainerReply) {}
-	rpc ImageStatus (ContainerID) returns (ContainerStatus){  }
+  rpc ImageStatus (Build) returns (ContainerStatusReply){  }
 }
 
 
-
+// Enum of ContainerStatus
+enum ContainerStatus {
+  NOT_STARTED = 0;
+  WAITING = 1;
+  BUILDING = 2;
+  BUILT = 3;
+  FAILED = 4;
+}
 
 
 
 message CreateContainerRequest {
   string repoURL = 1;
-	string type = 2;  
+  string type = 2;  
+  string customerID = 3;
+
 }
 
 message CreateContainerReply {
-  string message = 1;
+  string buildID = 1;
 }
 
-message ContainerStatus {
-	string status = 1;
-}
-
-message ContainerID {
+message Build {
 	string id = 1;
 } 
+
+message ContainerStatusReply {
+	ContainerStatus status = 1;
+}
+
+
+
+
 
