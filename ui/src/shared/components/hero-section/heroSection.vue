@@ -22,7 +22,7 @@ export default defineComponent({
             this.$formkit.submit('sub')
         },
         sendMail() {
-            window.$axios.post(`${env.BACKEND_BASE_URL.toString()}/api/v1/marketing/email`, this.subForm,
+            window.$axios.post(`${env.BACKEND_BASE_URL.toString()}api/v1/marketing/email`, this.subForm,
                 {
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded', }
                 }

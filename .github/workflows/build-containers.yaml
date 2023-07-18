@@ -32,6 +32,11 @@ jobs:
           push: true
           tags: nullchannel/eddington-api:${{ github.sha }}      
       -
+        name: Build ENV for frontend
+        run: |
+          echo "VITE_BASE_API_URL=${{ env.VITE_BASE_API_URL }}" >> ./ui/.env
+          echo "VITE_ORY_URL=${{ env.VITE_ORY_URL }}" >> ./ui/.env
+      -
         name: Build and push Frontend
         uses: docker/build-push-action@v4
         env:
