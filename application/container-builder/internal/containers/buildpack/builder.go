@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	pack "github.com/buildpacks/pack/pkg/client"
+	"github.com/null-channel/eddington/application/container-builder/models"
 	"github.com/null-channel/eddington/proto/container"
 	"github.com/rs/zerolog"
 	"github.com/uptrace/bun"
@@ -22,14 +23,6 @@ type BuildOpt struct {
 	Builder   string
 }
 
-// BuildRequest is the request to build a container
-type BuildRequest struct {
-	CustomerID string                    `bun:"customer_id,notnull"`
-	RepoName   string                    `bun:"name,notnull"`
-	BuildID    string                    `bun:"build_id,pk"`
-	Status     container.ContainerStatus `bun:"status,default:0"`
-}
-
 // BuildPackInfo contains the buildpack and builder for a given language
 type BuildPackInfo struct {
 	BuildPack string
@@ -38,7 +31,7 @@ type BuildPackInfo struct {
 
 type Builder struct {
 	Client *pack.Client
-	l      zerolog.Logger
+	log    zerolog.Logger
 	db     *bun.DB
 	// used to store built images
 	registry string
@@ -47,7 +40,7 @@ type Builder struct {
 // NewBuilder returns a new builder
 func NewBuilder(db *bun.DB, pack *pack.Client) (*Builder, error) {
 	return &Builder{
-		l:      log,
+		log:    log,
 		db:     db,
 		Client: pack,
 	}, nil
@@ -96,7 +89,7 @@ func (b *Builder) CreateImage(opt BuildOpt) error {
 	select {
 	case <-ctx.Done():
 		// The build was canceled
-		b.l.Err(ctx.Err()).Msg("build canceled")
+		b.log.Err(ctx.Err()).Msg("build canceled")
 		return ctx.Err()
 	case err := <-done:
 		// The build has completed
@@ -105,11 +98,11 @@ func (b *Builder) CreateImage(opt BuildOpt) error {
 		}
 
 		// Build completed successfully
-		b.l.Info().Msg("build completed successfully")
+		b.log.Info().Msg("build completed successfully")
 		// Update the build request
 		err = b.UpdateBuildRequest(opt.BuildID, container.ContainerStatus_BUILT)
 		if err != nil {
-			b.l.Err(err).Msg("unable to update build request")
+			b.log.Err(err).Msg("unable to update build request")
 			return err
 		}
 		// TODO: Push the image to the registry
@@ -119,8 +112,8 @@ func (b *Builder) CreateImage(opt BuildOpt) error {
 }
 
 // NewBuildRequest creates a new build request in the database
-func (b *Builder) NewBuildRequest(customerID, repoName, buildID string) error {
-	_, err := b.db.NewInsert().Model(&BuildRequest{
+func (b *Builder) NewBuild(customerID, repoName, buildID string) error {
+	_, err := b.db.NewInsert().Model(&models.Build{
 		CustomerID: customerID,
 		RepoName:   repoName,
 		BuildID:    buildID,
@@ -133,7 +126,7 @@ func (b *Builder) NewBuildRequest(customerID, repoName, buildID string) error {
 
 // UpdateBuildRequest updates the build request in the database
 func (b *Builder) UpdateBuildRequest(buildID string, status container.ContainerStatus) error {
-	_, err := b.db.NewUpdate().Model(&BuildRequest{
+	_, err := b.db.NewUpdate().Model(&models.Build{
 		BuildID: buildID,
 		Status:  status,
 	}).Where("build_id = ?", buildID).Exec(context.Background())
@@ -144,8 +137,8 @@ func (b *Builder) UpdateBuildRequest(buildID string, status container.ContainerS
 }
 
 // GetBuildRequest returns the build request from the database
-func (b *Builder) GetBuildRequest(buildID string) (*BuildRequest, error) {
-	var req BuildRequest
+func (b *Builder) GetBuild(buildID string) (*models.Build, error) {
+	var req models.Build
 	err := b.db.NewSelect().Model(&req).Where("build_id = ?", buildID).Scan(context.Background())
 	if err != nil {
 		return nil, err

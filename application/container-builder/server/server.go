@@ -10,6 +10,7 @@ import (
 	pack "github.com/buildpacks/pack/pkg/client"
 	"github.com/google/uuid"
 	image "github.com/null-channel/eddington/application/container-builder/internal/containers/buildpack"
+	"github.com/null-channel/eddington/application/container-builder/models"
 	"github.com/null-channel/eddington/proto/container"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -21,7 +22,7 @@ import (
 type Server struct {
 	container.UnimplementedContainerServiceServer
 	builder *image.Builder
-	l       zerolog.Logger
+	log     zerolog.Logger
 }
 
 func newServer() (*Server, error) {
@@ -33,7 +34,7 @@ func newServer() (*Server, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create db")
 	}
-	_, err = db.NewCreateTable().Model((*image.BuildRequest)(nil)).Exec(context.Background())
+	_, err = db.NewCreateTable().Model((*models.Build)(nil)).Exec(context.Background())
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to migrate table")
 	}
@@ -48,7 +49,7 @@ func newServer() (*Server, error) {
 	l := zerolog.New(os.Stdout).With().Timestamp().Str("component", "server").Logger()
 	return &Server{
 		builder: builder,
-		l:       l,
+		log:     l,
 	}, nil
 
 }
@@ -58,9 +59,9 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 	buildID := uuid.New().String()
 	// create a build request in the db
 	repo := strings.TrimPrefix(req.RepoURL, "https://github.com")
-	err := s.builder.NewBuildRequest(buildID, repo, req.CustomerID)
+	err := s.builder.NewBuild(buildID, repo, req.CustomerID)
 	if err != nil {
-		s.l.Error().Err(err).Msg("unable to create build request")
+		s.log.Error().Err(err).Msg("unable to create build request")
 		return nil, errors.Wrap(err, "unable to create build , please try again")
 	}
 
@@ -68,7 +69,7 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 	go func(buildID string, req *container.CreateContainerRequest) {
 		buildInfo, err := s.builder.GetBuildPackInfo(req.Type)
 		if err != nil {
-			s.l.Error().Err(err).Msg("unable to get buildpack info")
+			s.log.Error().Err(err).Msg("unable to get buildpack info")
 			return
 		}
 
@@ -82,7 +83,7 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 
 		err = s.builder.CreateImage(opts)
 		if err != nil {
-			s.l.Error().Err(err).Msg("Build failed")
+			s.log.Error().Err(err).Msg("Build failed")
 			return
 		}
 
@@ -95,13 +96,15 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 }
 
 // ImageStatus maps to the ImageStatus RPC
-func (s *Server) ImageStatus(ctx context.Context, req *container.Build) (*container.ContainerStatus, error) {
+func (s *Server) ImageStatus(ctx context.Context, req *container.Build) (*container.ContainerImage, error) {
 	// get the build request from the db
-	build, err := s.builder.GetBuildRequest(req.Id)
+	build, err := s.builder.GetBuild(req.Id)
 	if err != nil {
-		s.l.Error().Err(err).Msg("unable to get build request")
+		s.log.Error().Err(err).Msg("unable to get build request")
 		return nil, errors.Wrap(err, "unable to fetch build")
 	}
 
-	return &build.Status, nil
+	return &container.ContainerImage{
+		Status: build.Status,
+	}, nil
 }
