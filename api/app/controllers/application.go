@@ -16,6 +16,7 @@ import (
 	_ "github.com/swaggo/files"
 	_ "github.com/swaggo/gin-swagger"
 
+	appmodels "github.com/null-channel/eddington/api/app/models"
 	usercon "github.com/null-channel/eddington/api/users/controllers"
 	"github.com/null-channel/eddington/api/users/models"
 )
@@ -51,7 +52,9 @@ func (a ApplicationController) RegisterRoutes(routerGroup *gin.RouterGroup) {
 
 type Application struct {
 	Name          string `json:"name" binding:"required"`
-	Image         string `json:"image" binding:"required"`
+	Image         string `json:"image"`
+	GitRepo       string `json:"gitRepo"`
+	RepoType      string `json:"repoType"`
 	ResourceGroup string `json:"resourceGroup"`
 }
 
@@ -70,22 +73,27 @@ func (a ApplicationController) AppPOST() gin.HandlerFunc {
 		app := Application{
 			Name:          c.PostForm("name"),
 			Image:         c.PostForm("image"),
+			GitRepo:       c.PostForm("gitRepo"),
+			RepoType:      c.PostForm("repoType"),
 			ResourceGroup: c.PostForm("resourceGroup"),
 		}
+
 		//TODO: get user namespace
 
 		userContext, err := a.userController.GetUserContext(context.Background(), 1)
 		if err != nil {
 			c.IndentedJSON(500, "Internal server error")
 		}
-		resourceGroup, err := getResourceGroupName(userContext.ResourceGroups, app.ResourceGroup)
+		resourceGroup, rgId, err := getResourceGroupName(userContext.ResourceGroups, app.ResourceGroup)
 		if err != nil {
 			c.IndentedJSON(400, "Resource group not found")
 		}
-
 		namespace := userContext.Name + resourceGroup
+		nullApplication := getNullApplication(app, userContext, rgId, namespace)
 
-		deployment := getApplication(app.Name, namespace, app.Image)
+		//TODO: Save to database!
+
+		deployment := getApplication(*nullApplication)
 		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
 		if err != nil {
 			c.IndentedJSON(500, "Internal server error")
@@ -93,16 +101,36 @@ func (a ApplicationController) AppPOST() gin.HandlerFunc {
 	}
 }
 
-func getResourceGroupName(resourceGroups []*models.ResourceGroup, requested string) (string, error) {
+func getNullApplication(app Application, org *models.Org, resourceGroupId int64, namespace string) *appmodels.NullApplication {
+	return &appmodels.NullApplication{
+		OrgID:           org.ID,
+		Name:            app.Name,
+		ResourceGroupID: resourceGroupId,
+		Namespace:       namespace,
+		NullApplicationService: []*appmodels.NullApplicationService{
+			{
+				Type:    appmodels.ContainerImage,
+				GitRepo: app.GitRepo,
+				Name:    app.Name,
+				Image:   app.Image,
+				Cpu:     "100m",
+				Memory:  "100Mi",
+				Storage: "1Gi",
+			},
+		},
+	}
+}
+
+func getResourceGroupName(resourceGroups []*models.ResourceGroup, requested string) (string, int64, error) {
 	if requested == "" {
-		return "default", nil
+		requested = "default"
 	}
 	for _, group := range resourceGroups {
 		if group.Name == requested {
-			return group.Name, nil
+			return group.Name, group.ID, nil
 		}
 	}
-	return "", errors.New("Resource group not found")
+	return "", 0, errors.New("Resource group not found")
 }
 
 func getDeploymentGVR() schema.GroupVersionResource {

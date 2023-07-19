@@ -4,15 +4,16 @@ import (
 	"encoding/json"
 
 	jsonpatch "github.com/evanphx/json-patch"
+	"github.com/null-channel/eddington/api/app/models"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-func getApplication(name string, namespace string, image string) *unstructured.Unstructured {
+func getApplication(app models.NullApplication) *unstructured.Unstructured {
 	application := &unstructured.Unstructured{Object: map[string]interface{}{
 		"metadata": map[string]interface{}{
-			"name":      name,
-			"namespace": namespace,
+			"name":      app.Name,
+			"namespace": app.Namespace,
 			"valueFrom": map[string]interface{}{
 				"fieldRef": map[string]interface{}{
 					"fieldPath": "metadata.namespace",
@@ -23,8 +24,8 @@ func getApplication(name string, namespace string, image string) *unstructured.U
 			"name":       "name",
 			"appVersion": "v1",
 			"apps": map[string]interface{}{
-				"name":    name,
-				"image":   image,
+				"name":    app.NullApplicationService[0].Name,
+				"image":   app.NullApplicationService[0].Image,
 				"cpu":     "100m",
 				"memory":  "128Mi",
 				"storage": "1Gi",
