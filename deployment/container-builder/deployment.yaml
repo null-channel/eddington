@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eddington-container-builder
+spec:
+  selector:
+    matchLabels:
+      app: eddington-container-builder
+  template:
+    metadata:
+      labels:
+        app: eddington-container-builder
+    spec:
+      containers: 
+      - name: eddington-container-builder
+        image: nullchannel/eddington-container-builder:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 50051

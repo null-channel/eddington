@@ -6,7 +6,7 @@ require (
 	github.com/buildpacks/pack v0.30.0-pre3
 	github.com/go-git/go-git/v5 v5.7.0
 	github.com/google/uuid v1.3.0
-	github.com/null-channel/eddington/proto v0.0.0-00010101000000-000000000000
+	github.com/null-channel/eddington/proto v0.0.0-20230719010728-226c1c9199cb
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.29.1
 	github.com/uptrace/bun v1.1.14
@@ -14,8 +14,6 @@ require (
 	github.com/uptrace/bun/driver/sqliteshim v1.1.14
 	google.golang.org/grpc v1.56.1
 )
-
-replace github.com/null-channel/eddington/proto => ../../proto
 
 require (
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible // indirect

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: eddington-container-builder
+spec:
+  selector:
+    app: eddington-container-builder
+  ports:
+  - port: 50051
+    targetPort: 50051

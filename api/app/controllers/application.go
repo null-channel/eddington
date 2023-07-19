@@ -2,11 +2,15 @@ package controllers
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"flag"
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/sqlitedialect"
+	"github.com/uptrace/bun/driver/sqliteshim"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,29 +23,50 @@ import (
 	appmodels "github.com/null-channel/eddington/api/app/models"
 	usercon "github.com/null-channel/eddington/api/users/controllers"
 	"github.com/null-channel/eddington/api/users/models"
+	pb "github.com/null-channel/eddington/proto/container"
 )
 
 //	@BasePath	/api/v1/
 
 var (
-	addr = flag.String("addr", "localhost:50051", "the address to connect to")
+	addr = flag.String("addr", "eddington-container-builder:50051", "the address to connect to")
 )
 
 type ApplicationController struct {
-	kube           dynamic.Interface
-	userController *usercon.UserController
+	kube                   dynamic.Interface
+	userController         *usercon.UserController
+	database               *bun.DB
+	containerServiceClient *pb.ContainerServiceClient
 }
 
 func NewApplicationController(kube dynamic.Interface, userService *usercon.UserController) *ApplicationController {
 	// Set up a connection to the server.
+	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
+	db := bun.NewDB(sqldb, sqlitedialect.New())
+	if err != nil {
+		panic(err)
+	}
+	_, err = db.NewCreateTable().Model((*appmodels.NullApplication)(nil)).Exec(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	_, err = db.NewCreateTable().Model((*appmodels.NullApplicationService)(nil)).Exec(context.Background())
+	if err != nil {
+		panic(err)
+	}
+
 	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		log.Fatalf("fail to dial: %v", err)
 	}
 	defer conn.Close()
+	client := pb.NewContainerServiceClient(conn)
+
 	return &ApplicationController{
-		kube:           kube,
-		userController: userService,
+		kube:                   kube,
+		userController:         userService,
+		database:               db,
+		containerServiceClient: &client,
 	}
 }
 
@@ -78,8 +103,7 @@ func (a ApplicationController) AppPOST() gin.HandlerFunc {
 			ResourceGroup: c.PostForm("resourceGroup"),
 		}
 
-		//TODO: get user namespace
-
+		// get user namespace
 		userContext, err := a.userController.GetUserContext(context.Background(), 1)
 		if err != nil {
 			c.IndentedJSON(500, "Internal server error")
@@ -92,6 +116,13 @@ func (a ApplicationController) AppPOST() gin.HandlerFunc {
 		nullApplication := getNullApplication(app, userContext, rgId, namespace)
 
 		//TODO: Save to database!
+		_, err = a.database.NewInsert().Model(nullApplication).Exec(context.Background())
+
+		if err != nil {
+			c.IndentedJSON(500, "Internal server error")
+		}
+
+		//TODO: Build container image if given a repo
 
 		deployment := getApplication(*nullApplication)
 		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})

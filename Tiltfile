@@ -7,6 +7,11 @@ k8s_resource(
 )
 
 
+docker_build("nullchannel/eddington-container-builder","./application/container-builder/")
+k8s_yaml('./deployment/container-builder/deployment.yaml')
+k8s_yaml('./deployment/container-builder/service.yaml')
+
+
 # container running service
 docker_build("controller","./application/container-runner/")
 # k8s_yaml(kustomize('./application/container-runner/config/crd'))
