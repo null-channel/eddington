@@ -28,9 +28,9 @@ type Org struct {
 }
 
 type ResourceGroup struct {
-	ID        int64 `bun:",pk,autoincrement"`
-	OrgID     int64
-	Name      string
+	ID        int64        `bun:",pk,autoincrement"`
+	OrgID     int64        `bun:"org_id"`
+	Name      string       `bun:"name"`
 	Resources []*Resources `bun:"rel:has-many,join:id=resource_group_id"`
 }
 
