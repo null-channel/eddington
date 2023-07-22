@@ -25,7 +25,7 @@ type Server struct {
 	log     zerolog.Logger
 }
 
-func newServer() (*Server, error) {
+func NewServer() (*Server, error) {
 	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
 	if err != nil {
 		return nil, err
