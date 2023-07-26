@@ -6,5 +6,3 @@ use (
 	./application/container-runner
 	./proto
 )
-
-replace github.com/null-channel/eddington/proto => ../../proto
