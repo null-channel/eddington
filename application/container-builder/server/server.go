@@ -4,11 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"os"
+	"path"
 
 	"strings"
 
 	pack "github.com/buildpacks/pack/pkg/client"
 	"github.com/google/uuid"
+	"github.com/null-channel/eddington/application/container-builder/git"
 	image "github.com/null-channel/eddington/application/container-builder/internal/containers/buildpack"
 	"github.com/null-channel/eddington/application/container-builder/models"
 	"github.com/null-channel/eddington/proto/container"
@@ -23,6 +25,8 @@ type Server struct {
 	container.UnimplementedContainerServiceServer
 	builder *image.Builder
 	log     zerolog.Logger
+	// directory where cloned repos would be stored
+	repoDirs string
 }
 
 func NewServer() (*Server, error) {
@@ -46,23 +50,46 @@ func NewServer() (*Server, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create builder")
 	}
+	repoDirs := GetRepoDirOrDefault()
+	// create the repo directory if it doesn't exist
+	if _, err := os.Stat(repoDirs); os.IsNotExist(err) {
+		err = os.Mkdir(repoDirs, 0755)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to create repo directory")
+		}
+	}
+
 	l := zerolog.New(os.Stdout).With().Timestamp().Str("component", "server").Logger()
 	return &Server{
-		builder: builder,
-		log:     l,
+		builder:  builder,
+		repoDirs: repoDirs,
+		log:      l,
 	}, nil
 
 }
 
-// CreateContainer maps to the CreateContainer RPC
+// CreateContainer maps to the CreateContainer RPC``
+// call using grpcurl:
+// grpcurl -plaintext -d '{"repoURL": "your_repo_url", "type": "your_type", "customerID": "your_customer_id"}' localhost:4040 container.ContainerService/CreateContainer
+
 func (s *Server) CreateContainer(ctx context.Context, req *container.CreateContainerRequest) (*container.CreateContainerReply, error) {
+	s.log.Info().Msg("processing build for repo " + req.RepoURL)
 	buildID := uuid.New().String()
 	// create a build request in the db
-	repo := strings.TrimPrefix(req.RepoURL, "https://github.com")
-	err := s.builder.NewBuild(buildID, repo, req.CustomerID)
+	repo := strings.TrimPrefix(req.RepoURL, "https://github.com/")
+	err := s.builder.NewBuild(req.CustomerID, repo, buildID)
 	if err != nil {
 		s.log.Error().Err(err).Msg("unable to create build request")
 		return nil, errors.Wrap(err, "unable to create build , please try again")
+	}
+
+	dir := path.Join(s.repoDirs, buildID)
+	s.log.Debug().Str("dir", dir).Msg("cloning repo")
+
+	_, err = git.Clone(req.RepoURL, dir)
+	if err != nil {
+		s.log.Error().Err(err).Msg("unable to clone repo")
+		return nil, errors.Wrap(err, "unable to clone repo")
 	}
 
 	// start build in a goroutine with the buildID and request
@@ -76,7 +103,8 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 		opts := image.BuildOpt{
 			BuildID:   buildID,
 			RepoURL:   req.RepoURL,
-			ImageName: strings.TrimPrefix(req.RepoURL, "https://github.com"),
+			Path:      dir,
+			ImageName: strings.TrimPrefix(req.RepoURL, "https://github.com/"),
 			BuildPack: buildInfo.BuildPack,
 			Builder:   buildInfo.Builder,
 		}
@@ -107,4 +135,13 @@ func (s *Server) ImageStatus(ctx context.Context, req *container.Build) (*contai
 	return &container.ContainerImage{
 		Status: build.Status,
 	}, nil
+}
+
+func GetRepoDirOrDefault() string {
+	env := os.Getenv("ENVIROMENT")
+	if env == "dev" || env == "" {
+		return "./tmp"
+	} else {
+		return "/tmp"
+	}
 }
