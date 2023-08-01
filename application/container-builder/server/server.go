@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"os"
 	"path"
 
@@ -83,7 +84,7 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 		return nil, errors.Wrap(err, "unable to create build , please try again")
 	}
 
-	dir := path.Join(s.repoDirs, buildID)
+	dir := path.Join(s.repoDirs, fmt.Sprintf("%s-%s", buildID, req.CustomerID))
 	s.log.Debug().Str("dir", dir).Msg("cloning repo")
 
 	_, err = git.Clone(req.RepoURL, dir)
