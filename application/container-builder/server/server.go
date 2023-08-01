@@ -87,14 +87,13 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 	dir := path.Join(s.repoDirs, fmt.Sprintf("%s-%s", buildID, req.CustomerID))
 	s.log.Debug().Str("dir", dir).Msg("cloning repo")
 
-	_, err = git.Clone(req.RepoURL, dir)
-	if err != nil {
-		s.log.Error().Err(err).Msg("unable to clone repo")
-		return nil, errors.Wrap(err, "unable to clone repo")
-	}
-
 	// start build in a goroutine with the buildID and request
 	go func(buildID string, req *container.CreateContainerRequest) {
+		// TODO: Validate git repo
+		_, err = git.Clone(req.RepoURL, dir)
+		if err != nil {
+			s.log.Error().Err(err).Msg("unable to clone repo")
+		}
 		buildInfo, err := s.builder.GetBuildPackInfo(req.Type)
 		if err != nil {
 			s.log.Error().Err(err).Msg("unable to get buildpack info")
