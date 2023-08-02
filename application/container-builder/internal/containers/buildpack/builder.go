@@ -2,6 +2,8 @@ package image
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -21,6 +23,7 @@ type BuildOpt struct {
 	ImageName string
 	BuildPack string
 	Builder   string
+	Path      string
 }
 
 // BuildPackInfo contains the buildpack and builder for a given language
@@ -71,6 +74,7 @@ func (b *Builder) GetBuildPackInfo(language string) (BuildPackInfo, error) {
 		return BuildPackInfo{}, fmt.Errorf("no buildpack found for %s", language)
 	}
 }
+
 func (b *Builder) CreateImage(opt BuildOpt) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -78,9 +82,15 @@ func (b *Builder) CreateImage(opt BuildOpt) error {
 	done := make(chan error)
 
 	go func() {
-		err := b.Client.Build(ctx, pack.BuildOptions{
-			AppPath:    opt.RepoURL,
-			Builder:    opt.Builder,
+		// update the build request status
+		err := b.UpdateBuildRequest(opt.BuildID, container.ContainerStatus_BUILDING)
+		if err != nil {
+			b.log.Err(err).Msg("unable to update build request")
+		}
+		err = b.Client.Build(ctx, pack.BuildOptions{
+			AppPath: opt.Path,
+			Builder: opt.Builder,
+			// TODO: tag with git commit hash
 			Image:      opt.ImageName,
 			Buildpacks: []string{opt.BuildPack},
 		})
@@ -90,14 +100,19 @@ func (b *Builder) CreateImage(opt BuildOpt) error {
 	case <-ctx.Done():
 		// The build was canceled
 		b.log.Err(ctx.Err()).Msg("build canceled")
+		// Update the build request
+		err := b.UpdateBuildRequest(opt.BuildID, container.ContainerStatus_FAILED)
+		if err != nil {
+			b.log.Err(err).Msg("unable to update build request")
+			return err
+		}
+
 		return ctx.Err()
 	case err := <-done:
 		// The build has completed
 		if err != nil {
 			return err
 		}
-
-		// Build completed successfully
 		b.log.Info().Msg("build completed successfully")
 		// Update the build request
 		err = b.UpdateBuildRequest(opt.BuildID, container.ContainerStatus_BUILT)
@@ -117,6 +132,7 @@ func (b *Builder) NewBuild(customerID, repoName, buildID string) error {
 		CustomerID: customerID,
 		RepoName:   repoName,
 		BuildID:    buildID,
+		Status:     container.ContainerStatus_NOT_STARTED,
 	}).Exec(context.Background())
 	if err != nil {
 		return err
@@ -131,7 +147,8 @@ func (b *Builder) UpdateBuildRequest(buildID string, status container.ContainerS
 		Status:  status,
 	}).Where("build_id = ?", buildID).Exec(context.Background())
 	if err != nil {
-		return err
+		b.log.Err(err).Msg("unable to update build request")
+		return errors.New("unable to update build request")
 	}
 	return nil
 }
@@ -140,8 +157,13 @@ func (b *Builder) UpdateBuildRequest(buildID string, status container.ContainerS
 func (b *Builder) GetBuild(buildID string) (*models.Build, error) {
 	var req models.Build
 	err := b.db.NewSelect().Model(&req).Where("build_id = ?", buildID).Scan(context.Background())
+	// check if the build request is not found
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, errors.New("build request not found")
+	}
 	if err != nil {
-		return nil, err
+		b.log.Err(err).Msg("unable to get build request")
+		return nil, errors.New("unable to get build request")
 	}
 	return &req, nil
 }
