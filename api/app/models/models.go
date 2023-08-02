@@ -36,6 +36,7 @@ type NullApplicationService struct {
 	Cpu               string    `bun:"cpu"`
 	Memory            string    `bun:"memory"`
 	Storage           string    `bun:"storage"`
+	BuildID           string    `bun:"build_id"`
 }
 
 // Validate validates the NullApplicationService

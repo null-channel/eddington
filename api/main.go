@@ -17,13 +17,21 @@ import (
 	userController "github.com/null-channel/eddington/api/users/controllers"
 	ory "github.com/ory/client-go"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 
+	pb "github.com/null-channel/eddington/proto/container"
+
 	app "github.com/null-channel/eddington/api/app/controllers"
 	swaggerfiles "github.com/swaggo/files"
+)
+
+var (
+	addr = flag.String("addr", "eddington-container-builder:50051", "the address to connect to")
 )
 
 func main() {
@@ -76,8 +84,15 @@ func main() {
 		return
 	}
 
+	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
+	}
+	defer conn.Close()
+	client := pb.NewContainerServiceClient(conn)
+
 	config := dynamic.NewForConfigOrDie(clusterConfig)
-	appController := app.NewApplicationController(config, userController)
+	appController := app.NewApplicationController(config, userController, client)
 
 	v1 := router.Group("/api/v1")
 	{

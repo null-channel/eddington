@@ -3,9 +3,10 @@ package controllers
 import (
 	"encoding/json"
 
+	"errors"
+
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/null-channel/eddington/api/app/models"
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -41,12 +42,8 @@ func getPatchData(originalObj, modifiedObj interface{}) ([]byte, error) {
 	originalData, err := json.Marshal(originalObj)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed marshal original data")
-	}
-	modifiedData, err := json.Marshal(modifiedObj)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed marshal original data")
-	}
-
+	} *pb.ContainerServiceClient
+}
 	// Using strategicpatch package can cause below error
 	// Error: CreateTwoWayMergePatch failed: unable to find api field in struct Unstructured for the json field "spec"
 	//patchBytes, err := strategicpatch.CreateTwoWayMergePatch(originalData, modifiedData, originalObj)
