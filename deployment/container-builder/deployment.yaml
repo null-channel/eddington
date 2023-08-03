@@ -10,10 +10,20 @@ spec:
     metadata:
       labels:
         app: eddington-container-builder
+    volumes:
+    - name: docker-socket
+      hostPath:
+        path: "/var/run/docker.sock"
+        type: File
+    - name: docker-config
+      hostPath:
+        path: "/var/lib/docker"
     spec:
       containers: 
       - name: eddington-container-builder
         image: nullchannel/eddington-container-builder:latest
+        securityContext:
+          privileged: true
         resources:
           limits:
             memory: "128Mi"
