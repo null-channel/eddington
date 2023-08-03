@@ -1,5 +1,5 @@
 # api service
-docker_build("api-service","./api/")
+docker_build("api-service","./",dockerfile="./api/Dockerfile")
 k8s_yaml('./api/deploy/deploy.yaml')
 k8s_resource(
   workload='api-service',
