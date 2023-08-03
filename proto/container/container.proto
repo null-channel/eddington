@@ -21,7 +21,7 @@ package container;
 
 service ContainerService {
   rpc CreateContainer (CreateContainerRequest) returns (CreateContainerReply) {}
-  rpc ImageStatus (Build) returns (ContainerImage){  }
+  rpc ImageStatus (BuildRequest) returns (ContainerImageStatusReply){  }
 }
 
 
@@ -47,10 +47,10 @@ message CreateContainerReply {
   string buildID = 1;
 }
 
-message Build {
+message BuildRequest {
 	string id = 1;
 } 
 
-message ContainerImage {
+message ContainerImageStatusReply {
 	ContainerStatus status = 1;
 }
