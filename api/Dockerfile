@@ -4,8 +4,7 @@ ADD . .
 WORKDIR /app/api
 RUN go mod download
 RUN go mod tidy
-WORKDIR /app
-RUN go build -o ./api/api ./api/main.go
+RUN go build -o ./api ./main.go
 
 # The Real container
 FROM ubuntu:20.04
