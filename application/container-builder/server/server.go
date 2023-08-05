@@ -147,7 +147,7 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 }
 
 // ImageStatus maps to the ImageStatus RPC
-func (s *Server) ImageStatus(ctx context.Context, req *container.Build) (*container.ContainerImage, error) {
+func (s *Server) ImageStatus(ctx context.Context, req *container.BuildRequest) (*container.ContainerImageStatusReply, error) {
 	// get the build request from the db
 	build, err := s.builder.GetBuild(req.Id)
 	if err != nil {

@@ -56,9 +56,9 @@ func NewApplicationController(kube dynamic.Interface, userService *usercon.UserC
 	}
 }
 
-func (a ApplicationController) RegisterRoutes(routerGroup *gin.RouterGroup) {
-	routerGroup.POST("/apps", a.AppPOST())
-	routerGroup.GET("/apps/:id", a.AppGET())
+func (a *ApplicationController) RegisterRoutes(routerGroup *gin.RouterGroup) {
+	routerGroup.POST("/", a.AppPOST())
+	routerGroup.GET("/:id", a.AppGET())
 }
 
 type Application struct {
@@ -90,7 +90,7 @@ func (a ApplicationController) AppPOST() gin.HandlerFunc {
 		}
 
 		// get user namespace
-		userContext, err := a.userController.GetUserContext(context.Background(), 1)
+		userContext, err := a.userController.GetUserContext(context.Background(), 2)
 		if err != nil {
 			c.IndentedJSON(500, "Internal server error")
 		}
@@ -137,7 +137,7 @@ func (a ApplicationController) AppPOST() gin.HandlerFunc {
 				time.Sleep(20 * time.Second)
 			}
 
-			deployment := getApplication(*nullApplication)
+			deployment := getApplication(app.Name, namespace, app.Image)
 			_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
 			if err != nil {
 				c.IndentedJSON(500, "Internal server error")

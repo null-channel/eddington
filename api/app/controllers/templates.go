@@ -3,18 +3,16 @@ package controllers
 import (
 	"encoding/json"
 
-	"errors"
-
 	jsonpatch "github.com/evanphx/json-patch"
-	"github.com/null-channel/eddington/api/app/models"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-func getApplication(app models.NullApplication) *unstructured.Unstructured {
+func getApplication(name string, namespace string, image string) *unstructured.Unstructured {
 	application := &unstructured.Unstructured{Object: map[string]interface{}{
 		"metadata": map[string]interface{}{
-			"name":      app.Name,
-			"namespace": app.Namespace,
+			"name":      name,
+			"namespace": namespace,
 			"valueFrom": map[string]interface{}{
 				"fieldRef": map[string]interface{}{
 					"fieldPath": "metadata.namespace",
@@ -25,8 +23,8 @@ func getApplication(app models.NullApplication) *unstructured.Unstructured {
 			"name":       "name",
 			"appVersion": "v1",
 			"apps": map[string]interface{}{
-				"name":    app.NullApplicationService[0].Name,
-				"image":   app.NullApplicationService[0].Image,
+				"name":    name,
+				"image":   image,
 				"cpu":     "100m",
 				"memory":  "128Mi",
 				"storage": "1Gi",
@@ -42,8 +40,12 @@ func getPatchData(originalObj, modifiedObj interface{}) ([]byte, error) {
 	originalData, err := json.Marshal(originalObj)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed marshal original data")
-	} *pb.ContainerServiceClient
-}
+	}
+	modifiedData, err := json.Marshal(modifiedObj)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed marshal original data")
+	}
+
 	// Using strategicpatch package can cause below error
 	// Error: CreateTwoWayMergePatch failed: unable to find api field in struct Unstructured for the json field "spec"
 	//patchBytes, err := strategicpatch.CreateTwoWayMergePatch(originalData, modifiedData, originalObj)
