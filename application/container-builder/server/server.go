@@ -93,10 +93,14 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 		_, err = git.Clone(req.RepoURL, dir)
 		if err != nil {
 			s.log.Error().Err(err).Msg("unable to clone repo")
+			// Failed to clone the repo
+			s.builder.UpdateBuildRequest(buildID, container.ContainerStatus_FAILED, "unable to clone repo")
+			return
 		}
-		buildInfo, err := s.builder.GetBuildPackInfo(req.Type)
+		buildInfo, err := s.builder.GetBuildPackInfo(req.Type.String())
 		if err != nil {
 			s.log.Error().Err(err).Msg("unable to get buildpack info")
+			s.builder.UpdateBuildRequest(buildID, container.ContainerStatus_FAILED, "unable to retreive buildpack info")
 			return
 		}
 
@@ -112,6 +116,7 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 		err = s.builder.CreateImage(opts)
 		if err != nil {
 			s.log.Error().Err(err).Msg("Build failed")
+			s.builder.UpdateBuildRequest(buildID, container.ContainerStatus_FAILED, err.Error())
 			return
 		}
 
@@ -133,7 +138,8 @@ func (s *Server) ImageStatus(ctx context.Context, req *container.Build) (*contai
 	}
 
 	return &container.ContainerImage{
-		Status: build.Status,
+		Status:                 build.Status,
+		ContainerStatusMessage: "Build Successful",
 	}, nil
 }
 

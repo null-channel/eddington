@@ -83,7 +83,7 @@ func (b *Builder) CreateImage(opt BuildOpt) error {
 
 	go func() {
 		// update the build request status
-		err := b.UpdateBuildRequest(opt.BuildID, container.ContainerStatus_BUILDING)
+		err := b.UpdateBuildRequest(opt.BuildID, container.ContainerStatus_BUILDING, "Building...")
 		if err != nil {
 			b.log.Err(err).Msg("unable to update build request")
 		}
@@ -101,7 +101,7 @@ func (b *Builder) CreateImage(opt BuildOpt) error {
 		// The build was canceled
 		b.log.Err(ctx.Err()).Msg("build canceled")
 		// Update the build request
-		err := b.UpdateBuildRequest(opt.BuildID, container.ContainerStatus_FAILED)
+		err := b.UpdateBuildRequest(opt.BuildID, container.ContainerStatus_FAILED, "Build Cancled")
 		if err != nil {
 			b.log.Err(err).Msg("unable to update build request")
 			return err
@@ -115,7 +115,7 @@ func (b *Builder) CreateImage(opt BuildOpt) error {
 		}
 		b.log.Info().Msg("build completed successfully")
 		// Update the build request
-		err = b.UpdateBuildRequest(opt.BuildID, container.ContainerStatus_BUILT)
+		err = b.UpdateBuildRequest(opt.BuildID, container.ContainerStatus_BUILT, "Build Succesful")
 		if err != nil {
 			b.log.Err(err).Msg("unable to update build request")
 			return err
@@ -141,10 +141,11 @@ func (b *Builder) NewBuild(customerID, repoName, buildID string) error {
 }
 
 // UpdateBuildRequest updates the build request in the database
-func (b *Builder) UpdateBuildRequest(buildID string, status container.ContainerStatus) error {
+func (b *Builder) UpdateBuildRequest(buildID string, status container.ContainerStatus, message string) error {
 	_, err := b.db.NewUpdate().Model(&models.Build{
-		BuildID: buildID,
-		Status:  status,
+		BuildID:       buildID,
+		Status:        status,
+		StatusMessage: message,
 	}).Where("build_id = ?", buildID).Exec(context.Background())
 	if err != nil {
 		b.log.Err(err).Msg("unable to update build request")
