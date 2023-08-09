@@ -3,7 +3,7 @@ package main
 import (
 	"net"
 
-	"github.com/null-channel/eddington/application/container-builder/server"
+	"github.com/null-channel/eddington/container-builder/server"
 	"github.com/null-channel/eddington/proto/container"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"

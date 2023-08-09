@@ -11,9 +11,9 @@ import (
 
 	pack "github.com/buildpacks/pack/pkg/client"
 	"github.com/google/uuid"
-	"github.com/null-channel/eddington/application/container-builder/git"
-	image "github.com/null-channel/eddington/application/container-builder/internal/containers/buildpack"
-	"github.com/null-channel/eddington/application/container-builder/models"
+	"github.com/null-channel/eddington/container-builder/git"
+	image "github.com/null-channel/eddington/container-builder/internal/containers/buildpack"
+	"github.com/null-channel/eddington/container-builder/models"
 	"github.com/null-channel/eddington/proto/container"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
