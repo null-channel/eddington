@@ -7,7 +7,8 @@ import (
 )
 
 type User struct {
-	ID     string  `bun:",pk"` // primary key, same as ory.
+	ID     string `bun:",pk"` // primary key, same as ory.
+	Name   string
 	Traits *Traits `bun:"rel:has-one,join:id=user_id"`
 }
 

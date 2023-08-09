@@ -10,7 +10,7 @@ import (
 
 	pack "github.com/buildpacks/pack/pkg/client"
 	"github.com/buildpacks/pack/pkg/image"
-	"github.com/null-channel/eddington/application/container-builder/models"
+	"github.com/null-channel/eddington/container-builder/models"
 	"github.com/null-channel/eddington/proto/container"
 	"github.com/rs/zerolog"
 	"github.com/uptrace/bun"

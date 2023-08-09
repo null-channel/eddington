@@ -1,4 +1,4 @@
-module github.com/null-channel/eddington/application/container-builder
+module github.com/null-channel/eddington/container-builder
 
 go 1.20
 
@@ -14,8 +14,6 @@ require (
 	github.com/uptrace/bun/driver/sqliteshim v1.1.14
 	google.golang.org/grpc v1.56.1
 )
-
-replace github.com/null-channel/eddington/proto => ../../proto
 
 require (
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible // indirect

@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "api"
+		},
+		{
+			"path": "application/container-builder"
+		},
+		{
+			"path": "ui"
+		},
+		{
+			"path": "application/container-runner"
+		},
+		{
+			"path": "proto"
+		}
+	],
+	"settings": {}
+}

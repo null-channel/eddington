@@ -35,8 +35,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/yaml"
 
-	nullappv1alpha1 "github.com/null-channel/eddington/application/container-runner/api/v1alpha1"
-	"github.com/null-channel/eddington/application/container-runner/internal/templates"
+	nullappv1alpha1 "github.com/null-channel/eddington/container-runner/api/v1alpha1"
+	"github.com/null-channel/eddington/container-runner/internal/templates"
 )
 
 //nolint:golint,unused
