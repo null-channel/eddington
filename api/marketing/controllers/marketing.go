@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 	"github.com/sendgrid/sendgrid-go"
 )
 
@@ -16,18 +16,18 @@ type MarketingController struct {
 }
 
 // New creates a new MarketingController responsible for marketing endpoints
-func New(apiKey string, routerGroup *gin.RouterGroup) MarketingController {
+func New(apiKey string, router *mux.Router) MarketingController {
 	fmt.Println("New MarketingController")
 
 	mc := MarketingController{}
 
-	mc.AddAllControllers(routerGroup)
+	mc.AddAllControllers(router)
 
 	return MarketingController{apiKey: apiKey}
 }
 
-func (m *MarketingController) AddAllControllers(routerGroup *gin.RouterGroup) {
-	routerGroup.POST("/email", m.POSTEmailSubscriber())
+func (m *MarketingController) AddAllControllers(router *mux.Router) {
+	router.HandleFunc("/email", m.POSTEmailSubscriber).Methods(http.MethodPost)
 }
 
 //	@BasePath	/api/v1/
@@ -42,20 +42,26 @@ func (m *MarketingController) AddAllControllers(routerGroup *gin.RouterGroup) {
 //	@Produce		json
 //	@Success		200	{string}	Helloworld
 //	@Router			/marketing/email [post]
-func (m *MarketingController) POSTEmailSubscriber() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		email := c.PostForm("email")
-		fmt.Println("email: " + email)
-		err := m.Addrecipients(email)
+func (m *MarketingController) POSTEmailSubscriber(w http.ResponseWriter, r *http.Request) {
 
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
-			return
-		}
+	err := r.ParseForm()
 
-		c.JSON(http.StatusOK, gin.H{"status": "New e-mail added to list successfully!"})
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
 	}
+
+	email := r.Form.Get("email")
+	fmt.Println("email: " + email)
+	err = m.Addrecipients(email)
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "New e-mail added to list successfully!")
 }
 
 // GetIDfromEmail : Get ID from email
@@ -97,7 +103,7 @@ func (m *MarketingController) POSTEmailSubscriber() gin.HandlerFunc {
 func (m *MarketingController) GetIDfromEmail(email string) (string, error) {
 	host := "https://api.sendgrid.com"
 	request := sendgrid.GetRequest(m.apiKey, "/v3/marketing/contacts/search/emails", host)
-	request.Method = "POST"
+	request.Method = http.MethodPost
 	v := EmailList{Emails: []string{email}}
 	b, e := json.Marshal(v)
 	if e != nil {
@@ -142,7 +148,7 @@ func (m *MarketingController) GetIDfromEmail(email string) (string, error) {
 func (m *MarketingController) AddRecipientToWaitingList(recipientID string) error {
 	host := "https://api.sendgrid.com"
 	request := sendgrid.GetRequest(m.apiKey, fmt.Sprintf("/v3/marketing/contacts/lists/bdd5bf34-a5ba-43a5-b24a-e098b2ae3b68/recipients/%s", recipientID), host)
-	request.Method = "POST"
+	request.Method = http.MethodPost
 	response, err := sendgrid.MakeRequest(request)
 	//response, err := sendgrid.API(request)
 	if err != nil {
@@ -163,7 +169,7 @@ func (u *MarketingController) Addrecipients(email string) error {
 	apiKey := os.Getenv("SENDGRID_API_KEY")
 	host := "https://api.sendgrid.com"
 	request := sendgrid.GetRequest(apiKey, "/v3/marketing/contacts", host)
-	request.Method = "PUT"
+	request.Method = http.MethodPut
 	v := RecipientList{Contacts: []Contact{{Email: email}}}
 	b, e := json.Marshal(v)
 	if e != nil {

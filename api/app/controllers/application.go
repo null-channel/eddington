@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/sqlitedialect"
 	"github.com/uptrace/bun/driver/sqliteshim"
@@ -56,9 +57,9 @@ func NewApplicationController(kube dynamic.Interface, userService *usercon.UserC
 	}
 }
 
-func (a *ApplicationController) RegisterRoutes(routerGroup *gin.RouterGroup) {
-	routerGroup.POST("/", a.AppPOST())
-	routerGroup.GET("/:id", a.AppGET())
+func (a *ApplicationController) RegisterRoutes(router *mux.Router) {
+	router.HandleFunc("/", a.AppPOST).Methods("POST")
+	router.HandleFunc("/{id}", a.AppGET).Methods("GET")
 }
 
 type Application struct {
@@ -79,71 +80,79 @@ type Application struct {
 //	@Produce		json
 //	@Success		200	{string}	Helloworld
 //	@Router			/apps/ [post]
-func (a ApplicationController) AppPOST() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		app := Application{
-			Name:          c.PostForm("name"),
-			Image:         c.PostForm("image"),
-			GitRepo:       c.PostForm("gitRepo"),
-			RepoType:      c.PostForm("repoType"),
-			ResourceGroup: c.PostForm("resourceGroup"),
+func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Error parsing form data", http.StatusBadRequest)
+		return
+	}
+
+	app := Application{
+		Name:          r.Form.Get("name"),
+		Image:         r.Form.Get("image"),
+		GitRepo:       r.Form.Get("gitRepo"),
+		RepoType:      r.Form.Get("repoType"),
+		ResourceGroup: r.Form.Get("resourceGroup"),
+	}
+
+	// get user namespace
+	userContext, err := a.userController.GetUserContext(r.Context(), 2)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	resourceGroup, rgId, err := getResourceGroupName(userContext.ResourceGroups, app.ResourceGroup)
+	if err != nil {
+
+		http.Error(w, "Resource group not found", http.StatusNotFound)
+		return
+	}
+
+	ret, err := a.containerServiceClient.CreateContainer(r.Context(), &pb.CreateContainerRequest{
+		RepoURL:    app.GitRepo,
+		Type:       app.RepoType,
+		CustomerID: userContext.Owner.ID,
+	})
+
+	namespace := userContext.Name + resourceGroup
+	nullApplication := getNullApplication(app, userContext, rgId, namespace, ret.BuildID)
+
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	//TODO: Save to database!
+	_, err = a.database.NewInsert().Model(nullApplication).Exec(context.Background())
+
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	go func() {
+		keepChecking := true
+		var status *pb.ContainerImageStatusReply
+		for keepChecking {
+			status, err = a.containerServiceClient.ImageStatus(context.Background(), &pb.BuildRequest{Id: ret.BuildID})
+			if err != nil {
+				panic("checking container build status failed")
+			}
+
+			if status.Status == pb.ContainerStatus_BUILT {
+				keepChecking = false
+			}
+			time.Sleep(20 * time.Second)
 		}
 
-		// get user namespace
-		userContext, err := a.userController.GetUserContext(context.Background(), 2)
+		deployment := getApplication(app.Name, namespace, app.Image)
+		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
 		if err != nil {
-			c.IndentedJSON(500, "Internal server error")
-		}
-		resourceGroup, rgId, err := getResourceGroupName(userContext.ResourceGroups, app.ResourceGroup)
-		if err != nil {
-			c.IndentedJSON(400, "Resource group not found")
-		}
-
-		//TODO: Build container image if given a repo
-
-		ret, err := a.containerServiceClient.CreateContainer(c.Copy().Request.Context(), &pb.CreateContainerRequest{
-			RepoURL:    app.GitRepo,
-			Type:       app.RepoType,
-			CustomerID: userContext.Owner.ID,
-		})
-
-		namespace := userContext.Name + resourceGroup
-		nullApplication := getNullApplication(app, userContext, rgId, namespace, ret.BuildID)
-
-		if err != nil {
-			c.IndentedJSON(500, "Internal server error")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-
-		//TODO: Save to database!
-		_, err = a.database.NewInsert().Model(nullApplication).Exec(context.Background())
-
-		if err != nil {
-			c.IndentedJSON(500, "Internal server error")
-		}
-
-		go func() {
-			keepChecking := true
-			var status *pb.ContainerImageStatusReply
-			for keepChecking {
-				status, err = a.containerServiceClient.ImageStatus(context.Background(), &pb.BuildRequest{Id: ret.BuildID})
-				if err != nil {
-					panic("checking container build status failed")
-				}
-
-				if status.Status == pb.ContainerStatus_BUILT {
-					keepChecking = false
-				}
-				time.Sleep(20 * time.Second)
-			}
-
-			deployment := getApplication(app.Name, namespace, app.Image)
-			_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
-			if err != nil {
-				c.IndentedJSON(500, "Internal server error")
-			}
-		}()
-	}
+	}()
 }
 
 func getNullApplication(app Application, org *models.Org, resourceGroupId int64, namespace string, buildID string) *appmodels.NullApplication {
@@ -193,8 +202,7 @@ func getDeploymentGVR() schema.GroupVersionResource {
 //	@Produce		json
 //	@Success		200	{string}	Helloworld
 //	@Router			/apps/ [get]
-func (a ApplicationController) AppGET() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.IndentedJSON(501, "Not implemented yet")
-	}
+func (a ApplicationController) AppGET(w http.ResponseWriter, r *http.Request) {
+	// TODO: implement
+	w.WriteHeader(http.StatusNotImplemented)
 }

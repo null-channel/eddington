@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/evanphx/json-patch v4.12.0+incompatible
 	github.com/gin-contrib/cors v1.4.0
-	github.com/gin-gonic/gin v1.9.1
+	github.com/gin-gonic/gin v1.9.0
 	github.com/null-channel/eddington/proto v0.0.0-20230702031216-4707232b9648
 	github.com/ory/client-go v1.1.41
 	github.com/pkg/errors v0.9.1
@@ -20,6 +20,11 @@ require (
 	k8s.io/apimachinery v0.27.4
 	k8s.io/client-go v0.26.2
 	k8s.io/klog/v2 v2.90.1
+)
+
+require (
+	github.com/felixge/httpsnoop v1.0.1 // indirect
+	github.com/gorilla/handlers v1.5.1 // indirect
 )
 
 replace github.com/null-channel/eddington/proto => ../proto
@@ -46,6 +51,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
+	github.com/gorilla/mux v1.8.0
 	github.com/imdario/mergo v0.3.15 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -60,9 +66,9 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
+	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/sendgrid/rest v2.6.9+incompatible // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/testify v1.8.3 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
