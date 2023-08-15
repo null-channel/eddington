@@ -20,10 +20,9 @@ option java_outer_classname = "ApplicationServiceProto";
 package container;
 
 service ContainerService {
-  rpc CreateContainer (CreateContainerRequest) returns (CreateContainerReply) {}
-  rpc ImageStatus (Build) returns (ContainerImage){  }
+  rpc CreateContainer(CreateContainerRequest) returns (CreateContainerReply) {}
+  rpc ImageStatus(Build) returns (ContainerImage) {}
 }
-
 
 // Enum of ContainerStatus
 enum ContainerStatus {
@@ -35,22 +34,27 @@ enum ContainerStatus {
 }
 
 
+// enum of languages supported
+enum Language {
+  GO = 0;
+  JAVA = 1;
+  PYTHON = 2;
+  NODEJS = 3;
+}
+
+
 
 message CreateContainerRequest {
   string repoURL = 1;
-  string type = 2;  
+  Language type = 2;
   string customerID = 3;
-
 }
 
-message CreateContainerReply {
-  string buildID = 1;
-}
+message CreateContainerReply { string buildID = 1; }
 
-message Build {
-	string id = 1;
-} 
+message Build { string id = 1; }
 
 message ContainerImage {
-	ContainerStatus status = 1;
+  ContainerStatus status = 1;
+  string ContainerStatusMessage = 2;
 }
