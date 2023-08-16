@@ -15,3 +15,5 @@ Cargo.lock
 sendgrid.env
 
 *.sum
+
+application/container-builder/.env 
