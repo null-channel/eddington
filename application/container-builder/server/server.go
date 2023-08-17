@@ -11,6 +11,7 @@ import (
 
 	pack "github.com/buildpacks/pack/pkg/client"
 	"github.com/google/uuid"
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/null-channel/eddington/application/container-builder/git"
 	image "github.com/null-channel/eddington/application/container-builder/internal/containers/buildpack"
 	"github.com/null-channel/eddington/application/container-builder/models"
@@ -47,7 +48,13 @@ func NewServer() (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	builder, err := image.NewBuilder(db, packClient)
+
+	registry := os.Getenv("REGISTRY_URL")
+	if registry == "" {
+		return nil, errors.New("REGISTRY_URL is not set")
+	}
+
+	builder, err := image.NewBuilder(db, packClient, registry)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create builder")
 	}
@@ -77,6 +84,14 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 	s.log.Info().Msg("processing build for repo " + req.RepoURL)
 	buildID := uuid.New().String()
 	// create a build request in the db
+
+	// validate the repo url
+	isValid, _ := git.ValidateGitHubURL(req.RepoURL)
+
+	if !isValid {
+		return nil, errors.New("invalid repo url")
+	}
+
 	repo := strings.TrimPrefix(req.RepoURL, "https://github.com/")
 	err := s.builder.NewBuild(req.CustomerID, repo, buildID)
 	if err != nil {
@@ -104,11 +119,14 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 			return
 		}
 
+		// add repo name in the format of registry/customerID-repoName
+		// imagName := fmt.Sprintf("%s/%s-%s", s.builder.Registry, req.CustomerID, repo)
+
 		opts := image.BuildOpt{
 			BuildID:   buildID,
 			RepoURL:   req.RepoURL,
 			Path:      dir,
-			ImageName: strings.TrimPrefix(req.RepoURL, "https://github.com/"),
+			ImageName: fmt.Sprintf("%s/%s-%s", s.builder.Registry, "nc-test", "random"),
 			BuildPack: buildInfo.BuildPack,
 			Builder:   buildInfo.Builder,
 		}
@@ -139,7 +157,7 @@ func (s *Server) ImageStatus(ctx context.Context, req *container.Build) (*contai
 
 	return &container.ContainerImage{
 		Status:                 build.Status,
-		ContainerStatusMessage: "Build Successful",
+		ContainerStatusMessage: build.StatusMessage,
 	}, nil
 }
 

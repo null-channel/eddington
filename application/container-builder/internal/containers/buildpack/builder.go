@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	pack "github.com/buildpacks/pack/pkg/client"
+	"github.com/buildpacks/pack/pkg/image"
 	"github.com/null-channel/eddington/application/container-builder/models"
 	"github.com/null-channel/eddington/proto/container"
 	"github.com/rs/zerolog"
@@ -37,15 +38,16 @@ type Builder struct {
 	log    zerolog.Logger
 	db     *bun.DB
 	// used to store built images
-	registry string
+	Registry string
 }
 
 // NewBuilder returns a new builder
-func NewBuilder(db *bun.DB, pack *pack.Client) (*Builder, error) {
+func NewBuilder(db *bun.DB, pack *pack.Client, registry string) (*Builder, error) {
 	return &Builder{
-		log:    log,
-		db:     db,
-		Client: pack,
+		log:      log,
+		db:       db,
+		Client:   pack,
+		Registry: registry,
 	}, nil
 }
 
@@ -93,6 +95,8 @@ func (b *Builder) CreateImage(opt BuildOpt) error {
 			// TODO: tag with git commit hash
 			Image:      opt.ImageName,
 			Buildpacks: []string{opt.BuildPack},
+			PullPolicy: image.PullIfNotPresent,
+			Publish:    true,
 		})
 		done <- err
 	}()
