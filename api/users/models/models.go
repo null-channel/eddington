@@ -7,7 +7,8 @@ import (
 )
 
 type User struct {
-	ID     string  `bun:",pk"` // primary key, same as ory.
+	ID     string `bun:",pk"` // primary key, same as ory.
+	Name   string
 	Traits *Traits `bun:"rel:has-one,join:id=user_id"`
 }
 
@@ -28,9 +29,9 @@ type Org struct {
 }
 
 type ResourceGroup struct {
-	ID        int64 `bun:",pk,autoincrement"`
-	OrgID     int64
-	Name      string
+	ID        int64        `bun:",pk,autoincrement"`
+	OrgID     int64        `bun:"org_id"`
+	Name      string       `bun:"name"`
 	Resources []*Resources `bun:"rel:has-many,join:id=resource_group_id"`
 }
 

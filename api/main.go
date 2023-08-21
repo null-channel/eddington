@@ -5,25 +5,32 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
+	"strings"
+	"time"
 
 	"os"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-	"github.com/null-channel/eddington/api/docs"
+	"github.com/gorilla/mux"
 	marketing "github.com/null-channel/eddington/api/marketing/controllers"
 	"github.com/null-channel/eddington/api/middleware"
 	"github.com/null-channel/eddington/api/notfound"
 	userController "github.com/null-channel/eddington/api/users/controllers"
 	ory "github.com/ory/client-go"
-	ginSwagger "github.com/swaggo/gin-swagger"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 
+	pb "github.com/null-channel/eddington/proto/container"
+
 	app "github.com/null-channel/eddington/api/app/controllers"
-	swaggerfiles "github.com/swaggo/files"
+)
+
+var (
+	addr = flag.String("addr", "eddington-container-builder:50051", "the address to connect to")
 )
 
 func main() {
@@ -50,16 +57,17 @@ func main() {
 
 	fmt.Println("Starting server...")
 	flag.Parse()
-	//TODO: Never used gin. seems like mux is archived. going to try this out.
 
-	router := gin.New()
+	router := mux.NewRouter()
 
-	router.NoRoute(notfound.NotFoundHandler())
-	router.NoMethod(notfound.NotFoundHandler())
+	router.NotFoundHandler = http.HandlerFunc(notfound.NotFoundHandler)
 
-	router.Use(gin.Logger())
-	router.Use(cors.Default())
-	docs.SwaggerInfo.BasePath = "/api/v1"
+	router.Use(middleware.LoggingMiddleware)
+
+	middleware.CreateCORSHandler(router)
+
+	//TODO: Swagger
+	//docs.SwaggerInfo.BasePath = "/api/v1"
 	userController, err := userController.New()
 
 	if err != nil {
@@ -76,22 +84,29 @@ func main() {
 		return
 	}
 
-	config := dynamic.NewForConfigOrDie(clusterConfig)
-	appController := app.NewApplicationController(config, userController)
+	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
+	}
+	defer conn.Close()
+	client := pb.NewContainerServiceClient(conn)
 
-	v1 := router.Group("/api/v1")
+	config := dynamic.NewForConfigOrDie(clusterConfig)
+	appController := app.NewApplicationController(config, userController, client)
+
+	v1 := router.PathPrefix("/api/v1").Subrouter()
 	{
 		// Apps
-		apps := v1.Group("/apps")
+		apps := v1.PathPrefix("/apps").Subrouter()
 		{
-			apps.Use(oryMiddleware.SessionMiddleware())
+			apps.Use(oryMiddleware.SessionMiddleware)
 			appController.RegisterRoutes(apps)
 		}
 
 		// Users
-		users := v1.Group("/users")
+		users := v1.PathPrefix("/users").Subrouter()
 		{
-			users.Use(oryMiddleware.SessionMiddleware())
+			users.Use(oryMiddleware.SessionMiddleware)
 			userController.AddAllControllers(users)
 		}
 		// AuthZ
@@ -101,13 +116,14 @@ func main() {
 		// Space
 
 		// Marketing
-		marketingGroup := v1.Group("/marketing")
+		marketingGroup := v1.PathPrefix("/marketing").Subrouter()
 		{
 			_ = marketing.New(os.Getenv("SENDGRID_API_KEY"), marketingGroup)
 		}
 	}
 
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	//TODO: serve swagger
+	//router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	host := os.Getenv("HOST")
 	if host == "" {
@@ -119,7 +135,40 @@ func main() {
 		port = "8080"
 	}
 
-	log.Fatal(router.Run(":" + port))
+	_ = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		pathTemplate, err := route.GetPathTemplate()
+		if err == nil {
+			fmt.Println("ROUTE:", pathTemplate)
+		}
+		pathRegexp, err := route.GetPathRegexp()
+		if err == nil {
+			fmt.Println("Path regexp:", pathRegexp)
+		}
+		queriesTemplates, err := route.GetQueriesTemplates()
+		if err == nil {
+			fmt.Println("Queries templates:", strings.Join(queriesTemplates, ","))
+		}
+		queriesRegexps, err := route.GetQueriesRegexp()
+		if err == nil {
+			fmt.Println("Queries regexps:", strings.Join(queriesRegexps, ","))
+		}
+		methods, err := route.GetMethods()
+		if err == nil {
+			fmt.Println("Methods:", strings.Join(methods, ","))
+		}
+		fmt.Println()
+		return nil
+	})
+
+	srv := &http.Server{
+		Handler: router,
+		Addr:    "0.0.0.0:8000",
+		// Good practice: enforce timeouts for servers you create!
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+
+	log.Fatal(srv.ListenAndServe())
 
 }
 

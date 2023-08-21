@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 	"github.com/null-channel/eddington/api/users/models"
 	pb "github.com/null-channel/eddington/proto/user"
 	"github.com/uptrace/bun"
@@ -89,8 +89,8 @@ func resourceGroupModelToProto(resourceGroups []*models.ResourceGroup) []*pb.Res
 	return ret
 }
 
-func (u *UserController) AddAllControllers(routerGroup *gin.RouterGroup) {
-	routerGroup.POST("/users", u.UpdateUser())
+func (u *UserController) AddAllControllers(router *mux.Router) {
+	router.HandleFunc("", u.UpdateUser).Methods("POST")
 }
 
 //	@BasePath	/api/v1/
@@ -150,8 +150,7 @@ func (u *UserController) CreateUser(user models.User) (int, error) {
 // @Produce		json
 // @Success		200	{string}	Helloworld
 // @Router			/users/ [post]
-func (u *UserController) UpdateUser() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Update user in database
-	}
+func (u *UserController) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	// TODO: implement
+	w.WriteHeader(http.StatusNotImplemented)
 }
