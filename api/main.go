@@ -30,10 +30,12 @@ import (
 )
 
 var (
-	addr = flag.String("addr", "eddington-container-builder:50051", "the address to connect to")
+	addr  = flag.String("addr", "eddington-container-builder:50051", "the address to connect to")
+	debug = flag.Bool("debug", false, "Run in debug mode")
 )
 
 func main() {
+	flag.Parse()
 
 	// ORY Stuff Not sure this is a good way to deal with this.
 	proxyPort := os.Getenv("ORY_PROXY_PORT")
@@ -51,8 +53,16 @@ func main() {
 	c := ory.NewConfiguration()
 	c.Servers = ory.ServerConfigurations{{URL: fmt.Sprintf("%s:%s/.ory", oryDomain, proxyPort)}}
 
-	oryMiddleware := &middleware.OryApp{
-		Ory: ory.NewAPIClient(c),
+	var authMiddleware middleware.AuthMiddleware
+
+	if *debug {
+		authMiddleware = &middleware.DebugAuth{}
+		fmt.Println("WARNING: You are running in debug mode without auth. tread carefully and do not run in production")
+	} else {
+		authMiddleware = &middleware.OryApp{
+			Ory: ory.NewAPIClient(c),
+		}
+		fmt.Println("Running auth in production mode")
 	}
 
 	fmt.Println("Starting server...")
@@ -99,14 +109,14 @@ func main() {
 		// Apps
 		apps := v1.PathPrefix("/apps").Subrouter()
 		{
-			apps.Use(oryMiddleware.SessionMiddleware)
+			apps.Use(authMiddleware.SessionMiddleware)
 			appController.RegisterRoutes(apps)
 		}
 
 		// Users
 		users := v1.PathPrefix("/users").Subrouter()
 		{
-			users.Use(oryMiddleware.SessionMiddleware)
+			users.Use(authMiddleware.SessionMiddleware)
 			userController.AddAllControllers(users)
 		}
 		// AuthZ

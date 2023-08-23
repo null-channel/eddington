@@ -111,7 +111,7 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 
 	ret, err := a.containerServiceClient.CreateContainer(r.Context(), &pb.CreateContainerRequest{
 		RepoURL:    app.GitRepo,
-		Type:       app.RepoType,
+		Type:       pb.Language(pb.Language_value["app.RepoType"]),
 		CustomerID: userContext.Owner.ID,
 	})
 
