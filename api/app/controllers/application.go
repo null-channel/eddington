@@ -58,7 +58,7 @@ func NewApplicationController(kube dynamic.Interface, userService *usercon.UserC
 }
 
 func (a *ApplicationController) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/", a.AppPOST).Methods("POST")
+	router.HandleFunc("", a.AppPOST).Methods("POST")
 	router.HandleFunc("/{id}", a.AppGET).Methods("GET")
 }
 

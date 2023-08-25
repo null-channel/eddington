@@ -172,7 +172,7 @@ func main() {
 
 	srv := &http.Server{
 		Handler: router,
-		Addr:    "0.0.0.0:8000",
+		Addr:    "0.0.0.0:" + port,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
@@ -190,3 +190,5 @@ func getClusterConfig(kubeconfig string) (*rest.Config, error) {
 	klog.Info("Kubeconfig flag is empty")
 	return rest.InClusterConfig()
 }
+
+

@@ -38,6 +38,7 @@ func withUser(ctx context.Context, v *ory.Session) context.Context {
 func (app *OryApp) SessionMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 
+
 		fmt.Println("Authentication Middleware is running")
 		log.Printf("handling middleware request\n")
 
