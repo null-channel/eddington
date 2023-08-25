@@ -14,7 +14,10 @@ permissions:
   # pull-requests: read
 jobs:
   golangci:
-    name: lint
+    strategy:
+        matrix:
+          projects: ["api","container-runner","container-builder"]
+    name: lint and test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -23,6 +26,8 @@ jobs:
           go-version: '1.20'
           cache: false
       - name: vet
-        run: make vet
+        working-directory: ./${{ matrix.projects }}
+        run: go vet ./...
       - name: test
-        run: make test
+        working-directory: ./${{ matrix.projects }}
+        run: go test ./...
