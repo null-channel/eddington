@@ -6,16 +6,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
-	"os"
-
 	"github.com/gorilla/mux"
-	marketing "github.com/null-channel/eddington/api/marketing/controllers"
-	"github.com/null-channel/eddington/api/middleware"
-	"github.com/null-channel/eddington/api/notfound"
-	userController "github.com/null-channel/eddington/api/users/controllers"
 	ory "github.com/ory/client-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -23,6 +18,11 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
+
+	marketing "github.com/null-channel/eddington/api/marketing/controllers"
+	"github.com/null-channel/eddington/api/middleware"
+	"github.com/null-channel/eddington/api/notfound"
+	userController "github.com/null-channel/eddington/api/users/controllers"
 
 	pb "github.com/null-channel/eddington/proto/container"
 
@@ -190,6 +190,3 @@ func getClusterConfig(kubeconfig string) (*rest.Config, error) {
 	klog.Info("Kubeconfig flag is empty")
 	return rest.InClusterConfig()
 }
-
-
-
