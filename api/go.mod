@@ -4,8 +4,7 @@ go 1.20
 
 require (
 	github.com/evanphx/json-patch v4.12.0+incompatible
-	github.com/gin-contrib/cors v1.4.0
-	github.com/gin-gonic/gin v1.9.0
+	github.com/gorilla/handlers v1.5.1
 	github.com/null-channel/eddington/proto v0.0.0-20230702031216-4707232b9648
 	github.com/ory/client-go v1.1.41
 	github.com/pkg/errors v0.9.1
@@ -24,7 +23,7 @@ require (
 
 require (
 	github.com/felixge/httpsnoop v1.0.1 // indirect
-	github.com/gorilla/handlers v1.5.1 // indirect
+	github.com/gin-gonic/gin v1.9.0 // indirect
 )
 
 replace github.com/null-channel/eddington/proto => ../proto

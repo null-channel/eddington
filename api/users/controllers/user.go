@@ -91,6 +91,7 @@ func resourceGroupModelToProto(resourceGroups []*models.ResourceGroup) []*pb.Res
 
 func (u *UserController) AddAllControllers(router *mux.Router) {
 	router.HandleFunc("", u.UpdateUser).Methods("POST")
+	router.HandleFunc("/id", u.GetUserId).Methods("GET")
 }
 
 //	@BasePath	/api/v1/
@@ -154,3 +155,22 @@ func (u *UserController) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	// TODO: implement
 	w.WriteHeader(http.StatusNotImplemented)
 }
+
+
+
+// UpdateUser godoc
+//
+// @Summary	update an user
+// @Schemes
+// @Description	update a user
+// @Tags			Users
+// @Accept			json
+// @Produce		json
+// @Success		200	{string}	Helloworld
+// @Router			/users/ [post]
+func (u *UserController) GetUserId(w http.ResponseWriter, r *http.Request) {
+	// TODO: implement
+	fmt.Println("User ID: " + r.Context().Value("user-id").(string))
+	w.WriteHeader(http.StatusNotImplemented)
+}
+

@@ -31,8 +31,13 @@ func getSession(ctx context.Context) *ory.Session {
 	return ctx.Value("req.session").(*ory.Session)
 }
 
+func withUser(ctx context.Context, v *ory.Session) context.Context {
+	return context.WithValue(ctx, "user-name", v.GetIdentity().Id)
+}
+
 func (app *OryApp) SessionMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+
 
 		fmt.Println("Authentication Middleware is running")
 		log.Printf("handling middleware request\n")
@@ -57,6 +62,7 @@ func (app *OryApp) SessionMiddleware(next http.Handler) http.Handler {
 
 		ctx := withCookies(request.Context(), cookies)
 		ctx = withSession(ctx, session)
+		ctx = withUser(ctx,session)
 
 		// continue to the requested page (in our case the Dashboard)
 		next.ServeHTTP(writer, request.WithContext(ctx))

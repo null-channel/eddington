@@ -6,16 +6,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
-	"os"
-
 	"github.com/gorilla/mux"
-	marketing "github.com/null-channel/eddington/api/marketing/controllers"
-	"github.com/null-channel/eddington/api/middleware"
-	"github.com/null-channel/eddington/api/notfound"
-	userController "github.com/null-channel/eddington/api/users/controllers"
 	ory "github.com/ory/client-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -24,16 +19,23 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 
+	marketing "github.com/null-channel/eddington/api/marketing/controllers"
+	"github.com/null-channel/eddington/api/middleware"
+	"github.com/null-channel/eddington/api/notfound"
+	userController "github.com/null-channel/eddington/api/users/controllers"
+
 	pb "github.com/null-channel/eddington/proto/container"
 
 	app "github.com/null-channel/eddington/api/app/controllers"
 )
 
 var (
-	addr = flag.String("addr", "eddington-container-builder:50051", "the address to connect to")
+	addr  = flag.String("addr", "eddington-container-builder:50051", "the address to connect to")
+	debug = flag.Bool("debug", false, "Run in debug mode")
 )
 
 func main() {
+	flag.Parse()
 
 	// ORY Stuff Not sure this is a good way to deal with this.
 	proxyPort := os.Getenv("ORY_PROXY_PORT")
@@ -51,8 +53,16 @@ func main() {
 	c := ory.NewConfiguration()
 	c.Servers = ory.ServerConfigurations{{URL: fmt.Sprintf("%s:%s/.ory", oryDomain, proxyPort)}}
 
-	oryMiddleware := &middleware.OryApp{
-		Ory: ory.NewAPIClient(c),
+	var authMiddleware middleware.AuthMiddleware
+
+	if *debug {
+		authMiddleware = &middleware.DebugAuth{}
+		fmt.Println("WARNING: You are running in debug mode without auth. tread carefully and do not run in production")
+	} else {
+		authMiddleware = &middleware.OryApp{
+			Ory: ory.NewAPIClient(c),
+		}
+		fmt.Println("Running auth in production mode")
 	}
 
 	fmt.Println("Starting server...")
@@ -99,14 +109,14 @@ func main() {
 		// Apps
 		apps := v1.PathPrefix("/apps").Subrouter()
 		{
-			apps.Use(oryMiddleware.SessionMiddleware)
+			apps.Use(authMiddleware.SessionMiddleware)
 			appController.RegisterRoutes(apps)
 		}
 
 		// Users
 		users := v1.PathPrefix("/users").Subrouter()
 		{
-			users.Use(oryMiddleware.SessionMiddleware)
+			users.Use(authMiddleware.SessionMiddleware)
 			userController.AddAllControllers(users)
 		}
 		// AuthZ
@@ -162,7 +172,7 @@ func main() {
 
 	srv := &http.Server{
 		Handler: router,
-		Addr:    "0.0.0.0:8000",
+		Addr:    "0.0.0.0:" + port,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
