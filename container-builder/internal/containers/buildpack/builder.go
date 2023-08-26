@@ -71,7 +71,11 @@ func (b *Builder) GetBuildPackInfo(language string) (BuildPackInfo, error) {
 			BuildPack: "paketo-buildpacks/python",
 			Builder:   "paketobuildpacks/builder-jammy-full",
 		}, nil
-
+	case "static-web":
+		return BuildPackInfo{
+			Builder:   "paketobuildpacks/builder-jammy-full",
+			BuildPack: "paketo-buildpacks/web-servers",
+		}, nil
 	default:
 		return BuildPackInfo{}, fmt.Errorf("no buildpack found for %s", language)
 	}
@@ -91,6 +95,7 @@ func (b *Builder) CreateImage(opt BuildOpt) error {
 		}
 		err = b.Client.Build(ctx, pack.BuildOptions{
 			AppPath: opt.Path,
+			GroupID: -1,
 			Builder: opt.Builder,
 			// TODO: tag with git commit hash
 			Image:      opt.ImageName,

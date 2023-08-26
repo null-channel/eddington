@@ -6,6 +6,7 @@ require (
 	github.com/buildpacks/pack v0.30.0-pre3
 	github.com/go-git/go-git/v5 v5.7.0
 	github.com/google/uuid v1.3.0
+	github.com/joho/godotenv v1.5.1
 	github.com/null-channel/eddington/proto v0.0.0-20230719010728-226c1c9199cb
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.29.1
@@ -14,6 +15,8 @@ require (
 	github.com/uptrace/bun/driver/sqliteshim v1.1.14
 	google.golang.org/grpc v1.56.1
 )
+
+replace github.com/null-channel/eddington/proto => ../proto
 
 require (
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible // indirect
@@ -79,7 +82,6 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/klauspost/compress v1.16.5 // indirect
