@@ -63,11 +63,12 @@ func (a *ApplicationController) RegisterRoutes(router *mux.Router) {
 }
 
 type Application struct {
-	Name          string `json:"name" binding:"required"`
+	Name          string `json:"name"`
 	Image         string `json:"image"`
 	GitRepo       string `json:"gitRepo"`
 	RepoType      string `json:"repoType"`
 	ResourceGroup string `json:"resourceGroup"`
+	Directory     string `json:"directory"`
 }
 
 // AppPOST godoc
@@ -94,6 +95,7 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 		GitRepo:       r.Form.Get("gitRepo"),
 		RepoType:      r.Form.Get("repoType"),
 		ResourceGroup: r.Form.Get("resourceGroup"),
+		Directory:     r.Form.Get("directory"),
 	}
 
 	// get user namespace
@@ -111,8 +113,9 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 
 	ret, err := a.containerServiceClient.CreateContainer(r.Context(), &pb.CreateContainerRequest{
 		RepoURL:    app.GitRepo,
-		Type:       pb.Language(pb.Language_value["app.RepoType"]),
+		Type:       pb.Language(pb.Language_value[app.RepoType]),
 		CustomerID: userContext.Owner.ID,
+		Directory:  app.Directory,
 	})
 
 	namespace := userContext.Name + resourceGroup
@@ -133,9 +136,9 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		keepChecking := true
-		var status *pb.ContainerImageStatusReply
+		var status *pb.BuildStatusResponse
 		for keepChecking {
-			status, err = a.containerServiceClient.ImageStatus(context.Background(), &pb.BuildRequest{Id: ret.BuildID})
+			status, err = a.containerServiceClient.BuildStatus(context.Background(), &pb.BuildStatusRequest{Id: ret.BuildID})
 			if err != nil {
 				panic("checking container build status failed")
 			}

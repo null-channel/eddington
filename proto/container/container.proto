@@ -39,12 +39,14 @@ enum Language {
   JAVA = 1;
   PYTHON = 2;
   NODEJS = 3;
+  WebStatic = 4;
 }
 
 message CreateContainerRequest {
   string repoURL = 1;
   Language type = 2;
   string customerID = 3;
+  string directory = 4;
 }
 
 message CreateContainerResponse { string buildID = 1; }

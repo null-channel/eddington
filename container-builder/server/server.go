@@ -121,11 +121,12 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 
 		// add repo name in the format of registry/customerID-repoName
 		// imagName := fmt.Sprintf("%s/%s-%s", s.builder.Registry, req.CustomerID, repo)
+		buildPath := path.Join(dir, req.Directory)
 
 		opts := image.BuildOpt{
 			BuildID:   buildID,
 			RepoURL:   req.RepoURL,
-			Path:      dir,
+			Path:      buildPath,
 			ImageName: fmt.Sprintf("%s/%s-%s", s.builder.Registry, "nc-test", "random"),
 			BuildPack: buildInfo.BuildPack,
 			Builder:   buildInfo.Builder,
