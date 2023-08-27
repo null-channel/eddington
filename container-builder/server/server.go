@@ -13,6 +13,8 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/null-channel/eddington/container-builder/git"
+	"github.com/null-channel/eddington/container-builder/internal/containers/templates"
+
 	image "github.com/null-channel/eddington/container-builder/internal/containers/buildpack"
 	"github.com/null-channel/eddington/container-builder/models"
 	"github.com/null-channel/eddington/proto/container"
@@ -112,6 +114,11 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 			s.builder.UpdateBuildRequest(buildID, container.ContainerStatus_FAILED, "unable to clone repo")
 			return
 		}
+
+		// add repo name in the format of registry/customerID-repoName
+		// imagName := fmt.Sprintf("%s/%s-%s", s.builder.Registry, req.CustomerID, repo)
+		buildPath := path.Join(dir, req.Directory)
+
 		buildInfo, err := s.builder.GetBuildPackInfo(req.Type.String())
 		if err != nil {
 			s.log.Error().Err(err).Msg("unable to get buildpack info")
@@ -119,9 +126,13 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 			return
 		}
 
-		// add repo name in the format of registry/customerID-repoName
-		// imagName := fmt.Sprintf("%s/%s-%s", s.builder.Registry, req.CustomerID, repo)
-		buildPath := path.Join(dir, req.Directory)
+		language := strings.ToLower(req.Type.String())
+
+		//TODO: Do we need to have a "public" folder and the nginx config file outside that?
+		if language == "static-web" {
+			//write nginx config to filesystem
+			err = os.WriteFile(buildPath, []byte(templates.NginxConf), 0777)
+		}
 
 		opts := image.BuildOpt{
 			BuildID:   buildID,
