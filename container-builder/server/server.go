@@ -12,9 +12,11 @@ import (
 	pack "github.com/buildpacks/pack/pkg/client"
 	"github.com/google/uuid"
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/null-channel/eddington/application/container-builder/git"
-	image "github.com/null-channel/eddington/application/container-builder/internal/containers/buildpack"
-	"github.com/null-channel/eddington/application/container-builder/models"
+	"github.com/null-channel/eddington/container-builder/git"
+	"github.com/null-channel/eddington/container-builder/internal/containers/templates"
+
+	image "github.com/null-channel/eddington/container-builder/internal/containers/buildpack"
+	"github.com/null-channel/eddington/container-builder/models"
 	"github.com/null-channel/eddington/proto/container"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -80,7 +82,7 @@ func NewServer() (*Server, error) {
 // call using grpcurl:
 // grpcurl -plaintext -d '{"repoURL": "your_repo_url", "type": "your_type", "customerID": "your_customer_id"}' localhost:4040 container.ContainerService/CreateContainer
 
-func (s *Server) CreateContainer(ctx context.Context, req *container.CreateContainerRequest) (*container.CreateContainerReply, error) {
+func (s *Server) CreateContainer(ctx context.Context, req *container.CreateContainerRequest) (*container.CreateContainerResponse, error) {
 	s.log.Info().Msg("processing build for repo " + req.RepoURL)
 	buildID := uuid.New().String()
 	// create a build request in the db
@@ -104,7 +106,7 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 
 	// start build in a goroutine with the buildID and request
 	go func(buildID string, req *container.CreateContainerRequest) {
-		// TODO: Validate git repo
+		//TODO: Validate git repo
 		_, err = git.Clone(req.RepoURL, dir)
 		if err != nil {
 			s.log.Error().Err(err).Msg("unable to clone repo")
@@ -112,6 +114,11 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 			s.builder.UpdateBuildRequest(buildID, container.ContainerStatus_FAILED, "unable to clone repo")
 			return
 		}
+
+		// add repo name in the format of registry/customerID-repoName
+		// imagName := fmt.Sprintf("%s/%s-%s", s.builder.Registry, req.CustomerID, repo)
+		buildPath := path.Join(dir, req.Directory)
+
 		buildInfo, err := s.builder.GetBuildPackInfo(req.Type.String())
 		if err != nil {
 			s.log.Error().Err(err).Msg("unable to get buildpack info")
@@ -119,13 +126,18 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 			return
 		}
 
-		// add repo name in the format of registry/customerID-repoName
-		// imagName := fmt.Sprintf("%s/%s-%s", s.builder.Registry, req.CustomerID, repo)
+		language := strings.ToLower(req.Type.String())
+
+		//TODO: Do we need to have a "public" folder and the nginx config file outside that?
+		if language == "static-web" {
+			//write nginx config to filesystem
+			err = os.WriteFile(buildPath, []byte(templates.NginxConf), 0777)
+		}
 
 		opts := image.BuildOpt{
 			BuildID:   buildID,
 			RepoURL:   req.RepoURL,
-			Path:      dir,
+			Path:      buildPath,
 			ImageName: fmt.Sprintf("%s/%s-%s", s.builder.Registry, "nc-test", "random"),
 			BuildPack: buildInfo.BuildPack,
 			Builder:   buildInfo.Builder,
@@ -140,14 +152,14 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 
 	}(buildID, req)
 
-	return &container.CreateContainerReply{
+	return &container.CreateContainerResponse{
 		BuildID: buildID,
 	}, nil
 
 }
 
 // ImageStatus maps to the ImageStatus RPC
-func (s *Server) ImageStatus(ctx context.Context, req *container.BuildRequest) (*container.ContainerImageStatusReply, error) {
+func (s *Server) BuildStatus(ctx context.Context, req *container.BuildStatusRequest) (*container.BuildStatusResponse, error) {
 	// get the build request from the db
 	build, err := s.builder.GetBuild(req.Id)
 	if err != nil {
@@ -155,9 +167,9 @@ func (s *Server) ImageStatus(ctx context.Context, req *container.BuildRequest) (
 		return nil, errors.Wrap(err, "unable to fetch build")
 	}
 
-	return &container.ContainerImage{
-		Status:                 build.Status,
-		ContainerStatusMessage: build.StatusMessage,
+	return &container.BuildStatusResponse{
+		ImageName: build.RepoName,
+		Status:    build.Status,
 	}, nil
 }
 
