@@ -16,8 +16,6 @@ require (
 	google.golang.org/grpc v1.56.1
 )
 
-replace github.com/null-channel/eddington/proto => ../proto
-
 require (
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect

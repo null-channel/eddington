@@ -1,8 +1,6 @@
 FROM golang:1.20-buster as builder
 WORKDIR /app
 ADD . .
-WORKDIR /app/api
-RUN go mod download
 RUN go mod tidy
 RUN go build -o ./api ./main.go
 
