@@ -82,7 +82,12 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 			s.builder.UpdateBuildRequest(buildID, container.ContainerStatus_FAILED, "unable to clone repo")
 			return
 		}
-		buildInfo, err := s.builder.GetBuildPackInfo(req.Type)
+
+		// add repo name in the format of registry/customerID-repoName
+		// imagName := fmt.Sprintf("%s/%s-%s", s.builder.Registry, req.CustomerID, repo)
+		buildPath := path.Join(dir, req.Directory)
+
+		buildInfo, err := s.builder.GetBuildPackInfo(req.Type.String())
 		if err != nil {
 			s.log.Error().Err(err).Msg("unable to get buildpack info")
 			s.builder.UpdateBuildRequest(buildID, container.ContainerStatus_FAILED, "unable to retreive buildpack info")
@@ -122,7 +127,7 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 }
 
 // ImageStatus maps to the ImageStatus RPC
-func (s *Server) ImageStatus(ctx context.Context, req *container.Build) (*container.ContainerImage, error) {
+func (s *Server) ImageStatus(ctx context.Context, req *container.BuildStatusRequest) (*container.BuildStatusResponse, error) {
 	// get the build request from the db
 	build, err := s.builder.GetBuild(req.Id)
 	if err != nil {
