@@ -2,27 +2,21 @@ package server
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"os"
 	"path"
 
 	"strings"
 
-	pack "github.com/buildpacks/pack/pkg/client"
 	"github.com/google/uuid"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/null-channel/eddington/container-builder/git"
-	"github.com/null-channel/eddington/container-builder/internal/containers/templates"
-
 	image "github.com/null-channel/eddington/container-builder/internal/containers/buildpack"
-	"github.com/null-channel/eddington/container-builder/models"
+	"github.com/null-channel/eddington/container-builder/internal/containers/templates"
 	"github.com/null-channel/eddington/proto/container"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/dialect/sqlitedialect"
-	"github.com/uptrace/bun/driver/sqliteshim"
 )
 
 type Server struct {
@@ -33,33 +27,8 @@ type Server struct {
 	repoDirs string
 }
 
-func NewServer() (*Server, error) {
-	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
-	if err != nil {
-		return nil, err
-	}
-	db := bun.NewDB(sqldb, sqlitedialect.New())
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create db")
-	}
-	_, err = db.NewCreateTable().Model((*models.Build)(nil)).Exec(context.Background())
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to migrate table")
-	}
-	packClient, err := pack.NewClient()
-	if err != nil {
-		return nil, err
-	}
+func NewServer(db *bun.DB, builder *image.Builder, logger *zerolog.Logger) (*Server, error) {
 
-	registry := os.Getenv("REGISTRY_URL")
-	if registry == "" {
-		return nil, errors.New("REGISTRY_URL is not set")
-	}
-
-	builder, err := image.NewBuilder(db, packClient, registry)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create builder")
-	}
 	repoDirs := GetRepoDirOrDefault()
 	// create the repo directory if it doesn't exist
 	if _, err := os.Stat(repoDirs); os.IsNotExist(err) {
@@ -69,11 +38,10 @@ func NewServer() (*Server, error) {
 		}
 	}
 
-	l := zerolog.New(os.Stdout).With().Timestamp().Str("component", "server").Logger()
 	return &Server{
 		builder:  builder,
 		repoDirs: repoDirs,
-		log:      l,
+		log:      *logger,
 	}, nil
 
 }
@@ -88,14 +56,14 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 	// create a build request in the db
 
 	// validate the repo url
-	isValid, _ := git.ValidateGitHubURL(req.RepoURL)
+	err := git.ValidateGitHubURL(req.RepoURL)
 
-	if !isValid {
-		return nil, errors.New("invalid repo url")
+	if err != nil {
+		return nil, err
 	}
 
 	repo := strings.TrimPrefix(req.RepoURL, "https://github.com/")
-	err := s.builder.NewBuild(req.CustomerID, repo, buildID)
+	err = s.builder.NewBuild(req.CustomerID, repo, buildID)
 	if err != nil {
 		s.log.Error().Err(err).Msg("unable to create build request")
 		return nil, errors.Wrap(err, "unable to create build , please try again")
@@ -159,7 +127,7 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 }
 
 // ImageStatus maps to the ImageStatus RPC
-func (s *Server) BuildStatus(ctx context.Context, req *container.BuildStatusRequest) (*container.BuildStatusResponse, error) {
+func (s *Server) ImageStatus(ctx context.Context, req *container.BuildStatusRequest) (*container.BuildStatusResponse, error) {
 	// get the build request from the db
 	build, err := s.builder.GetBuild(req.Id)
 	if err != nil {
