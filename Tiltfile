@@ -7,7 +7,8 @@ k8s_resource(
 )
 
 
-docker_build("nullchannel/eddington-container-builder","./container-builder", only=["./application/container-builder/"])
+docker_build("nullchannel/eddington-container-builder","./container-builder")
+k8s_yaml('./deployment/container-builder/config.yaml')
 k8s_yaml('./deployment/container-builder/deployment.yaml')
 k8s_yaml('./deployment/container-builder/service.yaml')
 

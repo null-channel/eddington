@@ -12,5 +12,5 @@ RUN apt-get update && apt-get install -y openssl ca-certificates
 RUN update-ca-certificates
 RUN apt-get install -y libssl-dev
 RUN rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/application/container-builder/container-builder /app/container-builder
+COPY --from=builder /app/container-builder app/container-builder
 CMD ["/app/container-builder"]

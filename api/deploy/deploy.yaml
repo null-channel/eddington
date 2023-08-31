@@ -17,6 +17,7 @@ spec:
       containers:
       - name: api-service
         image: api-service:1.14.2
+        args: ["-debug"]
         ports:
         - containerPort: 8080
         env:

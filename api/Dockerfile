@@ -10,5 +10,5 @@ RUN apt-get update && apt-get install -y openssl ca-certificates
 RUN update-ca-certificates
 RUN apt-get install -y libssl-dev
 RUN rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/api/api /app/api
-CMD ["/app/api"]
+COPY --from=builder /app/api /app/api
+ENTRYPOINT ["/app/api"]

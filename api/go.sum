@@ -113,6 +113,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/null-channel/eddington/proto v0.0.0-20230702031216-4707232b9648 h1:OQ1W6JFF609G64/4oNoPKIlxrUHGN7I3T/JAFsZQIes=
 github.com/null-channel/eddington/proto v0.0.0-20230702031216-4707232b9648/go.mod h1:6/AKz1/DBlzRT5IG4Bbzvjfp1ssh84NoVnvDK/2zAd8=
+github.com/null-channel/eddington/proto v0.0.0-20230829132956-6204678b6bd0 h1:P1KbsrMDeJ82WzB4Xy9gV7wF4bQh0ft9iyaFfV828PE=
+github.com/null-channel/eddington/proto v0.0.0-20230829132956-6204678b6bd0/go.mod h1:QaQic8kdmFZcOkCFG0ik4XEvo5BTWn2MWagHROgm98Y=
 github.com/ory/client-go v1.1.41 h1:dMt3jHpYeSVaNDrgfDrhYZuUYcfz9qry/G42zalsrTo=
 github.com/ory/client-go v1.1.41/go.mod h1:g5jXHLTrOo8479mSmgPbA9/QWnEgQ2K8pgsaOwhidRs=
 github.com/pelletier/go-toml/v2 v2.0.8 h1:0ctb6s9mE31h0/lhu+J6OPmVeDxJn+kYnJc2jZR9tGQ=
