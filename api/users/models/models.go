@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	ID     string `bun:",pk"` // primary key, same as ory.
+	ID     int64 `bun:",pk"` // primary key, same as ory.
 	Name   string
 	Traits *Traits `bun:"rel:has-one,join:id=user_id"`
 }
@@ -15,7 +15,6 @@ type User struct {
 type Traits struct {
 	ID                int64    `bun:",pk,autoincrement"`
 	Emails            []string `bun:"email"`
-	Name              string   `bun:"name"`
 	NewsLetterConsent bool     `bun:"newsletterConsent"`
 	UserID            string   `bun:"user_id"`
 }
@@ -43,7 +42,7 @@ type Resources struct {
 }
 
 func (u User) String() string {
-	return fmt.Sprintf("User<%s %s %s>", u.ID, u.Traits.Name, u.Traits.Emails)
+	return fmt.Sprintf("User<%s %s>", u.ID, u.Traits.Emails)
 }
 
 func CreateUserRequestToDBModel(createUserRequest types.CreateUserRequest) User {
@@ -51,7 +50,6 @@ func CreateUserRequestToDBModel(createUserRequest types.CreateUserRequest) User 
 		ID: createUserRequest.UserId,
 		Traits: &Traits{
 			Emails:            []string{createUserRequest.Traits.Email},
-			Name:              createUserRequest.Traits.Name,
 			NewsLetterConsent: createUserRequest.Traits.NewsLetterConsent,
 		},
 	}

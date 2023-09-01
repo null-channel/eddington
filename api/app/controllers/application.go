@@ -5,12 +5,14 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/sqlitedialect"
 	"github.com/uptrace/bun/driver/sqliteshim"
+	"go.uber.org/zap"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
@@ -31,9 +33,10 @@ type ApplicationController struct {
 	userController         *usercon.UserController
 	database               *bun.DB
 	containerServiceClient pb.ContainerServiceClient
+	logs                   *zap.Logger
 }
 
-func NewApplicationController(kube dynamic.Interface, userService *usercon.UserController, containerBuildingService pb.ContainerServiceClient) *ApplicationController {
+func NewApplicationController(kube dynamic.Interface, userService *usercon.UserController, containerBuildingService pb.ContainerServiceClient, logger *zap.Logger) *ApplicationController {
 	// Set up a connection to the server.
 	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
 	db := bun.NewDB(sqldb, sqlitedialect.New())
@@ -54,6 +57,7 @@ func NewApplicationController(kube dynamic.Interface, userService *usercon.UserC
 		userController:         userService,
 		database:               db,
 		containerServiceClient: containerBuildingService,
+		logs:                   logger,
 	}
 }
 
@@ -83,6 +87,7 @@ type Application struct {
 //	@Router			/apps/ [post]
 func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 
+	suggeredLogger := a.logs.Sugar()
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, "Error parsing form data", http.StatusBadRequest)
@@ -98,9 +103,18 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 		Directory:     r.Form.Get("directory"),
 	}
 
-	// get user namespace
-	userContext, err := a.userController.GetUserContext(r.Context(), 2)
+	userId, err := strconv.ParseInt(r.Context().Value("user-id").(string), 10, 64)
+
 	if err != nil {
+		suggeredLogger.Errorf("Failed to parse user id",
+			"user-id:", r.Context().Value("user-id"))
+	}
+	// get user namespace
+	userContext, err := a.userController.GetUserContext(r.Context(), userId)
+	if err != nil {
+		suggeredLogger.Errorw("Failed to get user context for the user controller",
+			"user-id", userId,
+			"error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -122,6 +136,9 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 	nullApplication := getNullApplication(app, userContext, rgId, namespace, ret.BuildID)
 
 	if err != nil {
+		suggeredLogger.Errorf("Failed to create container",
+			"user-id", userId,
+			"error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -130,6 +147,9 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 	_, err = a.database.NewInsert().Model(nullApplication).Exec(context.Background())
 
 	if err != nil {
+		suggeredLogger.Errorf("Failed to create container",
+			"user-id", userId,
+			"error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -152,6 +172,9 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 		deployment := getApplication(app.Name, namespace, app.Image)
 		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
 		if err != nil {
+			suggeredLogger.Errorf("Failed to apply CRD for new application",
+				"user-id", userId,
+				"error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
@@ -209,3 +232,4 @@ func (a ApplicationController) AppGET(w http.ResponseWriter, r *http.Request) {
 	// TODO: implement
 	w.WriteHeader(http.StatusNotImplemented)
 }
+
