@@ -45,7 +45,7 @@ enum Language {
 message CreateContainerRequest {
   string repoURL = 1;
   Language type = 2;
-  string customerID = 3;
+  int64 customerID = 3;
   string directory = 4;
 }
 
