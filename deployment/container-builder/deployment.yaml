@@ -30,3 +30,9 @@ spec:
             cpu: "500m"
         ports:
         - containerPort: 50051
+        env:
+          - name: REGISTRY_URL
+            valueFrom:
+              configMapKeyRef:
+                name: container-builder-config
+                key: REGISTRY_URL

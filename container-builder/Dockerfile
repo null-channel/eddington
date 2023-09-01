@@ -1,7 +1,6 @@
 FROM golang:1.20-buster as builder
 WORKDIR /app
 ADD . .
-WORKDIR /app/application/container-builder
 RUN go mod download
 RUN go mod tidy
 RUN go build -o ./container-builder ./main.go
@@ -13,5 +12,5 @@ RUN apt-get update && apt-get install -y openssl ca-certificates
 RUN update-ca-certificates
 RUN apt-get install -y libssl-dev
 RUN rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/application/container-builder/container-builder /app/container-builder
+COPY --from=builder /app/container-builder app/container-builder
 CMD ["/app/container-builder"]

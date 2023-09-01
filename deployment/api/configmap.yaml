@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: eddington-config
+  name: eddington-api-config
 data:
   PORT: "8080"
   HOST: "http://localhost"

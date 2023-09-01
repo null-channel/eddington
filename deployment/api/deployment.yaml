@@ -14,6 +14,8 @@ spec:
       containers: 
       - name: eddington-api
         image: nullchannel/eddington-api:latest
+        command: ["app/api"]
+        arg: ["-debug"]
         resources:
           limits:
             memory: "128Mi"

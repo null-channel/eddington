@@ -5,7 +5,6 @@ go 1.20
 require (
 	github.com/evanphx/json-patch v4.12.0+incompatible
 	github.com/gorilla/handlers v1.5.1
-	github.com/null-channel/eddington/proto v0.0.0-20230702031216-4707232b9648
 	github.com/ory/client-go v1.1.41
 	github.com/pkg/errors v0.9.1
 	github.com/sendgrid/sendgrid-go v3.12.0+incompatible
@@ -24,9 +23,8 @@ require (
 require (
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/gin-gonic/gin v1.9.0 // indirect
+	github.com/null-channel/eddington/proto v0.0.0-20230829132956-6204678b6bd0 // indirect
 )
-
-replace github.com/null-channel/eddington/proto => ../proto
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
