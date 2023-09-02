@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/null-channel/eddington/api/users/models"
@@ -51,13 +52,26 @@ func (u *UserController) GetUserContext(ctx context.Context, userId int64) (*mod
 	// This is probably not even going to be an indext column in the future.
 	// Regrets future marek.
 	var orgs []models.Org
-	err := u.database.NewSelect().Model(&orgs).Where("owner_id = ?", userId).Scan(ctx, &orgs)
+	err := u.database.NewSelect().
+		Model(&orgs).
+		Where("owner_id = ?", userId).
+		Scan(ctx, &orgs)
 
 	if err != nil {
 		u.logger.Errorw("Error getting user from database",
 			"error", err)
 		return nil, err
 	}
+
+	var resGroups []*models.ResourceGroup
+	err = u.database.NewSelect().
+		Model(&resGroups).
+		Where("org_id = ?", &orgs[0].ID).
+		Scan(ctx)
+
+	orgs[0].ResourceGroups = resGroups
+
+	fmt.Println(orgs)
 
 	return &orgs[0], nil
 }
@@ -115,7 +129,9 @@ func (u *UserController) CreateUser(user models.User) (int, error) {
 		return http.StatusInternalServerError, err
 	}
 
+	orgAsString := strconv.FormatInt(ownerId, 10)
 	org := models.Org{
+		Name:    "default-" + orgAsString,
 		OwnerID: ownerId,
 	}
 	res, err = u.database.NewInsert().Model(&org).Exec(context.Background())
@@ -123,12 +139,10 @@ func (u *UserController) CreateUser(user models.User) (int, error) {
 		return http.StatusInternalServerError, err
 	}
 
-	orgId, err := res.LastInsertId()
-
-	u.logger.Infow("Org created", "orgId:", orgId)
+	u.logger.Infow("Org created", "orgId:", org.ID)
 
 	resourceGroup := models.ResourceGroup{
-		OrgID: orgId,
+		OrgID: org.ID,
 		Name:  "default",
 	}
 	_, err = u.database.NewInsert().Model(&resourceGroup).Exec(context.Background())

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -33,7 +34,7 @@ type ApplicationController struct {
 	userController         *usercon.UserController
 	database               *bun.DB
 	containerServiceClient pb.ContainerServiceClient
-	logs                   *zap.Logger
+	logs                   *zap.SugaredLogger
 }
 
 func NewApplicationController(kube dynamic.Interface, userService *usercon.UserController, containerBuildingService pb.ContainerServiceClient, logger *zap.Logger) *ApplicationController {
@@ -57,7 +58,7 @@ func NewApplicationController(kube dynamic.Interface, userService *usercon.UserC
 		userController:         userService,
 		database:               db,
 		containerServiceClient: containerBuildingService,
-		logs:                   logger,
+		logs:                   logger.Sugar(),
 	}
 }
 
@@ -87,7 +88,6 @@ type Application struct {
 //	@Router			/apps/ [post]
 func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 
-	suggeredLogger := a.logs.Sugar()
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, "Error parsing form data", http.StatusBadRequest)
@@ -106,21 +106,23 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 	userId, err := strconv.ParseInt(r.Context().Value("user-id").(string), 10, 64)
 
 	if err != nil {
-		suggeredLogger.Errorf("Failed to parse user id",
+		a.logs.Errorf("Failed to parse user id",
 			"user-id:", r.Context().Value("user-id"))
 	}
 	// get user namespace
 	userContext, err := a.userController.GetUserContext(r.Context(), userId)
 	if err != nil {
-		suggeredLogger.Errorw("Failed to get user context for the user controller",
+		a.logs.Errorw("Failed to get user context for the user controller",
 			"user-id", userId,
 			"error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+	fmt.Println(userContext)
 	resourceGroup, rgId, err := getResourceGroupName(userContext.ResourceGroups, app.ResourceGroup)
 	if err != nil {
 
+		a.logs.Warnw("Resource Group not found", "Resource Group:", resourceGroup)
 		http.Error(w, "Resource group not found", http.StatusNotFound)
 		return
 	}
@@ -128,26 +130,26 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 	ret, err := a.containerServiceClient.CreateContainer(r.Context(), &pb.CreateContainerRequest{
 		RepoURL:    app.GitRepo,
 		Type:       pb.Language(pb.Language_value[app.RepoType]),
-		CustomerID: userContext.Owner.ID,
+		CustomerID: userId,
 		Directory:  app.Directory,
 	})
 
-	namespace := userContext.Name + resourceGroup
-	nullApplication := getNullApplication(app, userContext, rgId, namespace, ret.BuildID)
-
 	if err != nil {
-		suggeredLogger.Errorf("Failed to create container",
+		a.logs.Errorf("Failed to create container",
 			"user-id", userId,
 			"error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
+	namespace := userContext.Name + resourceGroup
+	nullApplication := getNullApplication(app, userContext, rgId, namespace, ret.BuildID)
+
 	//TODO: Save to database!
 	_, err = a.database.NewInsert().Model(nullApplication).Exec(context.Background())
 
 	if err != nil {
-		suggeredLogger.Errorf("Failed to create container",
+		a.logs.Errorf("Failed to create container",
 			"user-id", userId,
 			"error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -160,6 +162,7 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 		for keepChecking {
 			status, err = a.containerServiceClient.BuildStatus(context.Background(), &pb.BuildStatusRequest{Id: ret.BuildID})
 			if err != nil {
+				a.logs.Errorw("Failed to get build status", "error", err)
 				panic("checking container build status failed")
 			}
 
@@ -172,7 +175,7 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 		deployment := getApplication(app.Name, namespace, app.Image)
 		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
 		if err != nil {
-			suggeredLogger.Errorf("Failed to apply CRD for new application",
+			a.logs.Errorf("Failed to apply CRD for new application",
 				"user-id", userId,
 				"error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -206,6 +209,7 @@ func getResourceGroupName(resourceGroups []*models.ResourceGroup, requested stri
 	if requested == "" {
 		requested = "default"
 	}
+
 	for _, group := range resourceGroups {
 		if group.Name == requested {
 			return group.Name, group.ID, nil
