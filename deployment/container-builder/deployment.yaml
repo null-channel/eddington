@@ -13,11 +13,11 @@ spec:
     volumes:
     - name: docker-socket
       hostPath:
-        path: "/var/run/docker.sock"
+        path: "/run/containerd/containerd.sock"
         type: File
     - name: docker-config
       hostPath:
-        path: "/var/lib/docker"
+        path: "/var/lib/containerd"
     spec:
       containers: 
       - name: eddington-container-builder
@@ -36,3 +36,8 @@ spec:
               configMapKeyRef:
                 name: container-builder-config
                 key: REGISTRY_URL
+          - name: DOCKER_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: container-builder-config 
+                key: DOCKER_HOST

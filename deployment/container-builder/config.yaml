@@ -4,3 +4,4 @@ metadata:
   name: container-builder-config
 data:
   REGISTRY_URL: "nullchannel/"
+  DOCKER_HOST: "/run/containerd/containerd.sock"
