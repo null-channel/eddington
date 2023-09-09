@@ -8,7 +8,7 @@ kind: Cluster
 product: kind
 registry: ctlptl-registry
 kindV1Alpha4Cluster:
-  name: kind-eddington
+  name: kind
   networking:
     apiServerAddress: "127.0.0.1"
     apiServerPort: 6443
