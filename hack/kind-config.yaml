@@ -9,6 +9,11 @@ networking:
   kubeProxyMode: "iptables"
 nodes:
   - role: control-plane
+    extraMounts:
+    - hostPath: /var/run/
+      containerPath: /eddington/var/run/
+    - hostPath: /var/lib/docker
+      containerPath: /eddington/var/lib/docker
     kubeadmConfigPatches:
       - |
         kind: InitConfiguration

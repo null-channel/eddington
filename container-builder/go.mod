@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/buildpacks/pack v0.30.0-pre3
+	github.com/docker/docker v24.0.5+incompatible
 	github.com/go-git/go-git/v5 v5.7.0
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.5.1
@@ -59,7 +60,6 @@ require (
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/docker/cli v24.0.2+incompatible // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
-	github.com/docker/docker v24.0.5+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect

@@ -10,20 +10,21 @@ spec:
     metadata:
       labels:
         app: eddington-container-builder
-    volumes:
-    - name: docker-socket
-      hostPath:
-        path: "/run/containerd/containerd.sock"
-        type: File
-    - name: docker-config
-      hostPath:
-        path: "/var/lib/containerd"
     spec:
+      volumes:
+      - name: docker-socket
+        hostPath:
+          path: "/eddington/var/run"
+          type: Directory
+      - name: docker-config
+        hostPath:
+          path: "/eddington/var/lib/docker"
       containers: 
       - name: eddington-container-builder
         image: nullchannel/eddington-container-builder:latest
         securityContext:
           privileged: true
+          runAsUser: 0
         resources:
           limits:
             memory: "128Mi"
@@ -41,3 +42,11 @@ spec:
               configMapKeyRef:
                 name: container-builder-config 
                 key: DOCKER_HOST
+        volumeMounts:
+          - mountPath: "/eddington/var/run"
+            name: docker-socket
+            readOnly: false
+          - mountPath: "/eddington/var/lib/docker"
+            name: docker-config
+            readOnly: false
+            
