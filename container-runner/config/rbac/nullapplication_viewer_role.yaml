@@ -25,3 +25,28 @@ rules:
   - nullapplications/status
   verbs:
   - get
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - pods
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch

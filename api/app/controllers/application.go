@@ -172,10 +172,10 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 			time.Sleep(20 * time.Second)
 		}
 
-		deployment := getApplication(app.Name, namespace, app.Image)
+		deployment := getApplication(app.Name, namespace, "nullchannel/"+app.Image)
 		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
 		if err != nil {
-			a.logs.Errorf("Failed to apply CRD for new application",
+			a.logs.Errorw("Failed to apply CRD for new application",
 				"user-id", userId,
 				"error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -219,7 +219,7 @@ func getResourceGroupName(resourceGroups []*models.ResourceGroup, requested stri
 }
 
 func getDeploymentGVR() schema.GroupVersionResource {
-	return schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+	return schema.GroupVersionResource{Group: "nullapp.io.nullcloud", Version: "v1alpha", Resource: "nullapplication"}
 }
 
 // AppGET godoc

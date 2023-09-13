@@ -77,6 +77,12 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 	go func(buildID string, req *container.CreateContainerRequest) {
 		//TODO: Validate git repo
 		_, err = git.Clone(req.RepoURL, dir)
+		defer func() {
+			err := os.RemoveAll(dir)
+			if err != nil {
+				fmt.Println("Failed to delete dir: " + err.Error())
+			}
+		}()
 		if err != nil {
 			s.log.Error().Err(err).Msg("unable to clone repo")
 			// Failed to clone the repo
@@ -84,6 +90,7 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 			return
 		}
 
+		s.log.Debug().Msg("Cloned Repo")
 		// add repo name in the format of registry/customerID-repoName
 		// imagName := fmt.Sprintf("%s/%s-%s", s.builder.Registry, req.CustomerID, repo)
 		buildPath := path.Join(dir, req.Directory)
@@ -95,6 +102,7 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 			return
 		}
 
+		s.log.Debug().Msg("Obtained Build Pack Info")
 		language := strings.ToLower(req.Type.String())
 
 		//TODO: Do we need to have a "public" folder and the nginx config file outside that?
