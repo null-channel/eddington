@@ -8,6 +8,7 @@ import (
 
 	"strings"
 
+	pack "github.com/buildpacks/pack/pkg/client"
 	"github.com/google/uuid"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/null-channel/eddington/container-builder/git"
@@ -110,8 +111,11 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 			BuildPack: buildInfo.BuildPack,
 			Builder:   buildInfo.Builder,
 		}
-
-		err = s.builder.CreateImage(opts)
+		client, err := pack.NewClient()
+		if err != nil {
+			s.log.Err(err).Msgf("unable to create pack client for build: %s", buildID)
+		}
+		err = s.builder.CreateImage(opts, client)
 		if err != nil {
 			s.log.Error().Err(err).Msg("Build failed")
 			s.builder.UpdateBuildRequest(buildID, container.ContainerStatus_FAILED, err.Error())
