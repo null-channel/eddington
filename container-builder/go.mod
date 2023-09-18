@@ -7,7 +7,7 @@ require (
 	github.com/go-git/go-git/v5 v5.7.0
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.5.1
-	github.com/null-channel/eddington/proto v0.0.0-20230719010728-226c1c9199cb
+	github.com/null-channel/eddington/proto v0.0.0-20230829132956-6204678b6bd0
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.29.1
 	github.com/uptrace/bun v1.1.14
@@ -17,7 +17,6 @@ require (
 )
 
 require (
-	github.com/null-channel/eddington/proto v0.0.0-20230829132956-6204678b6bd0 // indirect
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect

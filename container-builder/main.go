@@ -4,7 +4,6 @@ import (
 	"net"
 	"os"
 
-	pack "github.com/buildpacks/pack/pkg/client"
 	image "github.com/null-channel/eddington/container-builder/internal/containers/buildpack"
 	"github.com/null-channel/eddington/container-builder/server"
 	"github.com/null-channel/eddington/container-builder/utils"
@@ -32,17 +31,12 @@ func main() {
 		l.Err(err).Str("failed to create db", "")
 	}
 
-	packClient, err := pack.NewClient()
-	if err != nil {
-		l.Error().Err(err).Msg("unable to create pack client ")
-	}
-
 	registry := os.Getenv("REGISTRY_URL")
 	if registry == "" {
 		l.Error().Err(err).Msg("unable to create registry ")
 	}
 
-	builder, err := image.NewBuilder(db, packClient, registry)
+	builder, err := image.NewBuilder(db, registry)
 	if err != nil {
 		l.Error().Err(err).Msg("unable to create builder")
 	}

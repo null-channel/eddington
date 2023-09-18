@@ -34,19 +34,17 @@ type BuildPackInfo struct {
 }
 
 type Builder struct {
-	Client *pack.Client
-	log    zerolog.Logger
-	db     *bun.DB
+	log zerolog.Logger
+	db  *bun.DB
 	// used to store built images
 	Registry string
 }
 
 // NewBuilder returns a new builder
-func NewBuilder(db *bun.DB, pack *pack.Client, registry string) (*Builder, error) {
+func NewBuilder(db *bun.DB, registry string) (*Builder, error) {
 	return &Builder{
 		log:      log,
 		db:       db,
-		Client:   pack,
 		Registry: registry,
 	}, nil
 }
@@ -81,7 +79,7 @@ func (b *Builder) GetBuildPackInfo(language string) (BuildPackInfo, error) {
 	}
 }
 
-func (b *Builder) CreateImage(opt BuildOpt) error {
+func (b *Builder) CreateImage(opt BuildOpt, client *pack.Client) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -93,7 +91,7 @@ func (b *Builder) CreateImage(opt BuildOpt) error {
 		if err != nil {
 			b.log.Err(err).Msg("unable to update build request")
 		}
-		err = b.Client.Build(ctx, pack.BuildOptions{
+		err = client.Build(ctx, pack.BuildOptions{
 			AppPath: opt.Path,
 			GroupID: -1,
 			Builder: opt.Builder,
@@ -129,7 +127,6 @@ func (b *Builder) CreateImage(opt BuildOpt) error {
 			b.log.Err(err).Msg("unable to update build request")
 			return err
 		}
-		// TODO: Push the image to the registry
 
 	}
 	return nil
