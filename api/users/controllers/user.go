@@ -16,6 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// Mux Controller to handel user routes
 type UserController struct {
 	pb.UnimplementedUserServiceServer
 	database *bun.DB

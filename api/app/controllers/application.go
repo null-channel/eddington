@@ -236,4 +236,3 @@ func (a ApplicationController) AppGET(w http.ResponseWriter, r *http.Request) {
 	// TODO: implement
 	w.WriteHeader(http.StatusNotImplemented)
 }
-
