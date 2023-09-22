@@ -219,7 +219,7 @@ func getResourceGroupName(resourceGroups []*models.ResourceGroup, requested stri
 }
 
 func getDeploymentGVR() schema.GroupVersionResource {
-	return schema.GroupVersionResource{Group: "nullapp.io.nullcloud", Version: "v1alpha1", Resource: "nullapplication"}
+	return schema.GroupVersionResource{Group: "nullapp.io.nullcloud", Version: "v1alpha1", Resource: "nullapplications"}
 }
 
 // AppGET godoc

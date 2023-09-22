@@ -129,7 +129,6 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 			s.builder.UpdateBuildRequest(buildID, container.ContainerStatus_FAILED, err.Error())
 			return
 		}
-
 	}(buildID, req)
 
 	return &container.CreateContainerResponse{

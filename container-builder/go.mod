@@ -4,7 +4,6 @@ go 1.20
 
 require (
 	github.com/buildpacks/pack v0.30.0-pre3
-	github.com/docker/docker v24.0.5+incompatible
 	github.com/go-git/go-git/v5 v5.7.0
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.5.1
@@ -14,7 +13,6 @@ require (
 	github.com/uptrace/bun v1.1.14
 	github.com/uptrace/bun/dialect/sqlitedialect v1.1.14
 	github.com/uptrace/bun/driver/sqliteshim v1.1.14
-	google.golang.org/grpc v1.56.1
 )
 
 require (
@@ -60,6 +58,7 @@ require (
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/docker/cli v24.0.2+incompatible // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
+	github.com/docker/docker v24.0.5+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
@@ -122,6 +121,7 @@ require (
 	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/tools v0.9.1 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc // indirect
+	google.golang.org/grpc v1.56.1 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	lukechampine.com/uint128 v1.3.0 // indirect

@@ -4,11 +4,6 @@ import (
 	"net"
 	"os"
 
-<<<<<<< HEAD
-=======
-	pack "github.com/buildpacks/pack/pkg/client"
-	dockerClient "github.com/docker/docker/client"
->>>>>>> 5683902 (small updates to fix local debugging)
 	image "github.com/null-channel/eddington/container-builder/internal/containers/buildpack"
 	"github.com/null-channel/eddington/container-builder/server"
 	"github.com/null-channel/eddington/container-builder/utils"
@@ -36,19 +31,6 @@ func main() {
 	db, err := utils.NewDB("")
 	if err != nil {
 		l.Err(err).Str("failed to create db", "")
-	}
-
-	docker, err := dockerClient.NewClientWithOpts(
-		dockerClient.FromEnv,
-		dockerClient.WithVersion(DockerAPIVersion),
-	)
-	if err != nil {
-		l.Error().Err(err).Msg("creating docker client")
-	}
-
-	packClient, err := pack.NewClient(pack.WithDockerClient(docker))
-	if err != nil {
-		l.Error().Err(err).Msg("unable to create pack client ")
 	}
 
 	registry := os.Getenv("REGISTRY_URL")
