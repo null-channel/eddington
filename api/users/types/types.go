@@ -1,7 +1,7 @@
 package types
 
 type CreateUserRequest struct {
-	UserId string     `json:"userId"`
+	UserId int64      `json:"userId"`
 	Traits UserTraits `json:"traits"`
 }
 

@@ -18,6 +18,11 @@ kindV1Alpha4Cluster:
     kubeProxyMode: "iptables"
   nodes:
     - role: control-plane
+      extraMounts:
+      - hostPath: /run
+        containerPath: /eddington/var/run/
+      - hostPath: /var/lib/docker
+        containerPath: /eddington/var/lib/docker
       kubeadmConfigPatches:
         - |
           kind: InitConfiguration

@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/evanphx/json-patch v4.12.0+incompatible
 	github.com/gorilla/handlers v1.5.1
+	github.com/null-channel/eddington/proto v0.0.0-20230901040455-f77889c58a0a
 	github.com/ory/client-go v1.1.41
 	github.com/pkg/errors v0.9.1
 	github.com/sendgrid/sendgrid-go v3.12.0+incompatible
@@ -14,6 +15,7 @@ require (
 	github.com/uptrace/bun v1.1.14
 	github.com/uptrace/bun/dialect/sqlitedialect v1.1.14
 	github.com/uptrace/bun/driver/sqliteshim v1.1.14
+	go.uber.org/zap v1.25.0
 	google.golang.org/grpc v1.56.1
 	k8s.io/apimachinery v0.27.4
 	k8s.io/client-go v0.26.2
@@ -23,7 +25,7 @@ require (
 require (
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/gin-gonic/gin v1.9.0 // indirect
-	github.com/null-channel/eddington/proto v0.0.0-20230829132956-6204678b6bd0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 )
 
 require (

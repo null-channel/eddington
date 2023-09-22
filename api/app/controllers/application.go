@@ -4,13 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/sqlitedialect"
 	"github.com/uptrace/bun/driver/sqliteshim"
+	"go.uber.org/zap"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
@@ -31,9 +34,10 @@ type ApplicationController struct {
 	userController         *usercon.UserController
 	database               *bun.DB
 	containerServiceClient pb.ContainerServiceClient
+	logs                   *zap.SugaredLogger
 }
 
-func NewApplicationController(kube dynamic.Interface, userService *usercon.UserController, containerBuildingService pb.ContainerServiceClient) *ApplicationController {
+func NewApplicationController(kube dynamic.Interface, userService *usercon.UserController, containerBuildingService pb.ContainerServiceClient, logger *zap.Logger) *ApplicationController {
 	// Set up a connection to the server.
 	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
 	db := bun.NewDB(sqldb, sqlitedialect.New())
@@ -54,6 +58,7 @@ func NewApplicationController(kube dynamic.Interface, userService *usercon.UserC
 		userController:         userService,
 		database:               db,
 		containerServiceClient: containerBuildingService,
+		logs:                   logger.Sugar(),
 	}
 }
 
@@ -98,15 +103,26 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 		Directory:     r.Form.Get("directory"),
 	}
 
-	// get user namespace
-	userContext, err := a.userController.GetUserContext(r.Context(), 2)
+	userId, err := strconv.ParseInt(r.Context().Value("user-id").(string), 10, 64)
+
 	if err != nil {
+		a.logs.Errorf("Failed to parse user id",
+			"user-id:", r.Context().Value("user-id"))
+	}
+	// get user namespace
+	userContext, err := a.userController.GetUserContext(r.Context(), userId)
+	if err != nil {
+		a.logs.Errorw("Failed to get user context for the user controller",
+			"user-id", userId,
+			"error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+	fmt.Println(userContext)
 	resourceGroup, rgId, err := getResourceGroupName(userContext.ResourceGroups, app.ResourceGroup)
 	if err != nil {
 
+		a.logs.Warnw("Resource Group not found", "Resource Group:", resourceGroup)
 		http.Error(w, "Resource group not found", http.StatusNotFound)
 		return
 	}
@@ -114,22 +130,28 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 	ret, err := a.containerServiceClient.CreateContainer(r.Context(), &pb.CreateContainerRequest{
 		RepoURL:    app.GitRepo,
 		Type:       pb.Language(pb.Language_value[app.RepoType]),
-		CustomerID: userContext.Owner.ID,
+		CustomerID: userId,
 		Directory:  app.Directory,
 	})
 
-	namespace := userContext.Name + resourceGroup
-	nullApplication := getNullApplication(app, userContext, rgId, namespace, ret.BuildID)
-
 	if err != nil {
+		a.logs.Errorf("Failed to create container",
+			"user-id", userId,
+			"error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+
+	namespace := userContext.Name + resourceGroup
+	nullApplication := getNullApplication(app, userContext, rgId, namespace, ret.BuildID)
 
 	//TODO: Save to database!
 	_, err = a.database.NewInsert().Model(nullApplication).Exec(context.Background())
 
 	if err != nil {
+		a.logs.Errorf("Failed to create container",
+			"user-id", userId,
+			"error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -140,6 +162,7 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 		for keepChecking {
 			status, err = a.containerServiceClient.BuildStatus(context.Background(), &pb.BuildStatusRequest{Id: ret.BuildID})
 			if err != nil {
+				a.logs.Errorw("Failed to get build status", "error", err)
 				panic("checking container build status failed")
 			}
 
@@ -149,9 +172,12 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 			time.Sleep(20 * time.Second)
 		}
 
-		deployment := getApplication(app.Name, namespace, app.Image)
+		deployment := getApplication(app.Name, namespace, "nullchannel/"+app.Image)
 		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
 		if err != nil {
+			a.logs.Errorw("Failed to apply CRD for new application",
+				"user-id", userId,
+				"error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
@@ -183,6 +209,7 @@ func getResourceGroupName(resourceGroups []*models.ResourceGroup, requested stri
 	if requested == "" {
 		requested = "default"
 	}
+
 	for _, group := range resourceGroups {
 		if group.Name == requested {
 			return group.Name, group.ID, nil
@@ -192,7 +219,7 @@ func getResourceGroupName(resourceGroups []*models.ResourceGroup, requested stri
 }
 
 func getDeploymentGVR() schema.GroupVersionResource {
-	return schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+	return schema.GroupVersionResource{Group: "nullapp.io.nullcloud", Version: "v1alpha1", Resource: "nullapplications"}
 }
 
 // AppGET godoc

@@ -7,4 +7,4 @@ spec:
     app: eddington-container-builder
   ports:
   - port: 50051
-    targetPort: 50051
+    targetPort: 4040

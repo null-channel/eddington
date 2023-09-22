@@ -12,6 +12,7 @@ import (
 
 	"github.com/gorilla/mux"
 	ory "github.com/ory/client-go"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"k8s.io/client-go/dynamic"
@@ -36,6 +37,17 @@ var (
 
 func main() {
 	flag.Parse()
+
+	logger, _ := zap.NewProduction()
+	defer logger.Sync() // flushes buffer, if any
+	sugar := logger.Sugar()
+	sugar.Infow("failed to fetch URL",
+		// Structured context as loosely typed key-value pairs.
+		"url", "marek",
+		"attempt", 3,
+		"backoff", time.Second,
+	)
+	sugar.Infof("Failed to fetch URL: %s", "url")
 
 	// ORY Stuff Not sure this is a good way to deal with this.
 	proxyPort := os.Getenv("ORY_PROXY_PORT")
@@ -78,7 +90,7 @@ func main() {
 
 	//TODO: Swagger
 	//docs.SwaggerInfo.BasePath = "/api/v1"
-	userController, err := userController.New()
+	userController, err := userController.New(logger)
 
 	if err != nil {
 		log.Fatal(err)
@@ -102,7 +114,7 @@ func main() {
 	client := pb.NewContainerServiceClient(conn)
 
 	config := dynamic.NewForConfigOrDie(clusterConfig)
-	appController := app.NewApplicationController(config, userController, client)
+	appController := app.NewApplicationController(config, userController, client, logger)
 
 	v1 := router.PathPrefix("/api/v1").Subrouter()
 	{

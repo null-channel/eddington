@@ -15,6 +15,8 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+const DockerAPIVersion = "1.43"
+
 func main() {
 
 	lis, err := net.Listen("tcp", ":4040")
