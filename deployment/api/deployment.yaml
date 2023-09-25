@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: eddington-api
+  namespace: eddington-admin
 spec:
   selector:
     matchLabels:
@@ -11,6 +12,7 @@ spec:
       labels:
         app: eddington-api
     spec:
+      serviceAccountName: eddington-admin
       containers: 
       - name: eddington-api
         image: nullchannel/eddington-api:latest
