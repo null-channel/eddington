@@ -13,6 +13,5 @@ k8s_yaml('./deployment/container-builder/deployment.yaml')
 k8s_yaml('./deployment/container-builder/service.yaml')
 
 # container running service
-docker_build("controller","./container-runner/")
-# k8s_yaml(kustomize('./application/container-runner/config/crd'))
-k8s_yaml(kustomize('./container-runner/config/default'))
+docker_build("controller","./null-operator/")
+k8s_yaml(kustomize('./null-operator/config/default'))
