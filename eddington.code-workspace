@@ -10,7 +10,7 @@
 			"path": "ui"
 		},
 		{
-			"path": "application/container-runner"
+			"path": "application/null-operator"
 		},
 		{
 			"path": "proto"

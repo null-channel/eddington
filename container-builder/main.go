@@ -4,12 +4,12 @@ import (
 	"net"
 	"os"
 
-	image "github.com/null-channel/eddington/container-builder/internal/containers/buildpack"
 	"github.com/null-channel/eddington/container-builder/server"
-	"github.com/null-channel/eddington/container-builder/utils"
 	"github.com/null-channel/eddington/proto/container"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"go.uber.org/zap"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -26,24 +26,25 @@ func main() {
 	grpc := grpc.NewServer()
 	reflection.Register(grpc)
 
-	l := zerolog.New(os.Stdout).With().Timestamp().Str("component", "server").Logger()
+	logger, _ := zap.NewProduction()
+	defer logger.Sync() // flushes buffer, if any
+	sugaredLogger := logger.Sugar()
 
-	db, err := utils.NewDB("")
+	kubeConfig := os.Getenv("KUBECONFIG")
+
+	clusterConfig, err := getClusterConfig(kubeConfig)
+
 	if err != nil {
-		l.Err(err).Str("failed to create db", "")
+		sugaredLogger.Fatal(err)
+		return
 	}
 
 	registry := os.Getenv("REGISTRY_URL")
 	if registry == "" {
-		l.Error().Err(err).Msg("unable to create registry ")
+		sugaredLogger.Errorw("registry not configured", "error:", err)
 	}
 
-	builder, err := image.NewBuilder(db, registry)
-	if err != nil {
-		l.Error().Err(err).Msg("unable to create builder")
-	}
-
-	server, err := server.NewServer(db, builder, &l)
+	server, err := server.NewServer(clusterConfig, sugaredLogger)
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to create server")
 	}
@@ -56,4 +57,12 @@ func main() {
 		log.Fatal().Err(err).Msg("unable to serve")
 	}
 
+}
+
+// getClusterConfig return the config for k8s
+func getClusterConfig(kubeconfig string) (*rest.Config, error) {
+	if kubeconfig != "" {
+		return clientcmd.BuildConfigFromFlags("", kubeconfig)
+	}
+	return rest.InClusterConfig()
 }

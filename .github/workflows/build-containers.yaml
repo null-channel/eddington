@@ -50,6 +50,6 @@ jobs:
         name: Build and push container runner
         uses: docker/build-push-action@v4
         with:
-          context: ./application/container-runner/
+          context: ./application/null-operator/
           push: true
-          tags: nullchannel/eddington-container-runner:${{ github.sha }}
+          tags: nullchannel/eddington-null-operator:${{ github.sha }}

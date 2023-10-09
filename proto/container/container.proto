@@ -49,10 +49,13 @@ message CreateContainerRequest {
   string directory = 4;
 }
 
-message CreateContainerResponse { string buildID = 1; }
+message CreateContainerResponse {
+  string image = 1;
+  int64 generation = 2;
+}
 
 message BuildStatusRequest {
-  string id = 1;
+  string repo = 1;
 } 
 
 message BuildStatusResponse {

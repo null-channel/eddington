@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: eddington-api
+  namespace: eddington-admin
 spec:
   selector:
     app: eddington-api

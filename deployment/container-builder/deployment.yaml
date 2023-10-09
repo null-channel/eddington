@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: eddington-container-builder
+  namespace: eddington-admin
 spec:
   selector:
     matchLabels:

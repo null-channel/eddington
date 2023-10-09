@@ -13,7 +13,6 @@ import (
 	"github.com/null-channel/eddington/container-builder/models"
 	"github.com/null-channel/eddington/proto/container"
 	"github.com/rs/zerolog"
-	"github.com/uptrace/bun"
 )
 
 var log = zerolog.New(os.Stdout).With().Timestamp().Str("component", "builder").Logger()
@@ -35,16 +34,14 @@ type BuildPackInfo struct {
 
 type Builder struct {
 	log zerolog.Logger
-	db  *bun.DB
 	// used to store built images
 	Registry string
 }
 
 // NewBuilder returns a new builder
-func NewBuilder(db *bun.DB, registry string) (*Builder, error) {
+func NewBuilder(registry string) (*Builder, error) {
 	return &Builder{
 		log:      log,
-		db:       db,
 		Registry: registry,
 	}, nil
 }
