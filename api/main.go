@@ -25,7 +25,7 @@ import (
 	"github.com/null-channel/eddington/api/notfound"
 	userController "github.com/null-channel/eddington/api/users/controllers"
 
-	pb "github.com/null-channel/eddington/proto/container"
+	pb "github.com/null-channel/eddington/api/proto/container"
 
 	app "github.com/null-channel/eddington/api/app/controllers"
 )
