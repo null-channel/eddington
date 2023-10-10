@@ -4,8 +4,8 @@ import (
 	"net"
 	"os"
 
+	"github.com/null-channel/eddington/container-builder/proto/container"
 	"github.com/null-channel/eddington/container-builder/server"
-	"github.com/null-channel/eddington/proto/container"
 	"github.com/rs/zerolog/log"
 	"go.uber.org/zap"
 	"k8s.io/client-go/rest"

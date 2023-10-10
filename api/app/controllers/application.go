@@ -172,6 +172,13 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 			time.Sleep(20 * time.Second)
 		}
 
+		//		virtualService := istionetworking.VirtualService{}
+		//		u := &unstructured.Unstructured{Object: map[string]interface{}{}}
+		//		if err := json.Unmarshal(virtualService, &u.Object); err != nil {
+		//			a.logs.Errorw("Failed to martial virtual service to unstructured data", "error", err)
+		//		}
+		//		_, err = a.kube.Resource(getIstioNetowrkGVR("VirtualService")).Namespace(namespace).Apply(context.Background(), app.Name, virtualService, v1.ApplyOptions{})
+
 		deployment := getApplication(app.Name, namespace, "nullchannel/"+app.Image)
 		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
 		if err != nil {
@@ -220,6 +227,10 @@ func getResourceGroupName(resourceGroups []*models.ResourceGroup, requested stri
 
 func getDeploymentGVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{Group: "nullapp.io.nullcloud", Version: "v1alpha1", Resource: "nullapplications"}
+}
+
+func getIstioNetowrkGVR(resource string) schema.GroupVersionResource {
+	return schema.GroupVersionResource{Group: "networking.istio.io", Version: "v1beta1", Resource: resource}
 }
 
 // AppGET godoc

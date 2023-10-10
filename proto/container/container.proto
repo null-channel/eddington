@@ -47,6 +47,7 @@ message CreateContainerRequest {
   Language type = 2;
   int64 customerID = 3;
   string directory = 4;
+  string rev = 5;
 }
 
 message CreateContainerResponse {
@@ -56,6 +57,7 @@ message CreateContainerResponse {
 
 message BuildStatusRequest {
   string repo = 1;
+  string directory = 2;
 } 
 
 message BuildStatusResponse {
