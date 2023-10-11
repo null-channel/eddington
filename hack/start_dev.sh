@@ -8,6 +8,7 @@ kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1
 kubectl apply -f ./hack/calico.yaml
 
 kubectl create namespace eddington-admin
+kubectl create namespace eddington
 kubectl create serviceaccount eddington-admin
 kubectl create clusterrolebinding eddington-admin-crb --clusterrole=cluster-admin --serviceaccount=eddington-admin:eddington-admin
 
@@ -25,3 +26,5 @@ EOF
 sleep 20
 
 istioctl install -f ./hack/kind-istio-install.yaml --skip-confirmation
+
+kubectl apply -f ./hack/kpack.yaml

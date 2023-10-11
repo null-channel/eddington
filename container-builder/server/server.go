@@ -27,7 +27,7 @@ type Server struct {
 func NewServer(kubeConfig *rest.Config, logger *zap.SugaredLogger) (*Server, error) {
 
 	kpcs := k8s.DefaultClientSetProvider{}
-	cs, err := kpcs.GetClientSet("default")
+	cs, err := kpcs.GetClientSet("eddington")
 	if err != nil {
 		return nil, err
 	}
@@ -51,14 +51,15 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 	name := sanitizeRep(req.RepoURL, req.Directory)
 
 	factory := s.getImageFactory(req)
-	img, err := factory.MakeImage("kp-test", "default", s.getRepo(name))
+	img, err := factory.MakeImage(name, "eddington", s.getRepo(name))
 
 	if err != nil {
 		slog.Error("unable to create image factory", err.Error())
 	}
 
+	img.Labels = make(map[string]string)
 	img.Labels["customer"] = cusId
-	img.Labels["app"] = req.RepoURL + "/" + req.Directory
+	img.Labels["app"] = name
 
 	img, err = s.kpackClientSet.KpackClient.KpackV1alpha2().Images(s.kpackClientSet.Namespace).Create(ctx, img, metav1.CreateOptions{})
 	if err != nil {
@@ -66,7 +67,7 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 		slog.Error("unable to create image ", err.Error())
 	}
 	return &container.CreateContainerResponse{
-		Image:      s.getRepo(name),
+		Image:      name,
 		Generation: 1,
 	}, nil
 }
@@ -74,7 +75,7 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 // ImageStatus maps to the ImageStatus RPC
 func (s *Server) BuildStatus(ctx context.Context, req *container.BuildStatusRequest) (*container.BuildStatusResponse, error) {
 
-	name := s.getRepo(sanitizeRep(req.Repo, req.Directory))
+	name := sanitizeRep(req.Repo, req.Directory)
 	img, err := s.kpackClientSet.KpackClient.KpackV1alpha2().Images(s.kpackClientSet.Namespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
@@ -84,6 +85,7 @@ func (s *Server) BuildStatus(ctx context.Context, req *container.BuildStatusRequ
 
 	return &container.BuildStatusResponse{
 		ImageName: img.Status.LatestImage,
+		Status:    container.ContainerStatus_BUILT,
 	}, nil
 }
 
@@ -109,7 +111,8 @@ func (s *Server) getImageName(cusId, gitrepo string) string {
 }
 
 func sanitizeRep(repo, dir string) string {
-	return strings.Replace((repo + "/" + dir), "/", "-", -1)
+	repoClean := strings.TrimPrefix(repo, "https://")
+	return strings.Replace((repoClean + "/" + dir), "/", "-", -1)
 }
 
 // selectBuilder TODO: select a builder to build the project. not sure if we can just have one that auto selects or if we will have to have multiples.

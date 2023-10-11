@@ -11,3 +11,8 @@ kubectl apply -f ./hack/calico.yaml
 sleep 20
 
 istioctl install -f ./hack/kind-istio-install.yaml --skip-confirmation
+
+sleep 5
+
+kubectl apply -f ./hack/kpack.yaml
+

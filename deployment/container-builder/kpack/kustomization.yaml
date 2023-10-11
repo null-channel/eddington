@@ -1,0 +1,6 @@
+resources:
+- ./builder.yaml
+- ./kpack-image.yaml
+- ./service-account.yaml
+- ./cluster-stack.yaml
+- ./cluster-store.yaml

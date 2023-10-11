@@ -1,0 +1,19 @@
+apiVersion: kpack.io/v1alpha2
+kind: Image
+metadata:
+  name: tutorial-image
+  namespace: default
+  labels:
+    rev: 3be2895
+    version: "1.2.3"
+spec:
+  tag: nullchannel/eddington-test-container-build
+  serviceAccountName: tutorial-service-account
+  builder:
+    name: my-builder
+    kind: Builder
+  source:
+    git:
+      url: https://github.com/nullclouds/examples
+      revision: main
+    subPath: go

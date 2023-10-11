@@ -166,7 +166,8 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 			status, err = a.containerServiceClient.BuildStatus(context.Background(), &pb.BuildStatusRequest{Repo: app.GitRepo, Directory: app.Directory})
 			if err != nil {
 				a.logs.Errorw("Failed to get build status", "error", err)
-				panic("checking container build status failed")
+				time.Sleep(5 * time.Second)
+				continue
 			}
 
 			if status.Status == pb.ContainerStatus_BUILT {
@@ -183,7 +184,7 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 		//		_, err = a.kube.Resource(getIstioNetowrkGVR("VirtualService")).Namespace(namespace).Apply(context.Background(), app.Name, virtualService, v1.ApplyOptions{})
 
 		deployment := getApplication(app.Name, namespace, "nullchannel/"+app.Image)
-		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
+		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{FieldManager: "application/apply-patch"})
 		if err != nil {
 			a.logs.Errorw("Failed to apply CRD for new application",
 				"user-id", userId,

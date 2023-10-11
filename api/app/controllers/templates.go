@@ -10,25 +10,23 @@ import (
 
 func getApplication(name string, namespace string, image string) *unstructured.Unstructured {
 	application := &unstructured.Unstructured{Object: map[string]interface{}{
+		"apiVersion": "nullapp.io.nullcloud/v1alpha1",
+		"kind":       "NullApplication",
 		"metadata": map[string]interface{}{
 			"name":      name,
 			"namespace": namespace,
-			"valueFrom": map[string]interface{}{
-				"fieldRef": map[string]interface{}{
-					"fieldPath": "metadata.namespace",
-				},
-			},
 		},
 		"spec": map[string]interface{}{
-			"name":       "name",
+			"appName":    "name",
 			"appVersion": "v1",
-			"apps": map[string]interface{}{
-				"name":    name,
-				"image":   image,
-				"cpu":     "100m",
-				"memory":  "128Mi",
-				"storage": "1Gi",
-			},
+			"apps": []interface{}{
+				map[string]interface{}{
+					"name":    name,
+					"image":   image,
+					"cpu":     "100m",
+					"memory":  "128Mi",
+					"storage": "1Gi",
+				}},
 		}}}
 	return application
 }
