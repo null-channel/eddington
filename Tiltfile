@@ -15,3 +15,5 @@ k8s_yaml('./deployment/container-builder/service.yaml')
 # container running service
 docker_build("controller","./null-operator/")
 k8s_yaml(kustomize('./null-operator/config/default'))
+
+k8s_yaml(kustomize('./deployment/container-builder/kpack'))

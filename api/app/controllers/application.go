@@ -22,9 +22,9 @@ import (
 	_ "github.com/swaggo/gin-swagger"
 
 	appmodels "github.com/null-channel/eddington/api/app/models"
+	pb "github.com/null-channel/eddington/api/proto/container"
 	usercon "github.com/null-channel/eddington/api/users/controllers"
 	"github.com/null-channel/eddington/api/users/models"
-	pb "github.com/null-channel/eddington/proto/container"
 )
 
 //	@BasePath	/api/v1/
@@ -127,11 +127,13 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ret, err := a.containerServiceClient.CreateContainer(r.Context(), &pb.CreateContainerRequest{
+	//TODO: accept the revision
+	_, err = a.containerServiceClient.CreateContainer(r.Context(), &pb.CreateContainerRequest{
 		RepoURL:    app.GitRepo,
 		Type:       pb.Language(pb.Language_value[app.RepoType]),
 		CustomerID: userId,
 		Directory:  app.Directory,
+		Rev:        "main",
 	})
 
 	if err != nil {
@@ -143,7 +145,8 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	namespace := userContext.Name + resourceGroup
-	nullApplication := getNullApplication(app, userContext, rgId, namespace, ret.BuildID)
+	//TODO: short sha for build id?
+	nullApplication := getNullApplication(app, userContext, rgId, namespace, "12345")
 
 	//TODO: Save to database!
 	_, err = a.database.NewInsert().Model(nullApplication).Exec(context.Background())
@@ -160,10 +163,11 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 		keepChecking := true
 		var status *pb.BuildStatusResponse
 		for keepChecking {
-			status, err = a.containerServiceClient.BuildStatus(context.Background(), &pb.BuildStatusRequest{Id: ret.BuildID})
+			status, err = a.containerServiceClient.BuildStatus(context.Background(), &pb.BuildStatusRequest{Repo: app.GitRepo, Directory: app.Directory})
 			if err != nil {
 				a.logs.Errorw("Failed to get build status", "error", err)
-				panic("checking container build status failed")
+				time.Sleep(5 * time.Second)
+				continue
 			}
 
 			if status.Status == pb.ContainerStatus_BUILT {
@@ -172,8 +176,15 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 			time.Sleep(20 * time.Second)
 		}
 
+		//		virtualService := istionetworking.VirtualService{}
+		//		u := &unstructured.Unstructured{Object: map[string]interface{}{}}
+		//		if err := json.Unmarshal(virtualService, &u.Object); err != nil {
+		//			a.logs.Errorw("Failed to martial virtual service to unstructured data", "error", err)
+		//		}
+		//		_, err = a.kube.Resource(getIstioNetowrkGVR("VirtualService")).Namespace(namespace).Apply(context.Background(), app.Name, virtualService, v1.ApplyOptions{})
+
 		deployment := getApplication(app.Name, namespace, "nullchannel/"+app.Image)
-		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{})
+		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{FieldManager: "application/apply-patch"})
 		if err != nil {
 			a.logs.Errorw("Failed to apply CRD for new application",
 				"user-id", userId,
@@ -220,6 +231,10 @@ func getResourceGroupName(resourceGroups []*models.ResourceGroup, requested stri
 
 func getDeploymentGVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{Group: "nullapp.io.nullcloud", Version: "v1alpha1", Resource: "nullapplications"}
+}
+
+func getIstioNetowrkGVR(resource string) schema.GroupVersionResource {
+	return schema.GroupVersionResource{Group: "networking.istio.io", Version: "v1beta1", Resource: resource}
 }
 
 // AppGET godoc
