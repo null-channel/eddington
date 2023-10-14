@@ -24,6 +24,8 @@ import (
 	"github.com/null-channel/eddington/api/middleware"
 	"github.com/null-channel/eddington/api/notfound"
 	userController "github.com/null-channel/eddington/api/users/controllers"
+	versionedclient "istio.io/client-go/pkg/clientset/versioned"
+	kube "k8s.io/client-go/kubernetes"
 
 	pb "github.com/null-channel/eddington/api/proto/container"
 
@@ -112,9 +114,11 @@ func main() {
 	}
 	defer conn.Close()
 	client := pb.NewContainerServiceClient(conn)
+	kubeClient := kube.NewForConfigOrDie(clusterConfig)
 
 	config := dynamic.NewForConfigOrDie(clusterConfig)
-	appController := app.NewApplicationController(config, userController, client, logger)
+	istioClient := versionedclient.NewForConfigOrDie(clusterConfig)
+	appController := app.NewApplicationController(config, istioClient, kubeClient, userController, client, logger)
 
 	v1 := router.PathPrefix("/api/v1").Subrouter()
 	{

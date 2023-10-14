@@ -16,6 +16,7 @@ import (
 	"go.uber.org/zap"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/dynamic"
 
 	_ "github.com/swaggo/files"
@@ -25,19 +26,29 @@ import (
 	pb "github.com/null-channel/eddington/api/proto/container"
 	usercon "github.com/null-channel/eddington/api/users/controllers"
 	"github.com/null-channel/eddington/api/users/models"
+	networkingv1alpha3 "istio.io/api/networking/v1alpha3"
+	networkingapplyv1alpha3 "istio.io/client-go/pkg/applyconfiguration/networking/v1alpha3"
+	versionedclient "istio.io/client-go/pkg/clientset/versioned"
+	coreapplyv1 "k8s.io/client-go/applyconfigurations/core/v1"
+	coreapplymetav1 "k8s.io/client-go/applyconfigurations/meta/v1"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kube "k8s.io/client-go/kubernetes"
 )
 
 //	@BasePath	/api/v1/
 
 type ApplicationController struct {
 	kube                   dynamic.Interface
+	istioClient            *versionedclient.Clientset
 	userController         *usercon.UserController
 	database               *bun.DB
 	containerServiceClient pb.ContainerServiceClient
 	logs                   *zap.SugaredLogger
+	kubeClientset          *kube.Clientset
 }
 
-func NewApplicationController(kube dynamic.Interface, userService *usercon.UserController, containerBuildingService pb.ContainerServiceClient, logger *zap.Logger) *ApplicationController {
+func NewApplicationController(kube dynamic.Interface, istio *versionedclient.Clientset, kcs *kube.Clientset, userService *usercon.UserController, containerBuildingService pb.ContainerServiceClient, logger *zap.Logger) *ApplicationController {
 	// Set up a connection to the server.
 	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
 	db := bun.NewDB(sqldb, sqlitedialect.New())
@@ -59,6 +70,8 @@ func NewApplicationController(kube dynamic.Interface, userService *usercon.UserC
 		database:               db,
 		containerServiceClient: containerBuildingService,
 		logs:                   logger.Sugar(),
+		istioClient:            istio,
+		kubeClientset:          kcs,
 	}
 }
 
@@ -176,13 +189,27 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 			time.Sleep(20 * time.Second)
 		}
 
-		//		virtualService := istionetworking.VirtualService{}
-		//		u := &unstructured.Unstructured{Object: map[string]interface{}{}}
-		//		if err := json.Unmarshal(virtualService, &u.Object); err != nil {
-		//			a.logs.Errorw("Failed to martial virtual service to unstructured data", "error", err)
-		//		}
-		//		_, err = a.kube.Resource(getIstioNetowrkGVR("VirtualService")).Namespace(namespace).Apply(context.Background(), app.Name, virtualService, v1.ApplyOptions{})
+		// Create the services for our app.
+		// TODO: This should all be in the null operator.
+		// What was I thinking?!?!
+		serviceName := app.Name + "-service"
+		vitrualServiceName := app.Name + "-virtual-service"
 
+		user := strconv.FormatInt(userId, 10)
+		appService := createService(user, serviceName, namespace)
+		_, err = a.kubeClientset.CoreV1().Services(namespace).Apply(context.Background(), appService, metav1.ApplyOptions{FieldManager: "application/apply-patch"})
+
+		if err != nil {
+			a.logs.Errorw(err.Error())
+		}
+
+		virtualService := getVirtualService(user, app.Name, serviceName, vitrualServiceName, namespace)
+		_, err = a.istioClient.NetworkingV1alpha3().VirtualServices(namespace).Apply(context.TODO(), virtualService, metav1.ApplyOptions{FieldManager: "application/apply-patch"})
+
+		if err != nil {
+			a.logs.Errorw(err.Error())
+		}
+		// Create the operator object
 		deployment := getApplication(app.Name, namespace, "nullchannel/"+app.Image)
 		_, err = a.kube.Resource(getDeploymentGVR()).Namespace(namespace).Apply(context.Background(), app.Name, deployment, v1.ApplyOptions{FieldManager: "application/apply-patch"})
 		if err != nil {
@@ -193,6 +220,55 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}()
+}
+
+func createService(userId, serviceName, namespace string) *coreapplyv1.ServiceApplyConfiguration {
+	srv := coreapplyv1.Service(serviceName, namespace)
+	var port int32 = 80
+	srv.Spec = coreapplyv1.ServiceSpec().WithPorts((&coreapplyv1.ServicePortApplyConfiguration{Port: &port}).WithTargetPort(intstr.IntOrString{IntVal: 8080}))
+	return srv
+}
+
+func createApplyMeta(name, namespace string) coreapplymetav1.ObjectMetaApplyConfiguration {
+	return coreapplymetav1.ObjectMetaApplyConfiguration{
+		Name:      &name,
+		Namespace: &namespace,
+	}
+}
+
+func createMeta(name, namespace string) metav1.ObjectMeta {
+	return metav1.ObjectMeta{
+		Name:      name,
+		Namespace: namespace,
+	}
+}
+
+func getVirtualService(userId, appName, service, virtualServiceName, namespace string) *networkingapplyv1alpha3.VirtualServiceApplyConfiguration {
+	return networkingapplyv1alpha3.VirtualService(virtualServiceName, namespace).WithSpec(networkingv1alpha3.VirtualService{
+		Hosts:    []string{"*"},
+		Gateways: []string{"nullcloud-gateway"},
+		Http: []*networkingv1alpha3.HTTPRoute{
+			&networkingv1alpha3.HTTPRoute{
+				Match: []*networkingv1alpha3.HTTPMatchRequest{
+					&networkingv1alpha3.HTTPMatchRequest{
+						Uri: &networkingv1alpha3.StringMatch{
+							MatchType: &networkingv1alpha3.StringMatch_Prefix{Prefix: "/dataplane/" + userId + "/" + appName},
+						},
+					},
+				},
+				Route: []*networkingv1alpha3.HTTPRouteDestination{
+					&networkingv1alpha3.HTTPRouteDestination{
+						Destination: &networkingv1alpha3.Destination{
+							Host: service,
+							Port: &networkingv1alpha3.PortSelector{
+								Number: 80,
+							},
+						},
+					},
+				},
+			},
+		},
+	})
 }
 
 func getNullApplication(app Application, org *models.Org, resourceGroupId int64, namespace string, buildID string) *appmodels.NullApplication {
