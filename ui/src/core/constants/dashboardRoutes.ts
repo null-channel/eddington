@@ -1,5 +1,5 @@
 
 const ROUTES = {
-  CONTAINER: { path: "container", name: "container service" },
+  APPS: { path: "apps", name: "Apps" },
 };
 export default ROUTES;

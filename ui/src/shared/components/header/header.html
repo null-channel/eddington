@@ -44,15 +44,19 @@
                             </div>
                             <ul class="py-2 text-sm text-gray-700 dark:text-gray-200">
                                 <li class="flex">
-                                    <a href="#" class="block px-4 py-2  hover:bg-gray-600 hover:text-200">Dashboard</a>
+                                    <a href="#" 
+                                        @click="()=>router.push('/dashboard')"
+                                        class="block px-4 py-2 hover:bg-gray-600 hover:text-gray-200">Dashboard</a>
                                 </li>
                                 <li class="flex">
                                     <a href="#"
+                                        @click="()=>router.push('/settings')"
                                         class="block px-4 py-2 hover:bg-gray-600 hover:text-gray-200">Settings</a>
                                 </li>
                                 <li class="flex">
                                     <a href="#"
-                                        class="block px-4 py-2 hover:bg-gray-600 hover:text-gray-200">Earnings</a>
+                                        @click="()=>router.push('/profile')"
+                                        class="block px-4 py-2 hover:bg-gray-600 hover:text-gray-200">Profile</a>
                                 </li>
                             </ul>
                             <div class="py-1 ">

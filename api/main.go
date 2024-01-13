@@ -2,6 +2,7 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
 	"log"
@@ -12,6 +13,9 @@ import (
 
 	"github.com/gorilla/mux"
 	ory "github.com/ory/client-go"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/sqlitedialect"
+	"github.com/uptrace/bun/driver/sqliteshim"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -90,9 +94,21 @@ func main() {
 
 	middleware.CreateCORSHandler(router)
 
+	//Database stuff
+	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
+	userdb := bun.NewDB(sqldb, sqlitedialect.New())
+	if err != nil {
+		panic(err)
+	}
+
 	//TODO: Swagger
 	//docs.SwaggerInfo.BasePath = "/api/v1"
-	userController, err := userController.New(logger)
+	userController, err := userController.New(logger, userdb)
+
+	//Add user middleware
+	userMiddleware := middleware.NewUserMiddleware(userdb)
+
+	authzMiddleware := middleware.NewAuthzMiddleware(userdb)
 
 	if err != nil {
 		log.Fatal(err)
@@ -119,20 +135,25 @@ func main() {
 	config := dynamic.NewForConfigOrDie(clusterConfig)
 	istioClient := versionedclient.NewForConfigOrDie(clusterConfig)
 	appController := app.NewApplicationController(config, istioClient, kubeClient, userController, client, logger)
+	middlwares := []mux.MiddlewareFunc{
+		authMiddleware.SessionMiddleware,
+		authzMiddleware.CheckAuthz,
+		userMiddleware.NewUserMiddlewareCheck,
+	}
 
 	v1 := router.PathPrefix("/api/v1").Subrouter()
 	{
 		// Apps
 		apps := v1.PathPrefix("/apps").Subrouter()
 		{
-			apps.Use(authMiddleware.SessionMiddleware)
+			addMiddleware(apps, middlwares...)
 			appController.RegisterRoutes(apps)
 		}
 
 		// Users
 		users := v1.PathPrefix("/users").Subrouter()
 		{
-			users.Use(authMiddleware.SessionMiddleware)
+			addMiddleware(users, middlwares...)
 			userController.AddAllControllers(users)
 		}
 		// AuthZ
@@ -196,6 +217,13 @@ func main() {
 
 	log.Fatal(srv.ListenAndServe())
 
+}
+
+func addMiddleware(router *mux.Router, middleware ...mux.MiddlewareFunc) *mux.Router {
+	for _, m := range middleware {
+		router.Use(m)
+	}
+	return router
 }
 
 // getClusterConfig return the config for k8s

@@ -1,22 +1,17 @@
 package models
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/null-channel/eddington/api/users/types"
+	"github.com/uptrace/bun"
 )
 
 type User struct {
-	ID     int64 `bun:",pk"` // primary key, same as ory.
-	Name   string
-	Traits *Traits `bun:"rel:has-one,join:id=user_id"`
-}
-
-type Traits struct {
-	ID                int64    `bun:",pk,autoincrement"`
-	Emails            []string `bun:"email"`
-	NewsLetterConsent bool     `bun:"newsletterConsent"`
-	UserID            string   `bun:"user_id"`
+	ID                int64 `bun:",pk"` // primary key, same as ory.
+	Name              string
+	Email             string
+	NewsLetterConsent bool `bun:"newsletterConsent"`
 }
 
 type Org struct {
@@ -42,15 +37,35 @@ type Resources struct {
 }
 
 func (u User) String() string {
-	return fmt.Sprintf("User<%s %s>", u.ID, u.Traits.Emails)
+	return fmt.Sprintf("User<%s %s>", u.ID, u.Email)
 }
 
-func CreateUserRequestToDBModel(createUserRequest types.CreateUserRequest) User {
-	return User{
-		ID: createUserRequest.UserId,
-		Traits: &Traits{
-			Emails:            []string{createUserRequest.Traits.Email},
-			NewsLetterConsent: createUserRequest.Traits.NewsLetterConsent,
-		},
+// UpdateUser godoc
+// @Summary	Get user info for user id
+func GetUserForId(id int64, userDb *bun.DB) (*User, error) {
+	var user User
+	err := userDb.NewSelect().
+		Model(&user).
+		Where("id = ?", id).
+		Scan(context.Background(), &user)
+
+	if err != nil {
+		return nil, err
 	}
+
+	return &user, nil
+}
+
+func GetOrgByOwnerId(user_id int64, userDb *bun.DB) (*Org, error) {
+	var org Org
+	err := userDb.NewSelect().
+		Model(&org).
+		Where("owner_id = ?", user_id).
+		Scan(context.Background(), &org)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &org, nil
 }

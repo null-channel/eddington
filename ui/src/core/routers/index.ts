@@ -22,10 +22,15 @@ const router = createRouter({
       //beforeEnter: authGuard,
     },
     {
+      ...ROUTES.NEW_USER,
+      component: () => import("@pages/NewUser/newuser.vue"),
+      beforeEnter: authGuard,
+    },
+    {
       ...ROUTES.MAIN,
       component: () => import("@pages/Dashboard/dashboard.vue"),
       beforeEnter: authGuard,
-      children: mainRouter as any,
+      children: mainRouter,
     },
   ],
 });

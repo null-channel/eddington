@@ -8,7 +8,7 @@ export const NAVBAR_BEFORE_LOGIN = [
 export const NAVBAR_AFTER_LOGIN = [
   { ...ROUTES.HOME },
   {
-    ...MAIN_ROUTES.CONTAINER,
-    path: `${ROUTES.MAIN.path}/${MAIN_ROUTES.CONTAINER.path}`,
+    ...MAIN_ROUTES.APPS,
+    path: `${ROUTES.MAIN.path}/${MAIN_ROUTES.APPS.path}`,
   },
 ];

@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -11,8 +10,6 @@ import (
 	"github.com/null-channel/eddington/api/users/models"
 	pb "github.com/null-channel/eddington/proto/user"
 	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/dialect/sqlitedialect"
-	"github.com/uptrace/bun/driver/sqliteshim"
 	"go.uber.org/zap"
 )
 
@@ -23,13 +20,8 @@ type UserController struct {
 	logger   *zap.SugaredLogger
 }
 
-func New(logger *zap.Logger) (*UserController, error) {
-	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
-	db := bun.NewDB(sqldb, sqlitedialect.New())
-	if err != nil {
-		panic(err)
-	}
-	_, err = db.NewCreateTable().Model((*models.User)(nil)).Exec(context.Background())
+func New(logger *zap.Logger, db *bun.DB) (*UserController, error) {
+	_, err := db.NewCreateTable().Model((*models.User)(nil)).Exec(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -109,13 +101,16 @@ func resourceGroupModelToProto(resourceGroups []*models.ResourceGroup) []*pb.Res
 }
 
 func (u *UserController) AddAllControllers(router *mux.Router) {
-	router.HandleFunc("", u.UpdateUser).Methods("POST")
+	router.HandleFunc("", u.UpsertUser).Methods("POST")
 	router.HandleFunc("/id", u.GetUserId).Methods("GET")
 }
 
-func (u *UserController) CreateUser(user models.User) (int, error) {
+func (u *UserController) UpsertUserDB(user models.User) (int, error) {
 
-	res, err := u.database.NewInsert().Model(&user).Exec(context.Background())
+	res, err := u.database.NewInsert().
+		Model(&user).
+		On("CONFLICT (id) DO UPDATE").
+		Exec(context.Background())
 
 	if err != nil {
 		return http.StatusInternalServerError, err
@@ -164,14 +159,16 @@ func (u *UserController) CreateUser(user models.User) (int, error) {
 // @Produce		json
 // @Success		200	{string}	Helloworld
 // @Router			/users/ [post]
-func (u *UserController) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	u.CreateUser(models.User{
-		ID:   1234,
-		Name: "Marek",
-		Traits: &models.Traits{
-			Emails:            []string{"none@none.com"},
-			NewsLetterConsent: true,
-		},
+func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
+	id := r.Context().Value("user-id").(int64)
+	email := r.Context().Value("email").(string)
+	newsLetterConsent := r.Context().Value("newsletter-consent").(bool)
+	name := r.Context().Value("name").(string)
+	u.UpsertUserDB(models.User{
+		ID:                id,
+		Name:              name,
+		Email:             email,
+		NewsLetterConsent: newsLetterConsent,
 	})
 }
 
