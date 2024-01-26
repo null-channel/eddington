@@ -28,17 +28,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-// DontUseMeReconciler reconciles a DontUseMe object
-type DontUseMeReconciler struct {
+// ImageReconciler reconciles a DontUseMe object
+type ImageReconciler struct {
 	client.Client
 	Scheme     *runtime.Scheme
 	BuildCache map[types.NamespacedName]v1alpha2.Image
 }
-
-const (
-	Thing = iota
-	OtherThing
-)
 
 //+kubebuilder:rbac:groups=deleteme.nullcloud.io,resources=dontusemes,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=deleteme.nullcloud.io,resources=dontusemes/status,verbs=get;update;patch
@@ -56,7 +51,7 @@ const (
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.4/pkg/reconcile
-func (r *DontUseMeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *ImageReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
 	fmt.Println("Reconcile on image: " + req.Name)
@@ -91,7 +86,7 @@ func (r *DontUseMeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *DontUseMeReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ImageReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha2.Image{}).
 		Complete(r)

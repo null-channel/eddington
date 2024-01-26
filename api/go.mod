@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/evanphx/json-patch v5.6.0+incompatible
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/handlers v1.5.1
 	github.com/null-channel/eddington/proto v0.0.0-20231009003536-a2b6e90d2dcd
 	github.com/ory/client-go v1.1.41

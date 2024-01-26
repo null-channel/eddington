@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/golang-jwt/jwt"
 	ory "github.com/ory/client-go"
 )
 
@@ -38,30 +39,34 @@ func withUser(ctx context.Context, v *ory.Session) context.Context {
 func (app *OryApp) SessionMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 
+		//TODO: Parse JWT token and get user id
 		fmt.Println("Authentication Middleware is running")
 		log.Printf("handling middleware request\n")
 
 		// set the cookies on the ory client
 		var cookies string
 
+		ctx := withCookies(request.Context(), cookies)
 		// this example passes all request.Cookies
 		// to `ToSession` function
 		//
 		// However, you can pass only the value of
 		// ory_session_projectid cookie to the endpoint
 		cookies = request.Header.Get("Cookie")
-
-		// check if we have a session
-		session, _, err := app.Ory.FrontendApi.ToSession(request.Context()).Cookie(cookies).Execute()
-		if (err != nil && session == nil) || (err == nil && !*session.Active) {
-			// this will redirect the user to the managed Ory Login UI
-			http.Redirect(writer, request, "/.ory/self-service/login/browser", http.StatusSeeOther)
+		tokenString := request.Header.Get("Authorization")
+		user_id, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			fmt.Println(token)
+			return token.Claims.(jwt.MapClaims)["user-id"], nil
+		})
+		if err != nil {
+			fmt.Println(err)
 			return
 		}
+		//TODO: Delete this line
+		fmt.Println(user_id)
 
-		ctx := withCookies(request.Context(), cookies)
-		ctx = withSession(ctx, session)
-		ctx = withUser(ctx, session)
+		//ctx = withSession(ctx, session)
+		//ctx = withUser(ctx, session)
 
 		// continue to the requested page (in our case the Dashboard)
 		next.ServeHTTP(writer, request.WithContext(ctx))

@@ -93,7 +93,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controller.DontUseMeReconciler{
+	if err = (&controller.ImageReconciler{
 		Client:     mgr.GetClient(),
 		Scheme:     mgr.GetScheme(),
 		BuildCache: make(map[types.NamespacedName]v1alpha2.Image),
