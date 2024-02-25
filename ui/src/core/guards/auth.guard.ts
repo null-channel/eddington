@@ -1,5 +1,4 @@
 import { ROUTES } from "@constants";
-import { Ory } from "@helpers";
 
 const AUTH_ROUTES = [
   ROUTES.LOGIN.name,
@@ -10,7 +9,6 @@ const AUTH_ROUTES = [
 export default async (to: any) => {
   let authenticated = false;
   try {
-    await Ory.toSession();
     authenticated = true;
   } catch (e) {}
 
@@ -21,5 +19,6 @@ export default async (to: any) => {
   if (AUTH_ROUTES.includes(to.name) && authenticated) {
     return { name: ROUTES.HOME.name };
   }
+
   return true;
 };
