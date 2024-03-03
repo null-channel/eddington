@@ -14,7 +14,12 @@ async function run(){
     const app = createApp(App);
     app.use(pinia);
     app.use(clerkPlugin, {
-        publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,});
+        publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+        domain: import.meta.env.VITE_CLERK_DOMAIN,
+        frontendApi: import.meta.env.VITE_CLERK_FRONTEND_API,
+        home
+
+    );
     app.use(plugin, defaultConfig(genesis));
     app.use(axiosHelper);
     app.use(router);
