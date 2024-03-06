@@ -25,7 +25,7 @@ div .wrapper {
     width: 100%;
     grid-column: 1 / 4;
     height: 100%;
-    background-image: url('../assets/hero-bg.png');
+    background-image: url('../assets/hero-bg.svg');
     background-size: cover;
 }
 

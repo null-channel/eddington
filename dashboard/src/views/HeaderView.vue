@@ -14,7 +14,7 @@
                   <RouterLink to="/supporters">Supporters</RouterLink>
               </nav>
               <div class ="signin">
-                  <SignInButton mode="modal" />
+                  <SignInButton mode="modal" afterSignInUrl="/dashboard" />
                   <SignUpButton mode="modal" />
               </div>
           </SignedOut>

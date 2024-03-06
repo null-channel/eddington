@@ -9,10 +9,29 @@
     </div>
 </template>
 
-<script>
+<script setup lang=ts>
 import { useAuth } from 'vue-clerk'
-
 const { getToken, isLoaded, isSignedIn } = useAuth();
+import axios from 'axios';
+import { ref, onMounted } from 'vue';
+
+const loading = ref(true);
+const error = ref(null);
+const post = ref(null);
+
+onMounted(async () => {
+  try {
+    const response = await axios.get('https://jsonplaceholder.typicode.com/posts/1');
+    post.value = response.data;
+  } catch (err) {
+    error.value = err.message;
+  } finally {
+    loading.value = false;
+  }
+});
+
+const data = ref(post.value);
+
 
 </script>
 
