@@ -6,7 +6,6 @@ k8s_resource(
   port_forwards=9000
 )
 
-
 docker_build("nullchannel/eddington-container-builder","./container-builder")
 k8s_yaml('./deployment/container-builder/config.yaml')
 k8s_yaml('./deployment/container-builder/deployment.yaml')
