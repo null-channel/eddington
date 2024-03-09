@@ -1,0 +1,12 @@
+apiVersion: deleteme.nullcloud.io/v1
+kind: DontUseMe
+metadata:
+  labels:
+    app.kubernetes.io/name: dontuseme
+    app.kubernetes.io/instance: dontuseme-sample
+    app.kubernetes.io/part-of: null-watcher-go
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: null-watcher-go
+  name: dontuseme-sample
+spec:
+  # TODO(user): Add fields here

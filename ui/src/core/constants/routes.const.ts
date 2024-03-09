@@ -6,5 +6,6 @@ const ROUTES = {
   SIGNUP: { name: "sign-up", path: "/sign-up" },
   RESET_PASSWORD: { name: "reset-password", path: "/resetpassword" },
   UPDATE_PASSWORD: { name: "update-password", path: "/updatepassword" },
+  NEW_USER: { name: "new-user", path: "/new-user" },
 };
 export default ROUTES;

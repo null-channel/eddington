@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- deleteme_v1_dontuseme.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples

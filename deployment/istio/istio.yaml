@@ -1,0 +1,12 @@
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+ name: frontend
+ namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  jwtRules:
+  - issuer: "testing@secure.clerk.dev"
+    jwksUri: "https://api.clerk.dev/v1/jwks"

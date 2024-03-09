@@ -1,4 +1,4 @@
-<SideBar title="Docker SVC">
+<SideBar title="Services">
     <template v-slot:svc-image>
         <img src='@/assets/img/docker-svc.png' alt="Docker SVC" class="h-6 mr-3 sm:h-7" />
     </template>
@@ -57,8 +57,8 @@
     <Header :routes="routes" hideLogo></Header>
     <div class="container pt-36 my-auto font-sans">
         <template v-if="isSelected(elements.Dashboard)">
-            <Table v-bind:data="data" :columns="containerColum" :perPage="5" v-model:selected="selectedList"
-                tableTitle="container" tableSubtitle="This is a list of latest Containers.">
+            <Table v-bind:data="data" :columns="appsColumn" :perPage="5" v-model:selected="selectedList"
+                tableTitle="Services" tableSubtitle="Latests Services">
                 <template v-slot:actions-btn>
                     <BtnList :buttons="buttonsList" />
                 </template>

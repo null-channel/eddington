@@ -9,7 +9,7 @@ import { NAVBAR_AFTER_LOGIN } from "@/core/constants";
 import Table from "@components/table/table.vue";
 import ButtonListComponent from '@components/btn-list/btnList.vue'
 export default defineComponent({
-    name: "ContainerPage",
+    name: "AppPage",
     components: {
         SideBar: markRaw(SideBar),
         Header: markRaw(Header),
@@ -27,17 +27,17 @@ export default defineComponent({
             routes: NAVBAR_AFTER_LOGIN,
             buttonsList: [
                 {
-                    label: "actions",
+                    label: "Actions",
                     type: "primary",
                     class: 'h-10'
                 },
                 {
-                    label: "delete",
+                    label: "Add",
                     type: "secondary",
                     class:'h-10'
                 }
             ],
-            containerColum: [
+            appsColumn: [
                 { label: 'App name', propertyKey: "name" },
                 {
                     label: 'Date & time', propertyKey: "date", type: 'date', getValueFunction: (row:any) => {

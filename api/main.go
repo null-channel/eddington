@@ -2,6 +2,7 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
 	"log"
@@ -11,7 +12,10 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	ory "github.com/ory/client-go"
+	"github.com/rs/cors"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/sqlitedialect"
+	"github.com/uptrace/bun/driver/sqliteshim"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -24,6 +28,8 @@ import (
 	"github.com/null-channel/eddington/api/middleware"
 	"github.com/null-channel/eddington/api/notfound"
 	userController "github.com/null-channel/eddington/api/users/controllers"
+	versionedclient "istio.io/client-go/pkg/clientset/versioned"
+	kube "k8s.io/client-go/kubernetes"
 
 	pb "github.com/null-channel/eddington/api/proto/container"
 
@@ -40,41 +46,11 @@ func main() {
 
 	logger, _ := zap.NewProduction()
 	defer logger.Sync() // flushes buffer, if any
-	sugar := logger.Sugar()
-	sugar.Infow("failed to fetch URL",
-		// Structured context as loosely typed key-value pairs.
-		"url", "marek",
-		"attempt", 3,
-		"backoff", time.Second,
-	)
-	sugar.Infof("Failed to fetch URL: %s", "url")
 
 	// ORY Stuff Not sure this is a good way to deal with this.
 	proxyPort := os.Getenv("ORY_PROXY_PORT")
 	if proxyPort == "" {
 		proxyPort = "4000"
-	}
-
-	oryDomain := os.Getenv("ORY_DOMAIN")
-	if oryDomain == "" {
-		oryDomain = "http://localhost"
-	}
-
-	// register a new Ory client with the URL set to the Ory CLI Proxy
-	// we can also read the URL from the env or a config file
-	c := ory.NewConfiguration()
-	c.Servers = ory.ServerConfigurations{{URL: fmt.Sprintf("%s:%s/.ory", oryDomain, proxyPort)}}
-
-	var authMiddleware middleware.AuthMiddleware
-
-	if *debug {
-		authMiddleware = &middleware.DebugAuth{}
-		fmt.Println("WARNING: You are running in debug mode without auth. tread carefully and do not run in production")
-	} else {
-		authMiddleware = &middleware.OryApp{
-			Ory: ory.NewAPIClient(c),
-		}
-		fmt.Println("Running auth in production mode")
 	}
 
 	fmt.Println("Starting server...")
@@ -86,11 +62,21 @@ func main() {
 
 	router.Use(middleware.LoggingMiddleware)
 
-	middleware.CreateCORSHandler(router)
+	//Database stuff
+	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
+	userdb := bun.NewDB(sqldb, sqlitedialect.New())
+	if err != nil {
+		panic(err)
+	}
 
 	//TODO: Swagger
 	//docs.SwaggerInfo.BasePath = "/api/v1"
-	userController, err := userController.New(logger)
+	userController, err := userController.New(logger, userdb)
+
+	//Add user middleware
+	userMiddleware := middleware.NewUserMiddleware(userdb)
+
+	authzMiddleware := middleware.NewAuthzMiddleware(userdb)
 
 	if err != nil {
 		log.Fatal(err)
@@ -112,31 +98,31 @@ func main() {
 	}
 	defer conn.Close()
 	client := pb.NewContainerServiceClient(conn)
+	kubeClient := kube.NewForConfigOrDie(clusterConfig)
 
 	config := dynamic.NewForConfigOrDie(clusterConfig)
-	appController := app.NewApplicationController(config, userController, client, logger)
+	istioClient := versionedclient.NewForConfigOrDie(clusterConfig)
+	appController := app.NewApplicationController(config, istioClient, kubeClient, userController, client, logger)
+	middlwares := []mux.MiddlewareFunc{
+		authzMiddleware.CheckAuthz,
+		userMiddleware.NewUserMiddlewareCheck,
+	}
 
 	v1 := router.PathPrefix("/api/v1").Subrouter()
 	{
 		// Apps
 		apps := v1.PathPrefix("/apps").Subrouter()
 		{
-			apps.Use(authMiddleware.SessionMiddleware)
+			addMiddleware(apps, middlwares...)
 			appController.RegisterRoutes(apps)
 		}
 
 		// Users
 		users := v1.PathPrefix("/users").Subrouter()
 		{
-			users.Use(authMiddleware.SessionMiddleware)
+			addMiddleware(users, middlwares...)
 			userController.AddAllControllers(users)
 		}
-		// AuthZ
-
-		// AuthN
-
-		// Space
-
 		// Marketing
 		marketingGroup := v1.PathPrefix("/marketing").Subrouter()
 		{
@@ -182,8 +168,14 @@ func main() {
 		return nil
 	})
 
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:9000", "*"},
+		AllowCredentials: true,
+	})
+
+	handler := c.Handler(router)
 	srv := &http.Server{
-		Handler: router,
+		Handler: handler,
 		Addr:    "0.0.0.0:" + port,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
@@ -192,6 +184,13 @@ func main() {
 
 	log.Fatal(srv.ListenAndServe())
 
+}
+
+func addMiddleware(router *mux.Router, middleware ...mux.MiddlewareFunc) *mux.Router {
+	for _, m := range middleware {
+		router.Use(m)
+	}
+	return router
 }
 
 // getClusterConfig return the config for k8s

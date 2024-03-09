@@ -1,0 +1,30 @@
+<div class="h-[100vh] bg-hero-bg bg-contain bg-center bg-no-repeat">
+    <Header :routes="routes"></Header>
+    <div class="flex flex-col items-center justify-center">
+        <div class="w-[90%] md:w-[70%] lg:w-[50%] xl:w-[30%] 2xl:w-[25%] bg-white rounded-lg shadow-lg p-8">
+            <h1 class="text-2xl font-bold text-center mb-4">Create New Account</h1>
+            <form action="" class="flex flex-col space-y-4">
+                <div class="flex flex-col space-y-1">
+                    <label for="name" class="text-sm font-semibold">Name</label>
+                    <input type="text" name="name" id="name" class="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                </div>
+                <div class="flex flex-col space-y-1">
+                    <label for="email" class="text-sm font-semibold">Email</label>
+                    <input type="email" name="email" id="email" class="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                </div>
+                <div class="flex flex-col space-y-1">
+                    <label for="consent" class="text-sm font-semibold">Consent</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="checkbox" name="consent" id="consent" class="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <label for="consent" class="text-sm">I agree to the <a href="#" class="text-blue-400">Terms and Conditions</a></label>
+                    </div>
+                </div>
+                <div class="flex flex-col space-y-1">
+                    <label for="submit" class="text-sm font-semibold"></label>
+                    <button type="submit" class="bg-blue-400 text-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <Footer :routes="routes"></Footer>
+</div>
