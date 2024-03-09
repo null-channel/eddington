@@ -4,24 +4,31 @@
     <div v-if="error" class="error">{{ error }}</div>
 
     <div v-if="post" class="content">
-      <h2>{{ post.title }}</h2>
-      <p>{{ post.body }}</p>
+      <p>{{}}</p>
     </div>
 </template>
 
-<script setup lang=ts>
+<script setup>
 import { useAuth } from 'vue-clerk'
-const { getToken, isLoaded, isSignedIn } = useAuth();
-import axios from 'axios';
-import { ref, onMounted } from 'vue';
+import http from '../../src/axios/axios'
+import { ref, onMounted, inject } from 'vue';
 
+const { getToken, userId, isLoaded, isSignedIn } = useAuth();
 const loading = ref(true);
 const error = ref(null);
 const post = ref(null);
 
+const $http = inject('$http');
+
 onMounted(async () => {
   try {
-    const response = await axios.get('https://jsonplaceholder.typicode.com/posts/1');
+    const token = await getToken.value(); 
+    const config = {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    };
+    const response = await $http.get('http://localhost:9000/api/v1/users/id', config);
     post.value = response.data;
   } catch (err) {
     error.value = err.message;

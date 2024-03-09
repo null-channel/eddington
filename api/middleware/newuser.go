@@ -27,7 +27,9 @@ func (k *UserMiddleware) NewUserMiddlewareCheck(next http.Handler) http.Handler 
 
 		if err != nil {
 			fmt.Println("User is new, redirecting to new user page")
-			http.Redirect(w, r, "/newuser", http.StatusSeeOther)
+			http.Redirect(w, r, "/newuser", 234)
+			w.Header().Set("location", "/error")
+
 			return
 		}
 

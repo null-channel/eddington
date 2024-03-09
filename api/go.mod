@@ -9,6 +9,7 @@ require (
 	github.com/null-channel/eddington/proto v0.0.0-20231009003536-a2b6e90d2dcd
 	github.com/ory/client-go v1.1.41
 	github.com/pkg/errors v0.9.1
+	github.com/rs/cors v1.10.1
 	github.com/sendgrid/sendgrid-go v3.12.0+incompatible
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0

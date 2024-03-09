@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	ory "github.com/ory/client-go"
+	"github.com/rs/cors"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/sqlitedialect"
 	"github.com/uptrace/bun/driver/sqliteshim"
@@ -46,41 +46,11 @@ func main() {
 
 	logger, _ := zap.NewProduction()
 	defer logger.Sync() // flushes buffer, if any
-	sugar := logger.Sugar()
-	sugar.Infow("failed to fetch URL",
-		// Structured context as loosely typed key-value pairs.
-		"url", "marek",
-		"attempt", 3,
-		"backoff", time.Second,
-	)
-	sugar.Infof("Failed to fetch URL: %s", "url")
 
 	// ORY Stuff Not sure this is a good way to deal with this.
 	proxyPort := os.Getenv("ORY_PROXY_PORT")
 	if proxyPort == "" {
 		proxyPort = "4000"
-	}
-
-	oryDomain := os.Getenv("ORY_DOMAIN")
-	if oryDomain == "" {
-		oryDomain = "http://localhost"
-	}
-
-	// register a new Ory client with the URL set to the Ory CLI Proxy
-	// we can also read the URL from the env or a config file
-	c := ory.NewConfiguration()
-	c.Servers = ory.ServerConfigurations{{URL: fmt.Sprintf("%s:%s/.ory", oryDomain, proxyPort)}}
-
-	var authMiddleware middleware.AuthMiddleware
-
-	if *debug {
-		authMiddleware = &middleware.DebugAuth{}
-		fmt.Println("WARNING: You are running in debug mode without auth. tread carefully and do not run in production")
-	} else {
-		authMiddleware = &middleware.OryApp{
-			Ory: ory.NewAPIClient(c),
-		}
-		fmt.Println("Running auth in production mode")
 	}
 
 	fmt.Println("Starting server...")
@@ -91,8 +61,6 @@ func main() {
 	router.NotFoundHandler = http.HandlerFunc(notfound.NotFoundHandler)
 
 	router.Use(middleware.LoggingMiddleware)
-
-	middleware.CreateCORSHandler(router)
 
 	//Database stuff
 	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
@@ -136,7 +104,6 @@ func main() {
 	istioClient := versionedclient.NewForConfigOrDie(clusterConfig)
 	appController := app.NewApplicationController(config, istioClient, kubeClient, userController, client, logger)
 	middlwares := []mux.MiddlewareFunc{
-		authMiddleware.SessionMiddleware,
 		authzMiddleware.CheckAuthz,
 		userMiddleware.NewUserMiddlewareCheck,
 	}
@@ -156,12 +123,6 @@ func main() {
 			addMiddleware(users, middlwares...)
 			userController.AddAllControllers(users)
 		}
-		// AuthZ
-
-		// AuthN
-
-		// Space
-
 		// Marketing
 		marketingGroup := v1.PathPrefix("/marketing").Subrouter()
 		{
@@ -207,8 +168,14 @@ func main() {
 		return nil
 	})
 
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:9000", "*"},
+		AllowCredentials: true,
+	})
+
+	handler := c.Handler(router)
 	srv := &http.Server{
-		Handler: router,
+		Handler: handler,
 		Addr:    "0.0.0.0:" + port,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
