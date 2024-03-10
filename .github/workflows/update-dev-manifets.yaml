@@ -14,7 +14,7 @@ jobs:
         name: Checkout deployment code
         uses: actions/checkout@v3
         with:
-          repository: 'https://github.com/null-channel/nullcloud-deployments'
+          repository: 'null-channel/nullcloud-deployments'
           token: ${{ secrets.PAT_GITHUB_DEPLOYMENT }}
       - name: Update image tag for api service
         working-directory: ./deployments/null-cloud/base/api/dev/
