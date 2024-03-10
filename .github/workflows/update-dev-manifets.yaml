@@ -1,4 +1,4 @@
-name: deploy-api
+name: deploy-dev-manifests
 
 on:
   push:
@@ -23,17 +23,14 @@ jobs:
       - name: update image tag for null operator
         working-directory: ./deployments/null-cloud/base/null-operator/dev/
         run: |
-          cd dir
           kustomize edit set image nullchannel/eddington-null-operator:${{ github.sha }}
       - name: update image tag for ui
         working-directory: ./deployments/null-cloud/base/ui/dev/
         run: |
-          cd dir
           kustomize edit set image eddington-ui:${{ github.sha }}
       - name: Update image tag for container builder service
         working-directory: ./deployments/null-cloud/base/container-runner/dev/
         run: |
-          cd dir
           kustomize edit set image nullchannel/eddington-container-runner:${{ github.sha }}
       - name: commit to it.
         run: |
