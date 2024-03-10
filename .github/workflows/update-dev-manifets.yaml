@@ -37,6 +37,7 @@ jobs:
           kustomize edit set image nullchannel/eddington-container-runner:${{ github.sha }}
 
       - name: commit to it.
+        run: |
           git config --global user.email "null@nulllabs.com"
           git config --global user.name "GitHub Actions"
           git add .
