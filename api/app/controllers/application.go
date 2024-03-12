@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -77,7 +78,7 @@ func NewApplicationController(kube dynamic.Interface, istio *versionedclient.Cli
 
 func (a *ApplicationController) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("", a.AppPOST).Methods("POST")
-	router.HandleFunc("/{id}", a.AppGET).Methods("GET")
+	router.HandleFunc("/{}", a.AppGET).Methods("GET")
 }
 
 type Application struct {
@@ -315,15 +316,58 @@ func getIstioNetowrkGVR(resource string) schema.GroupVersionResource {
 
 // AppGET godoc
 //
-//	@Summary	Get all applications created by the user
+//	@Summary	Get all applications in the org
 //	@Schemes
-//	@Description	Get all applications created by the user
+//	@Description	Get all applications in the org
 //	@Tags			example
 //	@Accept			json
 //	@Produce		json
 //	@Success		200	{string}	Helloworld
 //	@Router			/apps/ [get]
 func (a ApplicationController) AppGET(w http.ResponseWriter, r *http.Request) {
-	// TODO: implement
-	w.WriteHeader(http.StatusNotImplemented)
+	userId, err := strconv.ParseInt(r.Context().Value("user-id").(string), 10, 64)
+
+	if err != nil {
+		a.logs.Errorf("Failed to parse user id",
+			"user-id:", r.Context().Value("user-id"))
+	}
+	// get user org
+	org, err := a.userController.GetUserContext(r.Context(), userId)
+	if err != nil {
+		a.logs.Errorw("Failed to get user org for the user controller",
+			"user-id", userId,
+			"error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	nullApplications, err := a.GetApplications(r.Context(), org.ID)
+	if err != nil {
+		a.logs.Errorw("Failed to get applications for the user",
+			"user-id", userId,
+			"error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(nullApplications)
+}
+
+func (a ApplicationController) GetApplication(ctx context.Context, id int64) (*appmodels.NullApplication, error) {
+	nullApplication := &appmodels.NullApplication{}
+	err := a.database.NewSelect().Model(nullApplication).Where("id = ?", id).Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return nullApplication, nil
+}
+
+func (a ApplicationController) GetApplications(ctx context.Context, orgId int64) ([]*appmodels.NullApplication, error) {
+	nullApplications := []*appmodels.NullApplication{}
+	err := a.database.NewSelect().Model(&nullApplications).Where("org_id = ?", orgId).Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return nullApplications, nil
 }

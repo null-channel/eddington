@@ -5,38 +5,24 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
-	"github.com/golang-jwt/jwt"
-	ory "github.com/ory/client-go"
+	"github.com/golang-jwt/jwt/v4"
 )
-
-type OryApp struct {
-	Ory *ory.APIClient
-}
 
 // save the cookies for any upstream calls to the Ory apis
 func withCookies(ctx context.Context, v string) context.Context {
 	return context.WithValue(ctx, "req.cookies", v)
+}
+func withUser(ctx context.Context, v string) context.Context {
+	return context.WithValue(ctx, "user-id", v)
 }
 
 func getCookies(ctx context.Context) string {
 	return ctx.Value("req.cookies").(string)
 }
 
-// save the session to display it on the dashboard
-func withSession(ctx context.Context, v *ory.Session) context.Context {
-	return context.WithValue(ctx, "req.session", v)
-}
-
-func getSession(ctx context.Context) *ory.Session {
-	return ctx.Value("req.session").(*ory.Session)
-}
-
-func withUser(ctx context.Context, v *ory.Session) context.Context {
-	return context.WithValue(ctx, "user-id", v.GetIdentity().Id)
-}
-
-func (app *OryApp) SessionMiddleware(next http.Handler) http.Handler {
+func AddJwtHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 
 		//TODO: Parse JWT token and get user id
@@ -54,19 +40,33 @@ func (app *OryApp) SessionMiddleware(next http.Handler) http.Handler {
 		// ory_session_projectid cookie to the endpoint
 		cookies = request.Header.Get("Cookie")
 		tokenString := request.Header.Get("Authorization")
-		user_id, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			fmt.Println(token)
-			return token.Claims.(jwt.MapClaims)["user-id"], nil
+		// remove the Bearer prefix
+		// and parse the token
+		parser := &jwt.Parser{
+			ValidMethods:         []string{"none"},
+			UseJSONNumber:        true,
+			SkipClaimsValidation: true,
+		}
+		tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
+		userId, err := parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			//fmt.Println("claims: " + token.Claims.(jwt.MapClaims)["sub"])
+			claims := token.Claims.(jwt.MapClaims)
+			// You can now extract any data from the token's payload
+			return claims["sub"], nil
 		})
+		user_id := fmt.Sprintf("%v", userId)
 		if err != nil {
-			fmt.Println(err)
-			return
+			fmt.Println("Error parsing token! but that is ok")
+			// can fail if the token is invalid but we don't want to validate it here for now
+			//return
 		}
 		//TODO: Delete this line
-		fmt.Println(user_id)
+		fmt.Println("request userId: %s" + user_id)
+		fmt.Println("next line")
+		ctx = withUser(ctx, user_id)
 
 		//ctx = withSession(ctx, session)
-		//ctx = withUser(ctx, session)
+		request.Header.Set("user-id", fmt.Sprintf("%v", user_id))
 
 		// continue to the requested page (in our case the Dashboard)
 		next.ServeHTTP(writer, request.WithContext(ctx))

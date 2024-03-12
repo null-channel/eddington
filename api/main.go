@@ -104,6 +104,7 @@ func main() {
 	istioClient := versionedclient.NewForConfigOrDie(clusterConfig)
 	appController := app.NewApplicationController(config, istioClient, kubeClient, userController, client, logger)
 	middlwares := []mux.MiddlewareFunc{
+		middleware.AddJwtHeaders,
 		authzMiddleware.CheckAuthz,
 		userMiddleware.NewUserMiddlewareCheck,
 	}
@@ -120,7 +121,8 @@ func main() {
 		// Users
 		users := v1.PathPrefix("/users").Subrouter()
 		{
-			addMiddleware(users, middlwares...)
+			users.Use(middleware.AddJwtHeaders)
+			users.Use(authzMiddleware.CheckAuthz)
 			userController.AddAllControllers(users)
 		}
 		// Marketing
