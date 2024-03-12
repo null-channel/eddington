@@ -62,7 +62,6 @@ func AddJwtHeaders(next http.Handler) http.Handler {
 		}
 		//TODO: Delete this line
 		fmt.Println("request userId: %s" + user_id)
-		fmt.Println("next line")
 		ctx = withUser(ctx, user_id)
 
 		//ctx = withSession(ctx, session)
