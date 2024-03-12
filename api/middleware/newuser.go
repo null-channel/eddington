@@ -21,7 +21,7 @@ func NewUserMiddleware(db *bun.DB) *UserMiddleware {
 func (k *UserMiddleware) NewUserMiddlewareCheck(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userId := r.Context().Value("user-id").(int64)
-		fmt.Println("Checking if user is new...")
+		fmt.Println("Checking if user is new... %i", userId)
 		// Check database for user
 		_, err := user.GetUserForId(userId, k.db)
 
