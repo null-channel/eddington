@@ -24,9 +24,9 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 		// Check if the user-id header is set
 		userId, ok := r.Context().Value("user-id").(string)
 		if !ok {
-			fmt.Println("User id not found in context. Failing Authz.")
-			http.Redirect(w, r, "error", 234)
-			w.Header().Set("location", "error")
+			fmt.Println("User is new, redirecting to new user page")
+			http.Error(w, "User is new, redirecting to new user page", http.StatusTemporaryRedirect)
+			w.Header().Set("location", "/newuser")
 			return
 		}
 		fmt.Println("Checking if user is new...")
@@ -35,8 +35,8 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 
 		if err != nil {
 			fmt.Println("User is new, redirecting to new user page")
-			http.Redirect(w, r, "newuser", 234)
-			w.Header().Set("location", "newuser")
+			http.Error(w, "User is new, redirecting to new user page", http.StatusTemporaryRedirect)
+			w.Header().Set("location", "/newuser")
 			return
 		}
 		org, err := user.GetOrgByOwnerId(userId, k.db)
