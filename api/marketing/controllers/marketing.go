@@ -67,7 +67,7 @@ func (m *MarketingController) POSTEmailSubscriber(w http.ResponseWriter, r *http
 		http.Error(w, fmt.Sprintf("Validation error: %s", errors), http.StatusBadRequest)
 		return
 	}
-	fmt.Println("Email: %s", marketingSubscribeDTO.Email)
+	fmt.Printf("Email: %s\n", marketingSubscribeDTO.Email)
 	err = m.Addrecipients(marketingSubscribeDTO.Email)
 
 	if err != nil {
