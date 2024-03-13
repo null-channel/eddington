@@ -33,13 +33,9 @@ func AddJwtHeaders(next http.Handler) http.Handler {
 		var cookies string
 
 		ctx := withCookies(request.Context(), cookies)
-		// this example passes all request.Cookies
-		// to `ToSession` function
-		//
-		// However, you can pass only the value of
-		// ory_session_projectid cookie to the endpoint
 		cookies = request.Header.Get("Cookie")
 		tokenString := request.Header.Get("Authorization")
+
 		// remove the Bearer prefix
 		// and parse the token
 		parser := &jwt.Parser{
@@ -48,24 +44,18 @@ func AddJwtHeaders(next http.Handler) http.Handler {
 			SkipClaimsValidation: true,
 		}
 		tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
-		userId, err := parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			//fmt.Println("claims: " + token.Claims.(jwt.MapClaims)["sub"])
-			claims := token.Claims.(jwt.MapClaims)
-			// You can now extract any data from the token's payload
-			return claims["sub"], nil
-		})
-		user_id := fmt.Sprintf("%v", userId)
+		var claims jwt.MapClaims
+		_, _, err := parser.ParseUnverified(tokenString, &claims)
 		if err != nil {
 			fmt.Println("Error parsing token! but that is ok")
-			// can fail if the token is invalid but we don't want to validate it here for now
-			//return
+			fmt.Println(err)
+			return
 		}
-		//TODO: Delete this line
-		fmt.Println("request userId: %s" + user_id)
-		ctx = withUser(ctx, user_id)
+		userId := claims["sub"].(string)
 
-		//ctx = withSession(ctx, session)
-		request.Header.Set("user-id", fmt.Sprintf("%v", user_id))
+		ctx = withUser(ctx, userId)
+
+		request.Header.Set("user-id", userId)
 
 		// continue to the requested page (in our case the Dashboard)
 		next.ServeHTTP(writer, request.WithContext(ctx))
