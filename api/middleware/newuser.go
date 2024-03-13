@@ -26,8 +26,7 @@ func (k *UserMiddleware) NewUserMiddlewareCheck(next http.Handler) http.Handler 
 		_, err := user.GetUserForId(userId, k.db)
 
 		if err != nil {
-			fmt.Println("User is new, redirecting to new user page")
-			http.Error(w, "User is new, redirecting to new user page", http.StatusTemporaryRedirect)
+			http.Error(w, "User is new, please register user", http.StatusBadRequest)
 			w.Header().Set("location", "/newuser")
 			return
 		}
