@@ -160,7 +160,7 @@ func (u *UserController) UpsertUserDB(user models.User) (int, error) {
 // @Success		200	{string}	Helloworld
 // @Router			/users/ [post]
 func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value("user-id").(int64)
+	id := r.Context().Value("user-id").(string)
 	email := r.Context().Value("email").(string)
 	newsLetterConsent := r.Context().Value("newsletter-consent").(bool)
 	name := r.Context().Value("name").(string)

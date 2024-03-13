@@ -22,7 +22,7 @@ func NewAuthzMiddleware(db *bun.DB) *AuthzMiddleware {
 func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if the user-id header is set
-		userId, ok := r.Context().Value("user-id").(int64)
+		userId, ok := r.Context().Value("user-id").(string)
 		if !ok {
 			fmt.Println("User id not found in context. Failing Authz.")
 			http.Redirect(w, r, "error", 234)

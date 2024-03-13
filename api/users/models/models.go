@@ -8,7 +8,7 @@ import (
 )
 
 type User struct {
-	ID                int64 `bun:",pk"` // primary key, same as ory.
+	ID                string `bun:",pk"` // primary key, same as ory.
 	Name              string
 	Email             string
 	NewsLetterConsent bool `bun:"newsletterConsent"`
@@ -42,7 +42,7 @@ func (u User) String() string {
 
 // UpdateUser godoc
 // @Summary	Get user info for user id
-func GetUserForId(id int64, userDb *bun.DB) (*User, error) {
+func GetUserForId(id string, userDb *bun.DB) (*User, error) {
 	var user User
 	err := userDb.NewSelect().
 		Model(&user).
@@ -56,11 +56,11 @@ func GetUserForId(id int64, userDb *bun.DB) (*User, error) {
 	return &user, nil
 }
 
-func GetOrgByOwnerId(user_id int64, userDb *bun.DB) (*Org, error) {
+func GetOrgByOwnerId(userId string, userDb *bun.DB) (*Org, error) {
 	var org Org
 	err := userDb.NewSelect().
 		Model(&org).
-		Where("owner_id = ?", user_id).
+		Where("owner_id = ?", userId).
 		Scan(context.Background(), &org)
 
 	if err != nil {

@@ -20,7 +20,7 @@ func NewUserMiddleware(db *bun.DB) *UserMiddleware {
 
 func (k *UserMiddleware) NewUserMiddlewareCheck(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userId := r.Context().Value("user-id").(int64)
+		userId := r.Context().Value("user-id").(string)
 		fmt.Println("Checking if user is new... %i", userId)
 		// Check database for user
 		_, err := user.GetUserForId(userId, k.db)
@@ -29,7 +29,6 @@ func (k *UserMiddleware) NewUserMiddlewareCheck(next http.Handler) http.Handler 
 			fmt.Println("User is new, redirecting to new user page")
 			http.Error(w, "User is new, redirecting to new user page", http.StatusTemporaryRedirect)
 			w.Header().Set("location", "/newuser")
-
 			return
 		}
 
