@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"github.com/sendgrid/sendgrid-go"
 )
@@ -30,6 +31,11 @@ func (m *MarketingController) AddAllControllers(router *mux.Router) {
 	router.HandleFunc("/email", m.POSTEmailSubscriber).Methods(http.MethodPost)
 }
 
+// define custom type
+type MarketingSubscribeDTO struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
 //	@BasePath	/api/v1/
 
 // CreateUser godoc
@@ -44,22 +50,32 @@ func (m *MarketingController) AddAllControllers(router *mux.Router) {
 //	@Router			/marketing/email [post]
 func (m *MarketingController) POSTEmailSubscriber(w http.ResponseWriter, r *http.Request) {
 
-	err := r.ParseForm()
+	var marketingSubscribeDTO MarketingSubscribeDTO
+	err := json.NewDecoder(r.Body).Decode(&marketingSubscribeDTO)
 
 	if err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintln(w, "Decode error! please check your JSON formatting.")
 		return
 	}
+	validate := validator.New()
 
-	email := r.Form.Get("email")
-	fmt.Println("email: " + email)
-	err = m.Addrecipients(email)
+	err = validate.Struct(marketingSubscribeDTO)
+
+	if err != nil {
+		errors := err.(validator.ValidationErrors)
+		http.Error(w, fmt.Sprintf("Validation error: %s", errors), http.StatusBadRequest)
+		return
+	}
+	fmt.Printf("Email: %s\n", marketingSubscribeDTO.Email)
+	err = m.Addrecipients(marketingSubscribeDTO.Email)
 
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "New e-mail added to list successfully!")
 }
