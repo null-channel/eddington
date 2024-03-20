@@ -24,8 +24,8 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 		// Check if the user-id header is set
 		userId, ok := r.Context().Value("user-id").(string)
 		if !ok {
-			fmt.Println("User is new, redirecting to new user page")
-			http.Error(w, "User is new, redirecting to new user page", http.StatusTemporaryRedirect)
+			fmt.Println("User is new")
+			http.Error(w, "User is new, they need to ", http.StatusBadRequest)
 			w.Header().Set("location", "/newuser")
 			return
 		}
@@ -34,8 +34,7 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 		_, err := user.GetUserForId(userId, k.db)
 
 		if err != nil {
-			fmt.Println("User is new, redirecting to new user page")
-			http.Error(w, "User is new, redirecting to new user page", http.StatusTemporaryRedirect)
+			http.Error(w, "User is new, please register user", http.StatusBadRequest)
 			w.Header().Set("location", "/newuser")
 			return
 		}

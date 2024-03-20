@@ -1,10 +1,10 @@
 name: deploy-dev-manifests
 
 on:
-  push:
-    branches:
-      - 'main'
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["build-api", "build-container-builder", "build-null-operator"]
+    types:
+      - completed
 
 jobs:
   build-manifests:
