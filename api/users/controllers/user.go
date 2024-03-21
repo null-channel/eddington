@@ -102,7 +102,7 @@ func resourceGroupModelToProto(resourceGroups []*models.ResourceGroup) []*pb.Res
 
 func (u *UserController) AddAllControllers(router *mux.Router) {
 	router.HandleFunc("", u.UpsertUser).Methods("POST")
-	router.HandleFunc("/id", u.GetUserId).Methods("GET")
+	router.HandleFunc("", u.GetUserId).Methods("GET")
 }
 
 func (u *UserController) UpsertUserDB(user models.User) (int, error) {

@@ -30,4 +30,7 @@ var (
 	UnauthorizedErrorHandler = func(w http.ResponseWriter) {
 		writeError(w, "Unauthorized", http.StatusUnauthorized)
 	}
+	UserRegistrationError = func(w http.ResponseWriter) {
+		writeError(w, "User not found in the database. Please complete the registration process.", http.StatusNotFound)
+	}
 )
