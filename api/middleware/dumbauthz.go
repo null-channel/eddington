@@ -5,9 +5,18 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/null-channel/eddington/api/core"
 	user "github.com/null-channel/eddington/api/users/models"
 	"github.com/uptrace/bun"
 )
+
+type UserRegistrationNotCompleteError struct {
+	UserID string
+}
+
+func (userNCE *UserRegistrationNotCompleteError) Error() string {
+	return fmt.Sprintf("the user %v require additional inforamtion", userNCE.UserID)
+}
 
 // NewUserMiddleware is a middleware that checks if the user is new.
 type AuthzMiddleware struct {
@@ -25,8 +34,11 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 		userId, ok := r.Context().Value("user-id").(string)
 		if !ok {
 			fmt.Println("User is new")
-			http.Error(w, "User is new, they need to ", http.StatusBadRequest)
-			w.Header().Set("location", "/newuser")
+			userErr := UserRegistrationNotCompleteError{
+				userId,
+			}
+			core.RequestErrorHandler(w, &userErr)
+			// http.Error(w, "User is new, they need to ", http.StatusBadRequest)
 			return
 		}
 		fmt.Println("Checking if user is new...")
