@@ -39,8 +39,7 @@ func New(logger *zap.Logger, db *bun.DB) (*UserController, error) {
 	return userServer, nil
 }
 
-func (u *UserController) GetUserContext(ctx context.Context, userId int64) (*models.Org, error) {
-
+func (u *UserController) GetUserContext(ctx context.Context, userId string) (*models.Org, error) {
 	// This assumes that the user is the owner. This is bad... but works for now.
 	// This is probably not even going to be an indext column in the future.
 	// Regrets future marek.
@@ -54,6 +53,11 @@ func (u *UserController) GetUserContext(ctx context.Context, userId int64) (*mod
 		u.logger.Errorw("Error getting user from database",
 			"error", err)
 		return nil, err
+	}
+
+	if len(orgs) == 0 {
+		u.logger.Errorw("No orgs found for user", "userId", userId)
+		return nil, fmt.Errorf("No orgs found for user")
 	}
 
 	var resGroups []*models.ResourceGroup
@@ -107,7 +111,7 @@ func (u *UserController) AddAllControllers(router *mux.Router) {
 
 func (u *UserController) UpsertUserDB(user models.User) (int, error) {
 
-	res, err := u.database.NewInsert().
+	_, err := u.database.NewInsert().
 		Model(&user).
 		On("CONFLICT (id) DO UPDATE").
 		Exec(context.Background())
@@ -116,21 +120,14 @@ func (u *UserController) UpsertUserDB(user models.User) (int, error) {
 		return http.StatusInternalServerError, err
 	}
 
-	ownerId, err := res.LastInsertId()
-
-	u.logger.Infow("New user created",
-		"userId:", ownerId)
-
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
-	orgAsString := strconv.FormatInt(ownerId, 10)
 	org := models.Org{
-		Name:    "default-" + orgAsString,
-		OwnerID: ownerId,
+		Name:    user.Name,
+		OwnerID: user.ID,
 	}
-	res, err = u.database.NewInsert().Model(&org).Exec(context.Background())
+	_, err = u.database.NewInsert().
+		Model(&org).
+		On("CONFLICT (owner_id) DO UPDATE").
+		Exec(context.Background())
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -149,6 +146,12 @@ func (u *UserController) UpsertUserDB(user models.User) (int, error) {
 	return http.StatusOK, nil
 }
 
+type NewUserRequest struct {
+	Name              string `json:"name"`
+	Email             string `json:"email"`
+	NewsletterConsent bool   `json:"newsletterConsent"`
+}
+
 // UpdateUser godoc
 //
 // @Summary	update an user
@@ -161,14 +164,22 @@ func (u *UserController) UpsertUserDB(user models.User) (int, error) {
 // @Router			/users/ [post]
 func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value("user-id").(string)
-	email := r.Context().Value("email").(string)
-	newsLetterConsent := r.Context().Value("newsletter-consent").(bool)
-	name := r.Context().Value("name").(string)
+
+	name := r.FormValue("name")
+	email := r.FormValue("email")
+	newsletterConsent := r.FormValue("newsletterConsent")
+
+	newsletterConsentBool := false
+	result, err := strconv.ParseBool(newsletterConsent)
+	if err != nil {
+		newsletterConsentBool = result
+	}
+
 	u.UpsertUserDB(models.User{
 		ID:                id,
 		Name:              name,
 		Email:             email,
-		NewsLetterConsent: newsLetterConsent,
+		NewsLetterConsent: newsletterConsentBool,
 	})
 }
 

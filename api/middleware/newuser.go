@@ -20,13 +20,17 @@ func NewUserMiddleware(db *bun.DB) *UserMiddleware {
 
 func (k *UserMiddleware) NewUserMiddlewareCheck(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userId := r.Context().Value("user-id").(string)
-		fmt.Println("Checking if user is new... %i", userId)
+		userId, userExists := r.Context().Value("user-id").(string)
+		if !userExists {
+			http.Error(w, "User not found in context", http.StatusBadRequest)
+			return
+		}
+		fmt.Println("Checking if user is new: ", userId)
 		// Check database for user
 		_, err := user.GetUserForId(userId, k.db)
 
 		if err != nil {
-			http.Error(w, "User is new, please register user", http.StatusBadRequest)
+			http.Error(w, "User is new, redirecting to new user page", http.StatusBadRequest)
 			w.Header().Set("location", "/newuser")
 			return
 		}

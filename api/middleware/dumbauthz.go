@@ -31,6 +31,16 @@ func NewAuthzMiddleware(db *bun.DB) *AuthzMiddleware {
 func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if the user-id header is set
+		vars := mux.Vars(r)
+		orgId, isOrgId := vars["orgId"]
+		_, isUserId := vars["userId"]
+
+		if !isOrgId && !isUserId {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Check if the user-id header is set
 		userId, ok := r.Context().Value("user-id").(string)
 		if !ok {
 			fmt.Println("User is new")
@@ -38,7 +48,6 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 				userId,
 			}
 			core.RequestErrorHandler(w, &userErr)
-			// http.Error(w, "User is new, they need to ", http.StatusBadRequest)
 			return
 		}
 		fmt.Println("Checking if user is new...")
@@ -46,15 +55,12 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 		_, err := user.GetUserForId(userId, k.db)
 
 		if err != nil {
-			// http.Error(w, "User is new, please register user", http.StatusBadRequest)
-			// w.Header().Set("location", "/newuser")
 			core.UserRegistrationError(w)
 			fmt.Println("The front handle new user sign up")
-
 			return
 		}
-		org, err := user.GetOrgByOwnerId(userId, k.db)
 
+		org, err := user.GetOrgByOwnerId(userId, k.db)
 		if err != nil {
 			fmt.Println("Org not found for user. Failing.")
 			http.Redirect(w, r, "error", http.StatusSeeOther)
@@ -62,8 +68,6 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 		}
 
 		// check url for org id
-		vars := mux.Vars(r)
-		orgId := vars["orgId"]
 
 		if err != nil {
 			fmt.Println("Org id not found in url. Failing Authz.")
