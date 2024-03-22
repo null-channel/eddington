@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -46,8 +47,9 @@ func NewServer(kubeConfig *rest.Config, logger *zap.SugaredLogger) (*Server, err
 func (s *Server) CreateContainer(ctx context.Context, req *container.CreateContainerRequest) (*container.CreateContainerResponse, error) {
 	s.log.Info("Create Container Request")
 
-	cusId := strconv.FormatInt(req.CustomerID, 10)
+	resourceId := strconv.FormatInt(req.ResourceGroup, 10)
 
+	fmt.Println("name: ", req.RepoURL, " directory: ", req.Directory, " resourceID: ", resourceId)
 	name := sanitizeRep(req.RepoURL, req.Directory)
 
 	factory := s.getImageFactory(req)
@@ -58,7 +60,7 @@ func (s *Server) CreateContainer(ctx context.Context, req *container.CreateConta
 	}
 
 	img.Labels = make(map[string]string)
-	img.Labels["customer"] = cusId
+	img.Labels["resourceId"] = resourceId
 	img.Labels["app"] = name
 
 	img, err = s.kpackClientSet.KpackClient.KpackV1alpha2().Images(s.kpackClientSet.Namespace).Create(ctx, img, metav1.CreateOptions{})
