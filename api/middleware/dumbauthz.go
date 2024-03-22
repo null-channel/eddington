@@ -46,8 +46,11 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 		_, err := user.GetUserForId(userId, k.db)
 
 		if err != nil {
-			http.Error(w, "User is new, please register user", http.StatusBadRequest)
-			w.Header().Set("location", "/newuser")
+			// http.Error(w, "User is new, please register user", http.StatusBadRequest)
+			// w.Header().Set("location", "/newuser")
+			core.UserRegistrationError(w)
+			fmt.Println("The front handle new user sign up")
+
 			return
 		}
 		org, err := user.GetOrgByOwnerId(userId, k.db)
