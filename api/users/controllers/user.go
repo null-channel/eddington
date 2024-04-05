@@ -1,76 +1,45 @@
 package controllers
 
 import (
-	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
+	"github.com/null-channel/eddington/api/core"
 	"github.com/null-channel/eddington/api/users/models"
+	services "github.com/null-channel/eddington/api/users/service"
+	"github.com/null-channel/eddington/api/users/types"
 	pb "github.com/null-channel/eddington/proto/user"
-	"github.com/uptrace/bun"
 	"go.uber.org/zap"
 )
 
 // Mux Controller to handel user routes
 type UserController struct {
 	pb.UnimplementedUserServiceServer
-	database *bun.DB
-	logger   *zap.SugaredLogger
+
+	userService services.IUserService
+	// orgService            services.IOrgService
+	// resourcesGroupService services.IResourcesGroupService
+	logger *zap.SugaredLogger
 }
 
-func New(logger *zap.Logger, db *bun.DB) (*UserController, error) {
-	_, err := db.NewCreateTable().Model((*models.User)(nil)).Exec(context.Background())
-	if err != nil {
-		panic(err)
-	}
-	_, err = db.NewCreateTable().Model((*models.ResourceGroup)(nil)).Exec(context.Background())
-	if err != nil {
-		panic(err)
-	}
-	_, err = db.NewCreateTable().Model((*models.Org)(nil)).Exec(context.Background())
-	if err != nil {
-		panic(err)
-	}
+func New(
+	logger *zap.Logger,
+	userService services.IUserService,
+	// orgService services.IOrgService,
+	// resourcesGroupService services.IResourcesGroupService,
+) (*UserController, error) {
 
-	userServer := &UserController{database: db, logger: logger.Sugar()}
+	userServer := &UserController{
+		userService: userService,
+		// orgService:            orgService,
+		// resourcesGroupService: resourcesGroupService,
+		logger: logger.Sugar(),
+	}
 
 	return userServer, nil
-}
-
-func (u *UserController) GetUserContext(ctx context.Context, userId string) (*models.Org, error) {
-	// This assumes that the user is the owner. This is bad... but works for now.
-	// This is probably not even going to be an indext column in the future.
-	// Regrets future marek.
-	var orgs []models.Org
-	err := u.database.NewSelect().
-		Model(&orgs).
-		Where("owner_id = ?", userId).
-		Scan(ctx, &orgs)
-
-	if err != nil {
-		u.logger.Errorw("Error getting user from database",
-			"error", err)
-		return nil, err
-	}
-
-	if len(orgs) == 0 {
-		u.logger.Errorw("No orgs found for user", "userId", userId)
-		return nil, fmt.Errorf("No orgs found for user")
-	}
-
-	var resGroups []*models.ResourceGroup
-	err = u.database.NewSelect().
-		Model(&resGroups).
-		Where("org_id = ?", &orgs[0].ID).
-		Scan(ctx)
-
-	orgs[0].ResourceGroups = resGroups
-
-	fmt.Println(orgs)
-
-	return &orgs[0], nil
 }
 
 func modelToUserContextRequest(org models.Org, ownerId int64) *pb.GetUserContextReply {
@@ -109,49 +78,6 @@ func (u *UserController) AddAllControllers(router *mux.Router) {
 	router.HandleFunc("", u.GetUserId).Methods("GET")
 }
 
-func (u *UserController) UpsertUserDB(user models.User) (int, error) {
-
-	_, err := u.database.NewInsert().
-		Model(&user).
-		On("CONFLICT (id) DO UPDATE").
-		Exec(context.Background())
-
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
-	org := models.Org{
-		Name:    user.Name,
-		OwnerID: user.ID,
-	}
-	_, err = u.database.NewInsert().
-		Model(&org).
-		On("CONFLICT (owner_id) DO UPDATE").
-		Exec(context.Background())
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
-	u.logger.Infow("Org created", "orgId:", org.ID)
-
-	resourceGroup := models.ResourceGroup{
-		OrgID: org.ID,
-		Name:  "default",
-	}
-	_, err = u.database.NewInsert().Model(&resourceGroup).Exec(context.Background())
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
-	return http.StatusOK, nil
-}
-
-type NewUserRequest struct {
-	Name              string `json:"name"`
-	Email             string `json:"email"`
-	NewsletterConsent bool   `json:"newsletterConsent"`
-}
-
 // UpdateUser godoc
 //
 // @Summary	update an user
@@ -163,24 +89,37 @@ type NewUserRequest struct {
 // @Success		200	{string}	Helloworld
 // @Router			/users/ [post]
 func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value("user-id").(string)
 
-	name := r.FormValue("name")
-	email := r.FormValue("email")
-	newsletterConsent := r.FormValue("newsletterConsent")
+	var userDTO types.NewUserRequest
+	err := json.NewDecoder(r.Body).Decode(&userDTO)
 
-	newsletterConsentBool := false
-	result, err := strconv.ParseBool(newsletterConsent)
 	if err != nil {
-		newsletterConsentBool = result
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintln(w, "Decode error! please check your JSON formatting.")
+		return
 	}
 
-	u.UpsertUserDB(models.User{
-		ID:                id,
-		Name:              name,
-		Email:             email,
-		NewsLetterConsent: newsletterConsentBool,
-	})
+	if err := userDTO.Validate(); err != nil {
+		errors := err.(validator.ValidationErrors)
+		http.Error(w, fmt.Sprintf("Validation error: %s", errors), http.StatusBadRequest)
+		return
+	}
+
+	err = u.userService.CreateOrUpdateUser(&models.User{
+		ID:                userDTO.ID,
+		Name:              userDTO.Name,
+		Email:             userDTO.Email,
+		NewsLetterConsent: userDTO.NewsletterConsent,
+		DOB:               userDTO.DOB.Time,
+	}, r.Context())
+
+	if err != nil {
+		core.InternalErrorHandler(w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }
 
 // UpdateUser godoc

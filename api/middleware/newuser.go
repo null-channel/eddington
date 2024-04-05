@@ -4,18 +4,17 @@ import (
 	"fmt"
 	"net/http"
 
-	user "github.com/null-channel/eddington/api/users/models"
-	"github.com/uptrace/bun"
+	services "github.com/null-channel/eddington/api/users/service"
 )
 
 // NewUserMiddleware is a middleware that checks if the user is new.
 type UserMiddleware struct {
-	db *bun.DB
+	userService services.IUserService
 }
 
 // NewUserMiddleware creates a new user middleware.
-func NewUserMiddleware(db *bun.DB) *UserMiddleware {
-	return &UserMiddleware{db: db}
+func NewUserMiddleware(userService services.IUserService) *UserMiddleware {
+	return &UserMiddleware{userService: userService}
 }
 
 func (k *UserMiddleware) NewUserMiddlewareCheck(next http.Handler) http.Handler {
@@ -27,7 +26,7 @@ func (k *UserMiddleware) NewUserMiddlewareCheck(next http.Handler) http.Handler 
 		}
 		fmt.Println("Checking if user is new: ", userId)
 		// Check database for user
-		_, err := user.GetUserForId(userId, k.db)
+		_, err := k.userService.GetUserByID(userId, r.Context())
 
 		if err != nil {
 			http.Error(w, "User is new, redirecting to new user page", http.StatusBadRequest)

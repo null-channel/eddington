@@ -1,10 +1,8 @@
 package models
 
 import (
-	"context"
 	"fmt"
-
-	"github.com/uptrace/bun"
+	"time"
 )
 
 type User struct {
@@ -12,6 +10,7 @@ type User struct {
 	Name              string
 	Email             string
 	NewsLetterConsent bool `bun:"newsletterConsent"`
+	DOB               time.Time
 }
 
 type Org struct {
@@ -38,34 +37,4 @@ type Resources struct {
 
 func (u User) String() string {
 	return fmt.Sprintf("User<%s %s>", u.ID, u.Email)
-}
-
-// UpdateUser godoc
-// @Summary	Get user info for user id
-func GetUserForId(id string, userDb *bun.DB) (*User, error) {
-	var user User
-	err := userDb.NewSelect().
-		Model(&user).
-		Where("id = ?", id).
-		Scan(context.Background(), &user)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
-}
-
-func GetOrgByOwnerId(userId string, userDb *bun.DB) (*Org, error) {
-	var org Org
-	err := userDb.NewSelect().
-		Model(&org).
-		Where("owner_id = ?", userId).
-		Scan(context.Background(), &org)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &org, nil
 }

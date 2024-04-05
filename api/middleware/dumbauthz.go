@@ -6,8 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/null-channel/eddington/api/core"
-	user "github.com/null-channel/eddington/api/users/models"
-	"github.com/uptrace/bun"
+	services "github.com/null-channel/eddington/api/users/service"
 )
 
 type UserRegistrationNotCompleteError struct {
@@ -20,12 +19,13 @@ func (userNCE *UserRegistrationNotCompleteError) Error() string {
 
 // NewUserMiddleware is a middleware that checks if the user is new.
 type AuthzMiddleware struct {
-	db *bun.DB
+	userService services.IUserService
+	orgServices services.IOrgService
 }
 
 // NewAuthzMiddleware creates a new user middleware.
-func NewAuthzMiddleware(db *bun.DB) *AuthzMiddleware {
-	return &AuthzMiddleware{db: db}
+func NewAuthzMiddleware(userService services.IUserService, orgServices services.IOrgService) *AuthzMiddleware {
+	return &AuthzMiddleware{userService: userService, orgServices: orgServices}
 }
 
 func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
@@ -52,7 +52,7 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 		}
 		fmt.Println("Checking if user is new...")
 		// Check database for user
-		_, err := user.GetUserForId(userId, k.db)
+		_, err := k.userService.GetUserByID(userId, r.Context())
 
 		if err != nil {
 			core.UserRegistrationError(w)
@@ -60,7 +60,7 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 			return
 		}
 
-		org, err := user.GetOrgByOwnerId(userId, k.db)
+		org, err := k.orgServices.GetOrgByOwnerId(userId, r.Context())
 		if err != nil {
 			fmt.Println("Org not found for user. Failing.")
 			http.Redirect(w, r, "error", http.StatusSeeOther)
@@ -75,7 +75,7 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 		}
 
 		// check if org id matches org id in url
-		if orgId != fmt.Sprintf("%d", org.ID) {
+		if orgId != fmt.Sprintf("%d", org[0].ID) {
 			fmt.Println("Org id in url does not match org id in database. Failing Authz.")
 			http.Redirect(w, r, "/error", http.StatusSeeOther)
 		}
