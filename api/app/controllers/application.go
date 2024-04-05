@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -109,15 +108,16 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app := Application{
-		Name:          r.Form.Get("name"),
-		Image:         r.Form.Get("image"),
-		GitRepo:       r.Form.Get("gitRepo"),
-		RepoType:      r.Form.Get("repoType"),
-		ResourceGroup: r.Form.Get("resourceGroup"),
-		Directory:     r.Form.Get("directory"),
+		Name:          r.FormValue("name"),
+		Image:         r.FormValue("image"),
+		GitRepo:       r.FormValue("gitRepo"),
+		RepoType:      r.FormValue("repoType"),
+		ResourceGroup: r.FormValue("resourceGroup"),
+		Directory:     r.FormValue("directory"),
 	}
 
-	userId, err := strconv.ParseInt(r.Context().Value("user-id").(string), 10, 64)
+	fmt.Println("app: ", app)
+	userId := r.Context().Value("user-id").(string)
 
 	if err != nil {
 		a.logs.Errorf("Failed to parse user id",
@@ -143,11 +143,11 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 
 	//TODO: accept the revision
 	_, err = a.containerServiceClient.CreateContainer(r.Context(), &pb.CreateContainerRequest{
-		RepoURL:    app.GitRepo,
-		Type:       pb.Language(pb.Language_value[app.RepoType]),
-		CustomerID: userId,
-		Directory:  app.Directory,
-		Rev:        "main",
+		RepoURL:       app.GitRepo,
+		Type:          pb.Language(pb.Language_value[app.RepoType]),
+		ResourceGroup: rgId,
+		Directory:     app.Directory,
+		Rev:           "main",
 	})
 
 	if err != nil {
@@ -196,15 +196,14 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 		serviceName := app.Name + "-service"
 		vitrualServiceName := app.Name + "-virtual-service"
 
-		user := strconv.FormatInt(userId, 10)
-		appService := createService(user, serviceName, namespace)
+		appService := createService(userId, serviceName, namespace)
 		_, err = a.kubeClientset.CoreV1().Services(namespace).Apply(context.Background(), appService, metav1.ApplyOptions{FieldManager: "application/apply-patch"})
 
 		if err != nil {
 			a.logs.Errorw(err.Error())
 		}
 
-		virtualService := getVirtualService(user, app.Name, serviceName, vitrualServiceName, namespace)
+		virtualService := getVirtualService(userId, app.Name, serviceName, vitrualServiceName, namespace)
 		_, err = a.istioClient.NetworkingV1alpha3().VirtualServices(namespace).Apply(context.TODO(), virtualService, metav1.ApplyOptions{FieldManager: "application/apply-patch"})
 
 		if err != nil {
@@ -325,12 +324,8 @@ func getIstioNetowrkGVR(resource string) schema.GroupVersionResource {
 //	@Success		200	{string}	Helloworld
 //	@Router			/apps/ [get]
 func (a ApplicationController) AppGET(w http.ResponseWriter, r *http.Request) {
-	userId, err := strconv.ParseInt(r.Context().Value("user-id").(string), 10, 64)
+	userId := r.Context().Value("user-id").(string)
 
-	if err != nil {
-		a.logs.Errorf("Failed to parse user id",
-			"user-id:", r.Context().Value("user-id"))
-	}
 	// get user org
 	org, err := a.userController.GetUserContext(r.Context(), userId)
 	if err != nil {
