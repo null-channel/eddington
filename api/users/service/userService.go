@@ -9,9 +9,9 @@ import (
 )
 
 type UserService struct {
-	UserRepository           repositories.IUserReposiotry
-	OrgReposiotry            repositories.IOrgReposiotry
-	ResourcesGroupRepository repositories.IResourcesGroupReposiotry
+	UserRepository           *repositories.UserRepository
+	OrgReposiotry            *repositories.OrgReposiotry
+	ResourcesGroupRepository *repositories.ResourcesGroupReposiotry
 }
 
 func (service *UserService) GetUserContext(ctx context.Context, userId string) (*models.Org, error) {
@@ -19,7 +19,7 @@ func (service *UserService) GetUserContext(ctx context.Context, userId string) (
 	// This is probably not even going to be an indext column in the future.
 	// Regrets future marek.
 
-	orgs, err := service.OrgReposiotry.GetOrgByOwnerId(userId, ctx)
+	orgs, err := service.OrgReposiotry.GetOrgByOwnerId(ctx, userId)
 
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (service *UserService) GetUserContext(ctx context.Context, userId string) (
 	}
 
 	var resGroups []*models.ResourceGroup
-	resGroups, _ = service.ResourcesGroupRepository.GetResourceGroupByOrgID(&orgs[0].ID, ctx)
+	resGroups, _ = service.ResourcesGroupRepository.GetResourceGroupByOrgID(ctx, &orgs[0].ID)
 
 	orgs[0].ResourceGroups = resGroups
 
@@ -40,7 +40,7 @@ func (service *UserService) GetUserContext(ctx context.Context, userId string) (
 }
 
 func (service *UserService) CreateOrUpdateUser(ctx context.Context, user *models.User) error {
-	err := service.UserRepository.Save(user, ctx)
+	err := service.UserRepository.Save(ctx, user)
 
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func (service *UserService) CreateOrUpdateUser(ctx context.Context, user *models
 		Name:    user.Name,
 		OwnerID: user.ID,
 	}
-	err = service.OrgReposiotry.Save(&org, ctx)
+	err = service.OrgReposiotry.Save(ctx, &org)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (service *UserService) CreateOrUpdateUser(ctx context.Context, user *models
 		OrgID: org.ID,
 		Name:  "default",
 	}
-	err = service.ResourcesGroupRepository.Save(&resourceGroup, ctx)
+	err = service.ResourcesGroupRepository.Save(ctx, &resourceGroup)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (service *UserService) CreateOrUpdateUser(ctx context.Context, user *models
 }
 
 func (service *UserService) GetUserByID(ctx context.Context, userID string) (*models.User, error) {
-	user, err := service.UserRepository.GetUserByID(userID, ctx)
+	user, err := service.UserRepository.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

@@ -7,12 +7,6 @@ import (
 	models "github.com/null-channel/eddington/api/users/models"
 )
 
-type IUserReposiotry interface {
-	Seedable
-	GetUserByID(id string, ctx context.Context) (*models.User, error)
-	Save(user *models.User, ctx context.Context) error
-}
-
 type UserRepository struct {
 	infrastrucure.Database
 }
@@ -25,7 +19,7 @@ func (repository *UserRepository) Seed() error {
 	return nil
 }
 
-func (repository *UserRepository) GetUserByID(id string, ctx context.Context) (*models.User, error) {
+func (repository *UserRepository) GetUserByID(ctx context.Context, id string) (*models.User, error) {
 	var user models.User
 	err := repository.DB().NewSelect().
 		Model(&user).
@@ -37,7 +31,7 @@ func (repository *UserRepository) GetUserByID(id string, ctx context.Context) (*
 	return &user, nil
 }
 
-func (repository UserRepository) Save(user *models.User, ctx context.Context) error {
+func (repository UserRepository) Save(ctx context.Context, user *models.User) error {
 	_, err := repository.DB().NewInsert().
 		Model(user).
 		On("CONFLICT (id) DO UPDATE").

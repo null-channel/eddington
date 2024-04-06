@@ -7,12 +7,6 @@ import (
 	models "github.com/null-channel/eddington/api/users/models"
 )
 
-type IResourcesGroupReposiotry interface {
-	Seedable
-	Save(resourcesGroup *models.ResourceGroup, ctx context.Context) error
-	GetResourceGroupByOrgID(orgID *int64, ctx context.Context) (resGroups []*models.ResourceGroup, err error)
-}
-
 type ResourcesGroupReposiotry struct {
 	infrastrucure.Database
 }
@@ -22,7 +16,7 @@ func (repository *ResourcesGroupReposiotry) Seed() error {
 	return err
 }
 
-func (repository *ResourcesGroupReposiotry) GetResourceGroupByOrgID(orgID *int64, ctx context.Context) (resGroups []*models.ResourceGroup, err error) {
+func (repository *ResourcesGroupReposiotry) GetResourceGroupByOrgID(ctx context.Context, orgID *int64) (resGroups []*models.ResourceGroup, err error) {
 
 	err = repository.DB().NewSelect().
 		Model(&resGroups).
@@ -32,7 +26,7 @@ func (repository *ResourcesGroupReposiotry) GetResourceGroupByOrgID(orgID *int64
 	return
 }
 
-func (repository *ResourcesGroupReposiotry) Save(resourcesGroup *models.ResourceGroup, ctx context.Context) error {
+func (repository *ResourcesGroupReposiotry) Save(ctx context.Context, resourcesGroup *models.ResourceGroup) error {
 	_, err := repository.DB().NewInsert().Model(&resourcesGroup).Exec(ctx)
 	return err
 }

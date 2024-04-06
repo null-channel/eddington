@@ -8,9 +8,9 @@ import (
 )
 
 type ResourcesGroupService struct {
-	ResourcesGroupRepository repositories.IResourcesGroupReposiotry
+	ResourcesGroupRepository *repositories.ResourcesGroupReposiotry
 }
 
 func (resourcesGroupService *ResourcesGroupService) CreateResourcesGroup(ctx context.Context, resourcesGroup *models.ResourceGroup) error {
-	return resourcesGroupService.ResourcesGroupRepository.Save(resourcesGroup, ctx)
+	return resourcesGroupService.ResourcesGroupRepository.Save(ctx, resourcesGroup)
 }

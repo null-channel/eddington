@@ -8,11 +8,6 @@ import (
 	"github.com/uptrace/bun/driver/sqliteshim"
 )
 
-// Database interface
-type IDatabase interface {
-	DB() *bun.DB
-}
-
 // DatabaseImpl struct implements Database interface
 type Database struct {
 	Database *bun.DB

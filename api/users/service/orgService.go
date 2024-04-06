@@ -8,13 +8,13 @@ import (
 )
 
 type OrgService struct {
-	OrgRepository repositories.IOrgReposiotry
+	OrgRepository *repositories.OrgReposiotry
 }
 
 func (service *OrgService) CreateOrg(org *models.Org, ctx context.Context) error {
-	return service.OrgRepository.Save(org, ctx)
+	return service.OrgRepository.Save(ctx, org)
 }
 
 func (service *OrgService) GetOrgByOwnerId(ctx context.Context, ownerID string) ([]*models.Org, error) {
-	return service.OrgRepository.GetOrgByOwnerId(ownerID, ctx)
+	return service.OrgRepository.GetOrgByOwnerId(ctx, ownerID)
 }
