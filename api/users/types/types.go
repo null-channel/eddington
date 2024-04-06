@@ -1,6 +1,8 @@
 package types
 
 import (
+	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -17,41 +19,62 @@ type UserTraits struct {
 	NewsLetterConsent bool   `json:"newsletterConsent"`
 }
 
-var validate = validator.New()
+var validate *validator.Validate
 
-type DOB struct {
-	time.Time
-}
-
-func (t *DOB) UnmarshalJSON(b []byte) error {
-	parseTime, err := time.Parse(`"2006-01-02T15:04:05.000z"`, string(b))
+func ValidateAgeGT(fl validator.FieldLevel) bool {
+	ageLimiter, err := strconv.Atoi(fl.Param())
 	if err != nil {
-		return err
-	}
-	t.Time = parseTime
-	return nil
-}
-func ageValidation(fl validator.FieldLevel) bool {
-	ageLimiter := fl.Param()
-	limit, err := time.ParseDuration("-" + ageLimiter + "y")
-	if err != nil {
+		fmt.Printf("Error using age parameter: %v\n", err)
 		return false
 	}
-	dob := fl.Field().Interface().(DOB)
-	minDate := time.Now().Add(limit)
+	dob := fl.Field().Interface().(time.Time)
+	minDate := time.Now().AddDate(-1*ageLimiter, 0, 0)
 	return dob.Before(minDate)
 }
 
 type NewUserRequest struct {
-	ID                string `json:"id" validator:"required"`
-	Name              string `json:"name" validator:"required"`
-	Email             string `json:"email" validator:"email"`
-	NewsletterConsent bool   `json:"newsletterConsent" validator:"bool"`
-	DOB               DOB    `json:"dob" validator:"age=16"`
+	ID                string    `json:"id" validate:"required"`
+	Name              string    `json:"name" validate:"required"`
+	Email             string    `json:"email" validate:"email"`
+	NewsletterConsent bool      `json:"newsletterConsent" validate:"boolean"`
+	DOB               time.Time `json:"dob" validate:"age=16"`
 }
 
+// ApiError represents an API error containing parameter and message details.
+type ApiError struct {
+	Param   string `json:"param"`
+	Message string `json:"message"`
+}
+
+func ConstructErrorMeesages(err error) []ApiError {
+	var apiErrors []ApiError
+	for _, err := range err.(validator.ValidationErrors) {
+		fieldName := err.StructField()
+		var message string
+
+		switch err.Tag() {
+		case "required":
+			message = fmt.Sprintf("%s is required", fieldName)
+		case "email":
+			message = fmt.Sprintf("%s must be a valid email address", fieldName)
+		case "age":
+			message = fmt.Sprintf("%s must be greater than %s", fieldName, err.Param())
+		default:
+			message = fmt.Sprintf("%s is invalid", fieldName)
+		}
+
+		apiError := ApiError{
+			Param:   fieldName,
+			Message: message,
+		}
+
+		apiErrors = append(apiErrors, apiError)
+	}
+	return apiErrors
+}
 func (newUserReq *NewUserRequest) Validate() error {
-	validate.RegisterValidation("age", ageValidation)
+	validate = validator.New()
+	validate.RegisterValidation("age", ValidateAgeGT)
 	err := validate.Struct(newUserReq)
 	return err
 }

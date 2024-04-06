@@ -9,11 +9,11 @@ import (
 
 // NewUserMiddleware is a middleware that checks if the user is new.
 type UserMiddleware struct {
-	userService services.IUserService
+	userService *services.UserService
 }
 
 // NewUserMiddleware creates a new user middleware.
-func NewUserMiddleware(userService services.IUserService) *UserMiddleware {
+func NewUserMiddleware(userService *services.UserService) *UserMiddleware {
 	return &UserMiddleware{userService: userService}
 }
 
@@ -26,7 +26,7 @@ func (k *UserMiddleware) NewUserMiddlewareCheck(next http.Handler) http.Handler 
 		}
 		fmt.Println("Checking if user is new: ", userId)
 		// Check database for user
-		_, err := k.userService.GetUserByID(userId, r.Context())
+		_, err := k.userService.GetUserByID(r.Context(), userId)
 
 		if err != nil {
 			http.Error(w, "User is new, redirecting to new user page", http.StatusBadRequest)

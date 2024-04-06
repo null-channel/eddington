@@ -41,7 +41,7 @@ func (repository *OrgReposiotry) GetOrgByOwnerId(userId string, ctx context.Cont
 
 func (repository *OrgReposiotry) Save(org *models.Org, ctx context.Context) error {
 	_, err := repository.DB().NewInsert().
-		Model(&org).
+		Model(org).
 		On("CONFLICT (owner_id) DO UPDATE").
 		Exec(ctx)
 

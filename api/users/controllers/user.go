@@ -5,21 +5,22 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
+	"go.uber.org/zap"
+
+	pb "github.com/null-channel/eddington/proto/user"
+
 	"github.com/null-channel/eddington/api/core"
 	"github.com/null-channel/eddington/api/users/models"
 	services "github.com/null-channel/eddington/api/users/service"
 	"github.com/null-channel/eddington/api/users/types"
-	pb "github.com/null-channel/eddington/proto/user"
-	"go.uber.org/zap"
 )
 
 // Mux Controller to handel user routes
 type UserController struct {
 	pb.UnimplementedUserServiceServer
 
-	userService services.IUserService
+	userService *services.UserService
 	// orgService            services.IOrgService
 	// resourcesGroupService services.IResourcesGroupService
 	logger *zap.SugaredLogger
@@ -27,7 +28,7 @@ type UserController struct {
 
 func New(
 	logger *zap.Logger,
-	userService services.IUserService,
+	userService *services.UserService,
 	// orgService services.IOrgService,
 	// resourcesGroupService services.IResourcesGroupService,
 ) (*UserController, error) {
@@ -94,26 +95,29 @@ func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&userDTO)
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintln(w, "Decode error! please check your JSON formatting.")
+		u.logger.Error(err)
+		http.Error(w, "Decode error! Please check your JSON formatting.", http.StatusBadRequest)
 		return
 	}
 
 	if err := userDTO.Validate(); err != nil {
-		errors := err.(validator.ValidationErrors)
-		http.Error(w, fmt.Sprintf("Validation error: %s", errors), http.StatusBadRequest)
+		errorMessage := types.ConstructErrorMeesages(err)
+		core.ValidationErrors(w, errorMessage)
 		return
 	}
 
-	err = u.userService.CreateOrUpdateUser(&models.User{
+	// Create or update the user based on userDTO
+	user := &models.User{
 		ID:                userDTO.ID,
 		Name:              userDTO.Name,
 		Email:             userDTO.Email,
 		NewsLetterConsent: userDTO.NewsletterConsent,
-		DOB:               userDTO.DOB.Time,
-	}, r.Context())
+		DOB:               userDTO.DOB,
+	}
+	err = u.userService.CreateOrUpdateUser(r.Context(), user)
 
 	if err != nil {
+		u.logger.Error(err)
 		core.InternalErrorHandler(w)
 		return
 	}

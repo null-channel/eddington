@@ -8,19 +8,13 @@ import (
 	repositories "github.com/null-channel/eddington/api/users/repositories"
 )
 
-type IUserService interface {
-	GetUserContext(userId string, ctx context.Context) (*models.Org, error)
-	CreateOrUpdateUser(user *models.User, ctx context.Context) error
-	GetUserByID(userID string, ctx context.Context) (*models.User, error)
-}
-
 type UserService struct {
 	UserRepository           repositories.IUserReposiotry
 	OrgReposiotry            repositories.IOrgReposiotry
 	ResourcesGroupRepository repositories.IResourcesGroupReposiotry
 }
 
-func (service *UserService) GetUserContext(userId string, ctx context.Context) (*models.Org, error) {
+func (service *UserService) GetUserContext(ctx context.Context, userId string) (*models.Org, error) {
 	// This assumes that the user is the owner. This is bad... but works for now.
 	// This is probably not even going to be an indext column in the future.
 	// Regrets future marek.
@@ -45,7 +39,7 @@ func (service *UserService) GetUserContext(userId string, ctx context.Context) (
 	return orgs[0], nil
 }
 
-func (service *UserService) CreateOrUpdateUser(user *models.User, ctx context.Context) error {
+func (service *UserService) CreateOrUpdateUser(ctx context.Context, user *models.User) error {
 	err := service.UserRepository.Save(user, ctx)
 
 	if err != nil {
@@ -73,7 +67,7 @@ func (service *UserService) CreateOrUpdateUser(user *models.User, ctx context.Co
 	return nil
 }
 
-func (service *UserService) GetUserByID(userID string, ctx context.Context) (*models.User, error) {
+func (service *UserService) GetUserByID(ctx context.Context, userID string) (*models.User, error) {
 	user, err := service.UserRepository.GetUserByID(userID, ctx)
 	if err != nil {
 		return nil, err

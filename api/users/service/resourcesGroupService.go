@@ -7,14 +7,10 @@ import (
 	repositories "github.com/null-channel/eddington/api/users/repositories"
 )
 
-type IResourcesGroupService interface {
-	CreateResourcesGroup(org *models.ResourceGroup, ctx context.Context) error
-}
-
 type ResourcesGroupService struct {
 	ResourcesGroupRepository repositories.IResourcesGroupReposiotry
 }
 
-func (resourcesGroupService *ResourcesGroupService) CreateResourcesGroup(resourcesGroup *models.ResourceGroup, ctx context.Context) error {
+func (resourcesGroupService *ResourcesGroupService) CreateResourcesGroup(ctx context.Context, resourcesGroup *models.ResourceGroup) error {
 	return resourcesGroupService.ResourcesGroupRepository.Save(resourcesGroup, ctx)
 }

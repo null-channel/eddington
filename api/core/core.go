@@ -3,6 +3,8 @@ package core
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/null-channel/eddington/api/users/types"
 )
 
 type Error struct {
@@ -19,8 +21,16 @@ func writeError(writer http.ResponseWriter, message string, code int) {
 	writer.WriteHeader(code)
 	json.NewEncoder(writer).Encode(resp)
 }
+func writeValidationError(writer http.ResponseWriter, apiError []types.ApiError) {
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusBadRequest)
+	json.NewEncoder(writer).Encode(apiError)
+}
 
 var (
+	ValidationErrors = func(w http.ResponseWriter, apiError []types.ApiError) {
+		writeValidationError(w, apiError)
+	}
 	RequestErrorHandler = func(w http.ResponseWriter, err error) {
 		writeError(w, err.Error(), http.StatusBadRequest)
 	}

@@ -39,8 +39,9 @@ func (repository *UserRepository) GetUserByID(id string, ctx context.Context) (*
 
 func (repository UserRepository) Save(user *models.User, ctx context.Context) error {
 	_, err := repository.DB().NewInsert().
-		Model(&user).
+		Model(user).
 		On("CONFLICT (id) DO UPDATE").
+		Set("name = EXCLUDED.name, email = EXCLUDED.email, newsletterConsent = EXCLUDED.newsletterConsent, dob = EXCLUDED.dob").
 		Exec(ctx)
 
 	if err != nil {

@@ -19,12 +19,12 @@ func (userNCE *UserRegistrationNotCompleteError) Error() string {
 
 // NewUserMiddleware is a middleware that checks if the user is new.
 type AuthzMiddleware struct {
-	userService services.IUserService
-	orgServices services.IOrgService
+	userService *services.UserService
+	orgServices *services.OrgService
 }
 
 // NewAuthzMiddleware creates a new user middleware.
-func NewAuthzMiddleware(userService services.IUserService, orgServices services.IOrgService) *AuthzMiddleware {
+func NewAuthzMiddleware(userService *services.UserService, orgServices *services.OrgService) *AuthzMiddleware {
 	return &AuthzMiddleware{userService: userService, orgServices: orgServices}
 }
 
@@ -52,7 +52,7 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 		}
 		fmt.Println("Checking if user is new...")
 		// Check database for user
-		_, err := k.userService.GetUserByID(userId, r.Context())
+		_, err := k.userService.GetUserByID(r.Context(), userId)
 
 		if err != nil {
 			core.UserRegistrationError(w)
@@ -60,7 +60,7 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 			return
 		}
 
-		org, err := k.orgServices.GetOrgByOwnerId(userId, r.Context())
+		org, err := k.orgServices.GetOrgByOwnerId(r.Context(), userId)
 		if err != nil {
 			fmt.Println("Org not found for user. Failing.")
 			http.Redirect(w, r, "error", http.StatusSeeOther)

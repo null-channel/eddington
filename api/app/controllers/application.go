@@ -41,14 +41,14 @@ import (
 type ApplicationController struct {
 	kube                   dynamic.Interface
 	istioClient            *versionedclient.Clientset
-	userService            services.IUserService
+	userService            *services.UserService
 	database               *bun.DB
 	containerServiceClient pb.ContainerServiceClient
 	logs                   *zap.SugaredLogger
 	kubeClientset          *kube.Clientset
 }
 
-func NewApplicationController(kube dynamic.Interface, istio *versionedclient.Clientset, kcs *kube.Clientset, userService services.IUserService, containerBuildingService pb.ContainerServiceClient, logger *zap.Logger) *ApplicationController {
+func NewApplicationController(kube dynamic.Interface, istio *versionedclient.Clientset, kcs *kube.Clientset, userService *services.UserService, containerBuildingService pb.ContainerServiceClient, logger *zap.Logger) *ApplicationController {
 	// Set up a connection to the server.
 	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
 	db := bun.NewDB(sqldb, sqlitedialect.New())
@@ -124,7 +124,7 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 			"user-id:", r.Context().Value("user-id"))
 	}
 	// get user namespace
-	userContext, err := a.userService.GetUserContext(userId, r.Context())
+	userContext, err := a.userService.GetUserContext(r.Context(), userId)
 	if err != nil {
 		a.logs.Errorw("Failed to get user context for the user controller",
 			"user-id", userId,
@@ -327,7 +327,7 @@ func (a ApplicationController) AppGET(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("user-id").(string)
 
 	// get user org
-	org, err := a.userService.GetUserContext(userId, r.Context())
+	org, err := a.userService.GetUserContext(r.Context(), userId)
 	if err != nil {
 		a.logs.Errorw("Failed to get user org for the user controller",
 			"user-id", userId,
