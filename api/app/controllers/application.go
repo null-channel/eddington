@@ -24,8 +24,8 @@ import (
 
 	appmodels "github.com/null-channel/eddington/api/app/models"
 	pb "github.com/null-channel/eddington/api/proto/container"
+	"github.com/null-channel/eddington/api/users/controllers"
 	"github.com/null-channel/eddington/api/users/models"
-	services "github.com/null-channel/eddington/api/users/service"
 	networkingv1alpha3 "istio.io/api/networking/v1alpha3"
 	networkingapplyv1alpha3 "istio.io/client-go/pkg/applyconfiguration/networking/v1alpha3"
 	versionedclient "istio.io/client-go/pkg/clientset/versioned"
@@ -41,14 +41,14 @@ import (
 type ApplicationController struct {
 	kube                   dynamic.Interface
 	istioClient            *versionedclient.Clientset
-	userService            *services.UserService
+	userController         *controllers.UserController
 	database               *bun.DB
 	containerServiceClient pb.ContainerServiceClient
 	logs                   *zap.SugaredLogger
 	kubeClientset          *kube.Clientset
 }
 
-func NewApplicationController(kube dynamic.Interface, istio *versionedclient.Clientset, kcs *kube.Clientset, userService *services.UserService, containerBuildingService pb.ContainerServiceClient, logger *zap.Logger) *ApplicationController {
+func NewApplicationController(kube dynamic.Interface, istio *versionedclient.Clientset, kcs *kube.Clientset, userContoller *controllers.UserController, containerBuildingService pb.ContainerServiceClient, logger *zap.Logger) *ApplicationController {
 	// Set up a connection to the server.
 	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
 	db := bun.NewDB(sqldb, sqlitedialect.New())
@@ -66,7 +66,7 @@ func NewApplicationController(kube dynamic.Interface, istio *versionedclient.Cli
 
 	return &ApplicationController{
 		kube:                   kube,
-		userService:            userService,
+		userController:         userContoller,
 		database:               db,
 		containerServiceClient: containerBuildingService,
 		logs:                   logger.Sugar(),
@@ -124,7 +124,7 @@ func (a ApplicationController) AppPOST(w http.ResponseWriter, r *http.Request) {
 			"user-id:", r.Context().Value("user-id"))
 	}
 	// get user namespace
-	userContext, err := a.userService.GetUserContext(r.Context(), userId)
+	userContext, err := a.userController.GetUserContext(r.Context(), userId)
 	if err != nil {
 		a.logs.Errorw("Failed to get user context for the user controller",
 			"user-id", userId,

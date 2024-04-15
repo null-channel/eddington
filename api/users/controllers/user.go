@@ -1,49 +1,57 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
-
+	"github.com/beevik/guid"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
+	"net/http"
 
 	pb "github.com/null-channel/eddington/proto/user"
 
 	"github.com/null-channel/eddington/api/core"
 	"github.com/null-channel/eddington/api/users/models"
-	services "github.com/null-channel/eddington/api/users/service"
 	"github.com/null-channel/eddington/api/users/types"
 )
+
+type MembersDatastore interface {
+	CreateOrUpdateUser(ctx context.Context, user *models.User) error
+	GetUserByID(ctx context.Context, id string) (*models.User, error)
+	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
+	CreateOrg(ctx context.Context, org *models.Org) error
+	GetOrgByID(ctx context.Context, id int64) (*models.Org, error)
+	UpdateOrg(ctx context.Context, org *models.Org) error
+	GetOrgByOwnerId(ctx context.Context, ownerId string) (*models.Org, error)
+	CreateResourceGroup(ctx context.Context, resourceGroup *models.ResourceGroup) error
+	GetResourceGroupByID(ctx context.Context, id int64) (*models.ResourceGroup, error)
+	UpdateResourceGroup(ctx context.Context, resourceGroup *models.ResourceGroup) error
+}
 
 // Mux Controller to handel user routes
 type UserController struct {
 	pb.UnimplementedUserServiceServer
 
-	userService *services.UserService
-	// orgService            services.IOrgService
-	// resourcesGroupService services.IResourcesGroupService
+	membersDatastore MembersDatastore
+
 	logger *zap.SugaredLogger
 }
 
 func New(
 	logger *zap.Logger,
-	userService *services.UserService,
-	// orgService services.IOrgService,
-	// resourcesGroupService services.IResourcesGroupService,
+	membersDatastore MembersDatastore,
 ) (*UserController, error) {
 
 	userServer := &UserController{
-		userService: userService,
-		// orgService:            orgService,
-		// resourcesGroupService: resourcesGroupService,
-		logger: logger.Sugar(),
+		membersDatastore: membersDatastore,
+		logger:           logger.Sugar(),
 	}
 
 	return userServer, nil
 }
 
-func modelToUserContextRequest(org models.Org, ownerId int64) *pb.GetUserContextReply {
+func modelToUserContextRequest(org models.Org, ownerId string) *pb.GetUserContextReply {
 	return &pb.GetUserContextReply{
 		Org: &pb.Org{
 			ID:             org.ID,
@@ -106,6 +114,14 @@ func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	isUserExist, err := u.membersDatastore.GetUserByEmail(r.Context(), userDTO.Email)
+
+	if err != nil {
+		u.logger.Error(err)
+		core.InternalErrorHandler(w)
+		return
+	}
+
 	// Create or update the user based on userDTO
 	user := &models.User{
 		ID:                userDTO.ID,
@@ -114,13 +130,49 @@ func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
 		NewsLetterConsent: userDTO.NewsletterConsent,
 		DOB:               userDTO.DOB,
 	}
-	err = u.userService.CreateOrUpdateUser(r.Context(), user)
+	err = u.membersDatastore.CreateOrUpdateUser(r.Context(), user)
 
 	if err != nil {
 		u.logger.Error(err)
 		core.InternalErrorHandler(w)
 		return
 	}
+
+	if isUserExist != nil {
+		// User already exist in the system it's an update. We can't update the org and default resource group here.
+		w.WriteHeader(http.StatusCreated)
+		return
+	}
+
+	// Create a new org for the user
+	org := &models.Org{
+		Name:    userDTO.Name + guid.New().String(),
+		OwnerID: user.ID,
+	}
+
+	err = u.membersDatastore.CreateOrg(r.Context(), org)
+
+	if err != nil {
+		u.logger.Error(err)
+		core.InternalErrorHandler(w)
+		return
+	}
+
+	// Create a new resource group for the org
+	resourceGroup := &models.ResourceGroup{
+		OrgID: org.ID,
+		Name:  "Default",
+	}
+
+	err = u.membersDatastore.CreateResourceGroup(r.Context(), resourceGroup)
+
+	if err != nil {
+		u.logger.Error(err)
+		core.InternalErrorHandler(w)
+		return
+	}
+
+	// Should we return the user context here?
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

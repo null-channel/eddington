@@ -2,6 +2,7 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
 	"log"
@@ -25,8 +26,9 @@ import (
 	"github.com/null-channel/eddington/api/middleware"
 	"github.com/null-channel/eddington/api/notfound"
 	userController "github.com/null-channel/eddington/api/users/controllers"
-	"github.com/null-channel/eddington/api/users/repositories"
-	services "github.com/null-channel/eddington/api/users/service"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/sqlitedialect"
+	"github.com/uptrace/bun/driver/sqliteshim"
 	versionedclient "istio.io/client-go/pkg/clientset/versioned"
 	kube "k8s.io/client-go/kubernetes"
 
@@ -60,52 +62,23 @@ func main() {
 	router.NotFoundHandler = http.HandlerFunc(notfound.NotFoundHandler)
 
 	router.Use(middleware.LoggingMiddleware)
-	db, err := infrastrucure.NewDatabase()
-	//Database stuff
-	// sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
-	// userdb := bun.NewDB(sqldb, sqlitedialect.New())
-	if err != nil {
-		panic(err)
-	}
-	userRepo := &repositories.UserRepository{
-		Database: *db,
-	}
-	err = userRepo.Seed()
-	if err != nil {
-		panic(err)
-	}
-	orgRepo := &repositories.OrgReposiotry{
-		Database: *db,
-	}
-	err = orgRepo.Seed()
+
+	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
+	userdb := bun.NewDB(sqldb, sqlitedialect.New())
 	if err != nil {
 		panic(err)
 	}
 
-	resGroupsRepo := &repositories.ResourcesGroupReposiotry{
-		Database: *db,
-	}
-	err = resGroupsRepo.Seed()
-	if err != nil {
-		panic(err)
-	}
+	bunMemberDatastore := infrastrucure.NewBunMemberDatastore(userdb)
 
-	userService := &services.UserService{
-		UserRepository:           userRepo,
-		OrgReposiotry:            orgRepo,
-		ResourcesGroupRepository: resGroupsRepo,
-	}
-	orgService := &services.OrgService{
-		OrgRepository: orgRepo,
-	}
 	//TODO: Swagger
 	//docs.SwaggerInfo.BasePath = "/api/v1"
-	userController, err := userController.New(logger, userService)
+	userController, err := userController.New(logger, bunMemberDatastore)
 
 	//Add user middleware
-	userMiddleware := middleware.NewUserMiddleware(userService)
+	userMiddleware := middleware.NewUserMiddleware(bunMemberDatastore)
 
-	authzMiddleware := middleware.NewAuthzMiddleware(userService, orgService)
+	authzMiddleware := middleware.NewAuthzMiddleware(bunMemberDatastore)
 
 	if err != nil {
 		log.Fatal(err)
@@ -131,7 +104,7 @@ func main() {
 
 	config := dynamic.NewForConfigOrDie(clusterConfig)
 	istioClient := versionedclient.NewForConfigOrDie(clusterConfig)
-	appController := app.NewApplicationController(config, istioClient, kubeClient, userService, client, logger)
+	appController := app.NewApplicationController(config, istioClient, kubeClient, userController, client, logger)
 	middlwares := []mux.MiddlewareFunc{
 		middleware.AddJwtHeaders,
 		authzMiddleware.CheckAuthz,

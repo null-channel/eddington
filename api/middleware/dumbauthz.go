@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/null-channel/eddington/api/core"
-	services "github.com/null-channel/eddington/api/users/service"
+	"github.com/null-channel/eddington/api/users/controllers"
 )
 
 type UserRegistrationNotCompleteError struct {
@@ -19,13 +19,12 @@ func (userNCE *UserRegistrationNotCompleteError) Error() string {
 
 // NewUserMiddleware is a middleware that checks if the user is new.
 type AuthzMiddleware struct {
-	userService *services.UserService
-	orgServices *services.OrgService
+	membersDatastore controllers.MembersDatastore
 }
 
 // NewAuthzMiddleware creates a new user middleware.
-func NewAuthzMiddleware(userService *services.UserService, orgServices *services.OrgService) *AuthzMiddleware {
-	return &AuthzMiddleware{userService: userService, orgServices: orgServices}
+func NewAuthzMiddleware(membersDatasoter controllers.MembersDatastore) *AuthzMiddleware {
+	return &AuthzMiddleware{membersDatastore: membersDatasoter}
 }
 
 func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
@@ -52,7 +51,7 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 		}
 		fmt.Println("Checking if user is new...")
 		// Check database for user
-		_, err := k.userService.GetUserByID(r.Context(), userId)
+		_, err := k.membersDatastore.GetUserByID(r.Context(), userId)
 
 		if err != nil {
 			core.UserRegistrationError(w)
@@ -60,7 +59,7 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 			return
 		}
 
-		org, err := k.orgServices.GetOrgByOwnerId(r.Context(), userId)
+		org, err := k.membersDatastore.GetOrgByOwnerId(r.Context(), userId)
 		if err != nil {
 			fmt.Println("Org not found for user. Failing.")
 			http.Redirect(w, r, "error", http.StatusSeeOther)
@@ -75,7 +74,7 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 		}
 
 		// check if org id matches org id in url
-		if orgId != fmt.Sprintf("%d", org[0].ID) {
+		if orgId != fmt.Sprintf("%d", org.ID) {
 			fmt.Println("Org id in url does not match org id in database. Failing Authz.")
 			http.Redirect(w, r, "/error", http.StatusSeeOther)
 		}
