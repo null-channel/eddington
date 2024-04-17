@@ -3,11 +3,11 @@ module github.com/null-channel/eddington/api
 go 1.20
 
 require (
+	github.com/beevik/guid v1.0.0
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/gorilla/handlers v1.5.1
-	github.com/null-channel/eddington/proto v0.0.0-20231009003536-a2b6e90d2dcd
-	github.com/ory/client-go v1.1.41
+	github.com/null-channel/eddington/proto v0.0.0-20231102101307-3b3b3b3b3b3b
 	github.com/pkg/errors v0.9.1
 	github.com/rs/cors v1.10.1
 	github.com/sendgrid/sendgrid-go v3.12.0+incompatible
@@ -55,7 +55,7 @@ require (
 	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.14.0 // indirect
+	github.com/go-playground/validator/v10 v10.14.0
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
@@ -117,3 +117,5 @@ require (
 )
 
 replace github.com/ugorji/go => github.com/ugorji/go v1.2.9
+
+replace github.com/null-channel/eddington/proto => ../proto
