@@ -115,7 +115,7 @@ func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isUserExist, err := u.membersDatastore.GetUserByEmail(r.Context(), userDTO.Email)
+	_, isNewUser := u.membersDatastore.GetUserByEmail(r.Context(), userDTO.Email)
 
 	if err != nil {
 		u.logger.Error(err)
@@ -131,6 +131,7 @@ func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
 		NewsLetterConsent: userDTO.NewsletterConsent,
 		DOB:               userDTO.DOB,
 	}
+
 	err = u.membersDatastore.CreateOrUpdateUser(r.Context(), user)
 
 	if err != nil {
@@ -139,7 +140,7 @@ func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if isUserExist != nil {
+	if isNewUser == nil {
 		// User already exist in the system it's an update. We can't update the org and default resource group here.
 		w.WriteHeader(http.StatusCreated)
 		return
@@ -190,9 +191,42 @@ func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
 // @Success		200	{string}	Helloworld
 // @Router			/users/ [post]
 func (u *UserController) GetUserId(w http.ResponseWriter, r *http.Request) {
-	// TODO: implement
-	fmt.Println("User ID: " + r.Context().Value("user-id").(string))
-	w.WriteHeader(http.StatusNotImplemented)
+
+	// Get the user ID from the context
+	userID := r.Context().Value("user-id").(string)
+
+	user, err := u.membersDatastore.GetUserByID(r.Context(), userID)
+
+	if err != nil {
+		u.logger.Error(err)
+		core.InternalErrorHandler(w)
+		return
+	}
+
+	// Get the user context
+	org, err := u.GetUserContext(r.Context(), user.ID)
+
+	if err != nil {
+		u.logger.Error(err)
+		core.InternalErrorHandler(w)
+		return
+	}
+
+	// return the UserGetResponse
+	userContext := &UserGetResponse{
+		User: user,
+		Org:  org,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(userContext)
+
+}
+
+type UserGetResponse struct {
+	User *models.User `json:"user"`
+	Org  *models.Org  `json:"org"`
 }
 
 func (u *UserController) GetUserContext(ctx context.Context, userId string) (*models.Org, error) {
