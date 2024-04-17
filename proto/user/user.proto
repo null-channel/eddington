@@ -22,36 +22,34 @@ package user;
 // The greeting service definition.
 service UserService {
   // Sends a greeting
-  rpc GetUserContext (GetUserContextRequest) returns (GetUserContextReply) {}
+  rpc GetUserContext(GetUserContextRequest) returns (GetUserContextReply) {}
 }
 
-message GetUserContextRequest {
-  int64 user_id = 1;
-}
+message GetUserContextRequest { string user_id = 1; }
 
 // The response message containing the greetings
 message GetUserContextReply {
 
-	// Org stuff
-	Org org = 10;
+  // Org stuff
+  Org org = 10;
 }
 
 message Org {
-	int64 ID = 1;
-	string Name = 2;
-	int64 OwnerID = 3;
-	repeated ResourceGroup resourceGroups = 4;
+  int64 ID = 1;
+  string Name = 2;
+  string OwnerID = 3;
+  repeated ResourceGroup resourceGroups = 4;
 }
 
 message ResourceGroup {
-	int64 id = 1;
-	int64 orgId = 2; 
-	string name = 3;
+  int64 id = 1;
+  int64 orgId = 2;
+  string name = 3;
   repeated Resource resources = 4;
 }
 
 message Resource {
-	int64 id         = 1;   
-	int64 createdAt       =2;
-	string type =3;
+  int64 id = 1;
+  int64 createdAt = 2;
+  string type = 3;
 }

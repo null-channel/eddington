@@ -24,7 +24,7 @@ import (
 
 	appmodels "github.com/null-channel/eddington/api/app/models"
 	pb "github.com/null-channel/eddington/api/proto/container"
-	usercon "github.com/null-channel/eddington/api/users/controllers"
+	"github.com/null-channel/eddington/api/users/controllers"
 	"github.com/null-channel/eddington/api/users/models"
 	networkingv1alpha3 "istio.io/api/networking/v1alpha3"
 	networkingapplyv1alpha3 "istio.io/client-go/pkg/applyconfiguration/networking/v1alpha3"
@@ -41,14 +41,14 @@ import (
 type ApplicationController struct {
 	kube                   dynamic.Interface
 	istioClient            *versionedclient.Clientset
-	userController         *usercon.UserController
+	userController         *controllers.UserController
 	database               *bun.DB
 	containerServiceClient pb.ContainerServiceClient
 	logs                   *zap.SugaredLogger
 	kubeClientset          *kube.Clientset
 }
 
-func NewApplicationController(kube dynamic.Interface, istio *versionedclient.Clientset, kcs *kube.Clientset, userService *usercon.UserController, containerBuildingService pb.ContainerServiceClient, logger *zap.Logger) *ApplicationController {
+func NewApplicationController(kube dynamic.Interface, istio *versionedclient.Clientset, kcs *kube.Clientset, userContoller *controllers.UserController, containerBuildingService pb.ContainerServiceClient, logger *zap.Logger) *ApplicationController {
 	// Set up a connection to the server.
 	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
 	db := bun.NewDB(sqldb, sqlitedialect.New())
@@ -66,7 +66,7 @@ func NewApplicationController(kube dynamic.Interface, istio *versionedclient.Cli
 
 	return &ApplicationController{
 		kube:                   kube,
-		userController:         userService,
+		userController:         userContoller,
 		database:               db,
 		containerServiceClient: containerBuildingService,
 		logs:                   logger.Sugar(),

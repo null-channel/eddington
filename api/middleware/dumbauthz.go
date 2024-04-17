@@ -6,8 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/null-channel/eddington/api/core"
-	user "github.com/null-channel/eddington/api/users/models"
-	"github.com/uptrace/bun"
+	"github.com/null-channel/eddington/api/users/controllers"
 )
 
 type UserRegistrationNotCompleteError struct {
@@ -20,12 +19,12 @@ func (userNCE *UserRegistrationNotCompleteError) Error() string {
 
 // NewUserMiddleware is a middleware that checks if the user is new.
 type AuthzMiddleware struct {
-	db *bun.DB
+	membersDatastore controllers.MembersDatastore
 }
 
 // NewAuthzMiddleware creates a new user middleware.
-func NewAuthzMiddleware(db *bun.DB) *AuthzMiddleware {
-	return &AuthzMiddleware{db: db}
+func NewAuthzMiddleware(membersDatasoter controllers.MembersDatastore) *AuthzMiddleware {
+	return &AuthzMiddleware{membersDatastore: membersDatasoter}
 }
 
 func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
@@ -52,7 +51,7 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 		}
 		fmt.Println("Checking if user is new...")
 		// Check database for user
-		_, err := user.GetUserForId(userId, k.db)
+		_, err := k.membersDatastore.GetUserByID(r.Context(), userId)
 
 		if err != nil {
 			core.UserRegistrationError(w)
@@ -60,7 +59,7 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 			return
 		}
 
-		org, err := user.GetOrgByOwnerId(userId, k.db)
+		org, err := k.membersDatastore.GetOrgByOwnerId(r.Context(), userId)
 		if err != nil {
 			fmt.Println("Org not found for user. Failing.")
 			http.Redirect(w, r, "error", http.StatusSeeOther)

@@ -13,9 +13,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/dialect/sqlitedialect"
-	"github.com/uptrace/bun/driver/sqliteshim"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -24,10 +21,14 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 
+	"github.com/null-channel/eddington/api/infrastrucure"
 	marketing "github.com/null-channel/eddington/api/marketing/controllers"
 	"github.com/null-channel/eddington/api/middleware"
 	"github.com/null-channel/eddington/api/notfound"
 	userController "github.com/null-channel/eddington/api/users/controllers"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/sqlitedialect"
+	"github.com/uptrace/bun/driver/sqliteshim"
 	versionedclient "istio.io/client-go/pkg/clientset/versioned"
 	kube "k8s.io/client-go/kubernetes"
 
@@ -62,21 +63,22 @@ func main() {
 
 	router.Use(middleware.LoggingMiddleware)
 
-	//Database stuff
 	sqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
 	userdb := bun.NewDB(sqldb, sqlitedialect.New())
 	if err != nil {
 		panic(err)
 	}
 
+	bunMemberDatastore := infrastrucure.NewBunMemberDatastore(userdb)
+
 	//TODO: Swagger
 	//docs.SwaggerInfo.BasePath = "/api/v1"
-	userController, err := userController.New(logger, userdb)
+	userController, err := userController.New(logger, bunMemberDatastore)
 
 	//Add user middleware
-	userMiddleware := middleware.NewUserMiddleware(userdb)
+	userMiddleware := middleware.NewUserMiddleware(bunMemberDatastore)
 
-	authzMiddleware := middleware.NewAuthzMiddleware(userdb)
+	authzMiddleware := middleware.NewAuthzMiddleware(bunMemberDatastore)
 
 	if err != nil {
 		log.Fatal(err)

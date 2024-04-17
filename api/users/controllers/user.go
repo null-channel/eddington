@@ -2,78 +2,57 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"net/http"
-	"strconv"
-
+	"github.com/beevik/guid"
 	"github.com/gorilla/mux"
-	"github.com/null-channel/eddington/api/users/models"
-	pb "github.com/null-channel/eddington/proto/user"
-	"github.com/uptrace/bun"
 	"go.uber.org/zap"
+	"net/http"
+
+	pb "github.com/null-channel/eddington/proto/user"
+
+	"github.com/null-channel/eddington/api/core"
+	"github.com/null-channel/eddington/api/users/models"
+	"github.com/null-channel/eddington/api/users/types"
 )
+
+type MembersDatastore interface {
+	CreateOrUpdateUser(ctx context.Context, user *models.User) error
+	GetUserByID(ctx context.Context, id string) (*models.User, error)
+	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
+	CreateOrg(ctx context.Context, org *models.Org) error
+	GetOrgByID(ctx context.Context, id int64) (*models.Org, error)
+	UpdateOrg(ctx context.Context, org *models.Org) error
+	GetOrgByOwnerId(ctx context.Context, ownerId string) (*models.Org, error)
+	CreateResourceGroup(ctx context.Context, resourceGroup *models.ResourceGroup) error
+	GetResourceGroupByID(ctx context.Context, id int64) (*models.ResourceGroup, error)
+	UpdateResourceGroup(ctx context.Context, resourceGroup *models.ResourceGroup) error
+	GetResourceGroupByOrgID(ctx context.Context, orgID *int64) (resGroups []*models.ResourceGroup, err error)
+}
 
 // Mux Controller to handel user routes
 type UserController struct {
 	pb.UnimplementedUserServiceServer
-	database *bun.DB
-	logger   *zap.SugaredLogger
+
+	membersDatastore MembersDatastore
+
+	logger *zap.SugaredLogger
 }
 
-func New(logger *zap.Logger, db *bun.DB) (*UserController, error) {
-	_, err := db.NewCreateTable().Model((*models.User)(nil)).Exec(context.Background())
-	if err != nil {
-		panic(err)
-	}
-	_, err = db.NewCreateTable().Model((*models.ResourceGroup)(nil)).Exec(context.Background())
-	if err != nil {
-		panic(err)
-	}
-	_, err = db.NewCreateTable().Model((*models.Org)(nil)).Exec(context.Background())
-	if err != nil {
-		panic(err)
-	}
+func New(
+	logger *zap.Logger,
+	membersDatastore MembersDatastore,
+) (*UserController, error) {
 
-	userServer := &UserController{database: db, logger: logger.Sugar()}
+	userServer := &UserController{
+		membersDatastore: membersDatastore,
+		logger:           logger.Sugar(),
+	}
 
 	return userServer, nil
 }
 
-func (u *UserController) GetUserContext(ctx context.Context, userId string) (*models.Org, error) {
-	// This assumes that the user is the owner. This is bad... but works for now.
-	// This is probably not even going to be an indext column in the future.
-	// Regrets future marek.
-	var orgs []models.Org
-	err := u.database.NewSelect().
-		Model(&orgs).
-		Where("owner_id = ?", userId).
-		Scan(ctx, &orgs)
-
-	if err != nil {
-		u.logger.Errorw("Error getting user from database",
-			"error", err)
-		return nil, err
-	}
-
-	if len(orgs) == 0 {
-		u.logger.Errorw("No orgs found for user", "userId", userId)
-		return nil, fmt.Errorf("No orgs found for user")
-	}
-
-	var resGroups []*models.ResourceGroup
-	err = u.database.NewSelect().
-		Model(&resGroups).
-		Where("org_id = ?", &orgs[0].ID).
-		Scan(ctx)
-
-	orgs[0].ResourceGroups = resGroups
-
-	fmt.Println(orgs)
-
-	return &orgs[0], nil
-}
-
-func modelToUserContextRequest(org models.Org, ownerId int64) *pb.GetUserContextReply {
+func modelToUserContextRequest(org models.Org, ownerId string) *pb.GetUserContextReply {
 	return &pb.GetUserContextReply{
 		Org: &pb.Org{
 			ID:             org.ID,
@@ -109,49 +88,6 @@ func (u *UserController) AddAllControllers(router *mux.Router) {
 	router.HandleFunc("", u.GetUserId).Methods("GET")
 }
 
-func (u *UserController) UpsertUserDB(user models.User) (int, error) {
-
-	_, err := u.database.NewInsert().
-		Model(&user).
-		On("CONFLICT (id) DO UPDATE").
-		Exec(context.Background())
-
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
-	org := models.Org{
-		Name:    user.Name,
-		OwnerID: user.ID,
-	}
-	_, err = u.database.NewInsert().
-		Model(&org).
-		On("CONFLICT (owner_id) DO UPDATE").
-		Exec(context.Background())
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
-	u.logger.Infow("Org created", "orgId:", org.ID)
-
-	resourceGroup := models.ResourceGroup{
-		OrgID: org.ID,
-		Name:  "default",
-	}
-	_, err = u.database.NewInsert().Model(&resourceGroup).Exec(context.Background())
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
-	return http.StatusOK, nil
-}
-
-type NewUserRequest struct {
-	Name              string `json:"name"`
-	Email             string `json:"email"`
-	NewsletterConsent bool   `json:"newsletterConsent"`
-}
-
 // UpdateUser godoc
 //
 // @Summary	update an user
@@ -163,24 +99,84 @@ type NewUserRequest struct {
 // @Success		200	{string}	Helloworld
 // @Router			/users/ [post]
 func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value("user-id").(string)
 
-	name := r.FormValue("name")
-	email := r.FormValue("email")
-	newsletterConsent := r.FormValue("newsletterConsent")
+	var userDTO types.NewUserRequest
+	err := json.NewDecoder(r.Body).Decode(&userDTO)
 
-	newsletterConsentBool := false
-	result, err := strconv.ParseBool(newsletterConsent)
 	if err != nil {
-		newsletterConsentBool = result
+		u.logger.Error(err)
+		http.Error(w, "Decode error! Please check your JSON formatting.", http.StatusBadRequest)
+		return
 	}
 
-	u.UpsertUserDB(models.User{
-		ID:                id,
-		Name:              name,
-		Email:             email,
-		NewsLetterConsent: newsletterConsentBool,
-	})
+	if err := userDTO.Validate(); err != nil {
+		errorMessage := types.ConstructErrorMeesages(err)
+		core.ValidationErrors(w, errorMessage)
+		return
+	}
+
+	isUserExist, err := u.membersDatastore.GetUserByEmail(r.Context(), userDTO.Email)
+
+	if err != nil {
+		u.logger.Error(err)
+		core.InternalErrorHandler(w)
+		return
+	}
+
+	// Create or update the user based on userDTO
+	user := &models.User{
+		ID:                userDTO.ID,
+		Name:              userDTO.Name,
+		Email:             userDTO.Email,
+		NewsLetterConsent: userDTO.NewsletterConsent,
+		DOB:               userDTO.DOB,
+	}
+	err = u.membersDatastore.CreateOrUpdateUser(r.Context(), user)
+
+	if err != nil {
+		u.logger.Error(err)
+		core.InternalErrorHandler(w)
+		return
+	}
+
+	if isUserExist != nil {
+		// User already exist in the system it's an update. We can't update the org and default resource group here.
+		w.WriteHeader(http.StatusCreated)
+		return
+	}
+
+	// Create a new org for the user
+	org := &models.Org{
+		Name:    userDTO.Name + guid.New().String(),
+		OwnerID: user.ID,
+	}
+
+	err = u.membersDatastore.CreateOrg(r.Context(), org)
+
+	if err != nil {
+		u.logger.Error(err)
+		core.InternalErrorHandler(w)
+		return
+	}
+
+	// Create a new resource group for the org
+	resourceGroup := &models.ResourceGroup{
+		OrgID: org.ID,
+		Name:  "Default",
+	}
+
+	err = u.membersDatastore.CreateResourceGroup(r.Context(), resourceGroup)
+
+	if err != nil {
+		u.logger.Error(err)
+		core.InternalErrorHandler(w)
+		return
+	}
+
+	// Should we return the user context here?
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }
 
 // UpdateUser godoc
@@ -197,4 +193,33 @@ func (u *UserController) GetUserId(w http.ResponseWriter, r *http.Request) {
 	// TODO: implement
 	fmt.Println("User ID: " + r.Context().Value("user-id").(string))
 	w.WriteHeader(http.StatusNotImplemented)
+}
+
+func (u *UserController) GetUserContext(ctx context.Context, userId string) (*models.Org, error) {
+	// This assumes that the user is the owner. This is bad... but works for now.
+	// This is probably not even going to be an indext column in the future.
+	// Regrets future marek.
+
+	orgs, err := u.membersDatastore.GetOrgByOwnerId(ctx, userId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var resGroups []*models.ResourceGroup
+	resGroups, _ = u.membersDatastore.GetResourceGroupByOrgID(ctx, &orgs.ID)
+
+	orgs.ResourceGroups = resGroups
+
+	fmt.Println(orgs)
+
+	return orgs, nil
+}
+
+func (u *UserController) GetUserByID(ctx context.Context, userID string) (*models.User, error) {
+	user, err := u.membersDatastore.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
