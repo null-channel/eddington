@@ -99,9 +99,15 @@ func (u *UserController) AddAllControllers(router *mux.Router) {
 // @Success		200	{string}	Helloworld
 // @Router			/users/ [post]
 func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
+	// TODO:
+	userID := r.Context().Value("user-id").(string)
 
 	var userDTO types.NewUserRequest
 	err := json.NewDecoder(r.Body).Decode(&userDTO)
+
+	userDTO.ID = userID
+
+	u.logger.Info("Upserting user: ", userDTO)
 
 	if err != nil {
 		u.logger.Error(err)
@@ -116,12 +122,6 @@ func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, isNewUser := u.membersDatastore.GetUserByEmail(r.Context(), userDTO.Email)
-
-	if err != nil {
-		u.logger.Error(err)
-		core.InternalErrorHandler(w)
-		return
-	}
 
 	// Create or update the user based on userDTO
 	user := &models.User{

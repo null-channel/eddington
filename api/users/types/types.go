@@ -33,7 +33,7 @@ func ValidateAgeGT(fl validator.FieldLevel) bool {
 }
 
 type NewUserRequest struct {
-	ID                string    `json:"id" validate:"required"`
+	ID                string    `json:"id"`
 	Name              string    `json:"name" validate:"required"`
 	Email             string    `json:"email" validate:"email"`
 	NewsletterConsent bool      `json:"newsletterConsent" validate:"boolean"`
