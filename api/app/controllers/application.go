@@ -327,7 +327,7 @@ func (a ApplicationController) AppGET(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("user-id").(string)
 
 	// get user org
-	org, err := a.userService.GetUserContext(r.Context(), userId)
+	org, err := a.userController.GetUserContext(r.Context(), userId)
 	if err != nil {
 		a.logs.Errorw("Failed to get user org for the user controller",
 			"user-id", userId,

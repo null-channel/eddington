@@ -7,7 +7,7 @@ require (
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/gorilla/handlers v1.5.1
-	github.com/null-channel/eddington/proto v0.0.0-20231009003536-a2b6e90d2dcd
+	github.com/null-channel/eddington/proto v0.0.0-20231102101307-3b3b3b3b3b3b
 	github.com/pkg/errors v0.9.1
 	github.com/rs/cors v1.10.1
 	github.com/sendgrid/sendgrid-go v3.12.0+incompatible
@@ -117,3 +117,5 @@ require (
 )
 
 replace github.com/ugorji/go => github.com/ugorji/go v1.2.9
+
+replace github.com/null-channel/eddington/proto => ../proto

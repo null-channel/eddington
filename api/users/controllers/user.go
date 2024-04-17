@@ -27,6 +27,7 @@ type MembersDatastore interface {
 	CreateResourceGroup(ctx context.Context, resourceGroup *models.ResourceGroup) error
 	GetResourceGroupByID(ctx context.Context, id int64) (*models.ResourceGroup, error)
 	UpdateResourceGroup(ctx context.Context, resourceGroup *models.ResourceGroup) error
+	GetResourceGroupByOrgID(ctx context.Context, orgID *int64) (resGroups []*models.ResourceGroup, err error)
 }
 
 // Mux Controller to handel user routes
@@ -192,4 +193,33 @@ func (u *UserController) GetUserId(w http.ResponseWriter, r *http.Request) {
 	// TODO: implement
 	fmt.Println("User ID: " + r.Context().Value("user-id").(string))
 	w.WriteHeader(http.StatusNotImplemented)
+}
+
+func (u *UserController) GetUserContext(ctx context.Context, userId string) (*models.Org, error) {
+	// This assumes that the user is the owner. This is bad... but works for now.
+	// This is probably not even going to be an indext column in the future.
+	// Regrets future marek.
+
+	orgs, err := u.membersDatastore.GetOrgByOwnerId(ctx, userId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var resGroups []*models.ResourceGroup
+	resGroups, _ = u.membersDatastore.GetResourceGroupByOrgID(ctx, &orgs.ID)
+
+	orgs.ResourceGroups = resGroups
+
+	fmt.Println(orgs)
+
+	return orgs, nil
+}
+
+func (u *UserController) GetUserByID(ctx context.Context, userID string) (*models.User, error) {
+	user, err := u.membersDatastore.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

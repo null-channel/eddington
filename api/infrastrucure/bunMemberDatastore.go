@@ -146,3 +146,11 @@ func (bmd *BunMemberDatastore) UpdateResourceGroup(ctx context.Context, resource
 	}
 	return nil
 }
+
+func (bmd *BunMemberDatastore) GetResourceGroupByOrgID(ctx context.Context, orgID *int64) (resGroups []*models.ResourceGroup, err error) {
+	err = bmd.Database.NewSelect().
+		Model(&resGroups).
+		Where("org_id = ?", orgID).
+		Scan(ctx)
+	return
+}
