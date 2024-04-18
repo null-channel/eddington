@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/beevik/guid"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
-	"net/http"
 
 	pb "github.com/null-channel/eddington/proto/user"
 
@@ -23,7 +24,7 @@ type MembersDatastore interface {
 	CreateOrg(ctx context.Context, org *models.Org) error
 	GetOrgByID(ctx context.Context, id int64) (*models.Org, error)
 	UpdateOrg(ctx context.Context, org *models.Org) error
-	GetOrgByOwnerId(ctx context.Context, ownerId string) (*models.Org, error)
+	GetOrgByOwnerId(ctx context.Context, ownerId string) ([]*models.Org, error)
 	CreateResourceGroup(ctx context.Context, resourceGroup *models.ResourceGroup) error
 	GetResourceGroupByID(ctx context.Context, id int64) (*models.ResourceGroup, error)
 	UpdateResourceGroup(ctx context.Context, resourceGroup *models.ResourceGroup) error
@@ -105,8 +106,6 @@ func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
 	var userDTO types.NewUserRequest
 	err := json.NewDecoder(r.Body).Decode(&userDTO)
 
-	userDTO.ID = userID
-
 	u.logger.Info("Upserting user: ", userDTO)
 
 	if err != nil {
@@ -125,7 +124,7 @@ func (u *UserController) UpsertUser(w http.ResponseWriter, r *http.Request) {
 
 	// Create or update the user based on userDTO
 	user := &models.User{
-		ID:                userDTO.ID,
+		ID:                userID,
 		Name:              userDTO.Name,
 		Email:             userDTO.Email,
 		NewsLetterConsent: userDTO.NewsletterConsent,
@@ -213,7 +212,7 @@ func (u *UserController) GetUserId(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// return the UserGetResponse
-	userContext := &UserGetResponse{
+	userContext := &types.UserGetResponse{
 		User: user,
 		Org:  org,
 	}
@@ -222,11 +221,6 @@ func (u *UserController) GetUserId(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(userContext)
 
-}
-
-type UserGetResponse struct {
-	User *models.User `json:"user"`
-	Org  *models.Org  `json:"org"`
 }
 
 func (u *UserController) GetUserContext(ctx context.Context, userId string) (*models.Org, error) {
@@ -241,13 +235,13 @@ func (u *UserController) GetUserContext(ctx context.Context, userId string) (*mo
 	}
 
 	var resGroups []*models.ResourceGroup
-	resGroups, _ = u.membersDatastore.GetResourceGroupByOrgID(ctx, &orgs.ID)
+	resGroups, _ = u.membersDatastore.GetResourceGroupByOrgID(ctx, &orgs[0].ID)
 
-	orgs.ResourceGroups = resGroups
+	orgs[0].ResourceGroups = resGroups
 
 	fmt.Println(orgs)
 
-	return orgs, nil
+	return orgs[0], nil
 }
 
 func (u *UserController) GetUserByID(ctx context.Context, userID string) (*models.User, error) {

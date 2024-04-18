@@ -101,8 +101,8 @@ func (bmd *BunMemberDatastore) UpdateOrg(ctx context.Context, org *models.Org) e
 	return nil
 }
 
-func (bmd *BunMemberDatastore) GetOrgByOwnerId(ctx context.Context, ownerId string) (*models.Org, error) {
-	var org models.Org
+func (bmd *BunMemberDatastore) GetOrgByOwnerId(ctx context.Context, ownerId string) ([]*models.Org, error) {
+	var org []*models.Org
 	err := bmd.Database.NewSelect().
 		Model(&org).
 		Where("owner_id = ?", ownerId).
@@ -111,7 +111,7 @@ func (bmd *BunMemberDatastore) GetOrgByOwnerId(ctx context.Context, ownerId stri
 	if err != nil {
 		return nil, err
 	}
-	return &org, nil
+	return org, nil
 }
 
 func (bmd *BunMemberDatastore) CreateResourceGroup(ctx context.Context, resourceGroup *models.ResourceGroup) error {

@@ -3,12 +3,12 @@ package models
 import "errors"
 
 type NullApplication struct {
-	ID                     int64                     `bun:",pk,autoincrement"`
-	Name                   string                    `bun:"name"`
-	OrgID                  int64                     `bun:"org_id"`
-	ResourceGroupID        int64                     `bun:"resource_group_id"`
-	Namespace              string                    `bun:"namespace"`
-	NullApplicationService []*NullApplicationService `bun:"rel:has-many,join:id=null_application_id"`
+	ID                     int64                     `bun:",pk,autoincrement" json:"id"`
+	Name                   string                    `bun:"name" json:"name"`
+	OrgID                  int64                     `bun:"org_id" json:"org_id"`
+	ResourceGroupID        int64                     `bun:"resource_group_id" json:"resource_group_id"`
+	Namespace              string                    `bun:"namespace" json:"namespace"`
+	NullApplicationService []*NullApplicationService `bun:"rel:has-many,join:id=null_application_id" json:"null_application_service"`
 }
 
 type BuildType int
@@ -26,17 +26,17 @@ func (b BuildType) String() string {
 }
 
 type NullApplicationService struct {
-	ID                int64     `bun:",pk,autoincrement"`
-	NullApplicationID int64     `bun:"null_application_id"`
-	Type              BuildType `bun:"type"`
-	GitRepo           string    `bun:"gitRepo"`
-	GitSha            string    `bun:"gitSha"`
-	Name              string    `bun:"name"`
-	Image             string    `bun:"image"`
-	Cpu               string    `bun:"cpu"`
-	Memory            string    `bun:"memory"`
-	Storage           string    `bun:"storage"`
-	BuildID           string    `bun:"build_id"`
+	ID                int64     `bun:",pk,autoincrement" json:"id"`
+	NullApplicationID int64     `bun:"null_application_id" json:"null_application_id"`
+	Type              BuildType `bun:"type" json:"type"`
+	GitRepo           string    `bun:"gitRepo" json:"git_repo"`
+	GitSha            string    `bun:"gitSha" json:"git_sha"`
+	Name              string    `bun:"name" json:"name"`
+	Image             string    `bun:"image" json:"image"`
+	Cpu               string    `bun:"cpu" json:"cpu"`
+	Memory            string    `bun:"memory" json:"memory"`
+	Storage           string    `bun:"storage" json:"storage"`
+	BuildID           string    `bun:"build_id" json:"build_id"`
 }
 
 // Validate validates the NullApplicationService
