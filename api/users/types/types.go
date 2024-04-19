@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/null-channel/eddington/api/users/models"
 )
 
 type CreateUserRequest struct {
@@ -33,11 +34,15 @@ func ValidateAgeGT(fl validator.FieldLevel) bool {
 }
 
 type NewUserRequest struct {
-	ID                string    `json:"id"`
 	Name              string    `json:"name" validate:"required"`
 	Email             string    `json:"email" validate:"email"`
 	NewsletterConsent bool      `json:"newsletterConsent" validate:"boolean"`
 	DOB               time.Time `json:"dob" validate:"age=16"`
+}
+
+type UserGetResponse struct {
+	User *models.User `json:"user"`
+	Org  *models.Org  `json:"org"`
 }
 
 // ApiError represents an API error containing parameter and message details.

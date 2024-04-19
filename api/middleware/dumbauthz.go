@@ -74,7 +74,7 @@ func (k *AuthzMiddleware) CheckAuthz(next http.Handler) http.Handler {
 		}
 
 		// check if org id matches org id in url
-		if orgId != fmt.Sprintf("%d", org.ID) {
+		if orgId != fmt.Sprintf("%d", org[0].ID) {
 			fmt.Println("Org id in url does not match org id in database. Failing Authz.")
 			http.Redirect(w, r, "/error", http.StatusSeeOther)
 		}

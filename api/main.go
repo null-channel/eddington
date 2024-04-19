@@ -104,7 +104,13 @@ func main() {
 
 	config := dynamic.NewForConfigOrDie(clusterConfig)
 	istioClient := versionedclient.NewForConfigOrDie(clusterConfig)
-	appController := app.NewApplicationController(config, istioClient, kubeClient, userController, client, logger)
+	appsqldb, err := sql.Open(sqliteshim.ShimName, "file::memory:?cache=shared")
+	appdb := bun.NewDB(appsqldb, sqlitedialect.New())
+	if err != nil {
+		panic(err)
+	}
+	bunAppDatastore := infrastrucure.NewBunAppDatastore(appdb)
+	appController := app.NewApplicationController(config, istioClient, kubeClient, bunAppDatastore, userController, client, logger)
 	middlwares := []mux.MiddlewareFunc{
 		middleware.AddJwtHeaders,
 		authzMiddleware.CheckAuthz,
