@@ -262,7 +262,7 @@ func getNullApplication(app types.Application, org *models.Org, resourceGroupId 
 			ResourceGroupID: resourceGroupId,
 			Namespace:       namespace,
 		}, &appmodels.NullApplicationService{
-			Type:    appmodels.ContainerImage,
+			Type:    app.RepoType,
 			GitRepo: app.GitRepo,
 			Name:    app.Name,
 			Image:   app.Image,
