@@ -20,7 +20,7 @@ jobs:
       - name: Update image tag for api service
         working-directory: ./deployments/null-cloud/base/api/dev/
         run: |
-          kustomize edit set image nullchannel/eddington-api-service:${{ github.sha }}
+          kustomize edit set image nullchannel/eddington-api:${{ github.sha }}
       - name: update image tag for null operator
         working-directory: ./deployments/null-cloud/base/null-operator/dev/
         run: |
