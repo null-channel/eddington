@@ -5,6 +5,7 @@ on:
     workflows: ["build-api", "build-container-builder", "build-null-operator"]
     types:
       - completed
+  workflow_dispatch:
 
 jobs:
   build-manifests:
