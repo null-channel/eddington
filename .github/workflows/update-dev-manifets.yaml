@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: ahmadnassri/action-workflow-run-wait@v1
+        with:
+        timeout: 600000
       -
         name: Checkout deployment code
         uses: actions/checkout@v3
